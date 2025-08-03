@@ -1,45 +1,26 @@
-import express from 'express';
-
+import { Router } from 'express';
 import { db } from '../db/client';
 
+const router = Router();
 
-const router = express.Router();
-
-
-router.post('/hikvision', express.json(), async (req, res) => {
-
-    const event = req.body;
-
-
+router.post('/hikvision', async (req, res) => {
     try {
+        const { eventTime, employeeNoString, attendanceStatus } = req.body;
 
-        const jobNo = event.sJobNo;
-
-        const status = event.AttendanceStatus;
-
-        const timestamp = event.eventTime || new Date().toISOString();
-
+        if (!eventTime || !employeeNoString || !attendanceStatus) {
+            return res.status(400).json({ error: 'Faltan datos necesarios.' });
+        }
 
         await db.query(
-
-            'INSERT INTO asistencia (id_empleado, entrada_salida, fecha_hora) VALUES ($1, $2, $3)',
-
-            [jobNo, status, timestamp]
-
+            'INSERT INTO asistencia (employee_id, nombre, fecha_hora, tipo) VALUES ($1, $2, $3, $4)',
+            [employeeNoString, '', eventTime, attendanceStatus]
         );
 
-
-        res.status(200).json({ message: 'Evento registrado' });
-
-    } catch (err) {
-
-        console.error(err);
-
-        res.status(500).json({ error: 'Error al guardar evento' });
-
+        res.status(200).json({ message: 'Datos guardados correctamente' });
+    } catch (error) {
+        console.error('Error al guardar en la base de datos:', error);
+        res.status(500).json({ error: 'Error del servidor' });
     }
-
 });
-
 
 export default router;
