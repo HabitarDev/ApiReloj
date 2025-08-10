@@ -1,21 +1,26 @@
 {
   "name": "hikvision-server",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "private": true,
+  "main": "dist/poller/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts"
+    "start": "node dist/poller/index.js",
+    "start:poller": "node dist/poller/index.js",
+    "start:poller:dev": "ts-node src/poller/index.ts",
+    "build:watch": "tsc -w"
   },
   "dependencies": {
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "pg": "^8.11.1"
+    "@mhoc/axios-digest-auth": "^0.8.0",
+    "axios": "^1.11.0",
+    "dotenv": "^16.6.1",
+    "pg": "^8.16.3",
+    "pino": "^9.8.0"
   },
   "devDependencies": {
-    "@types/express": "^4.17.17",
-    "@types/node": "^20.5.0",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.1.6"
+    "@types/node": "^20.19.10",
+    "@types/pg": "^8.15.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   }
 }
