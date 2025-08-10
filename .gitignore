@@ -46,7 +46,7 @@ tsconfig.tsbuildinfo
 # Certificados/keys del dispositivo
 # (guardá solo placeholders .example o README)
 # ─────────────────────────────
-src/poller/certs/*
+#src/poller/certs/*
 !src/poller/certs/README.md
 !src/poller/certs/*.example
 
