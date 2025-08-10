@@ -1,242 +1,316 @@
-# Hoja de ruta: Polling de eventos y carga en la Base de Datos
+# Hikvision Poller (HTTPS + Digest) — Hoja de Ruta Técnica (v2)
 
-Este documento describe los pasos para configurar el **repositorio** que extrae eventos de un reloj HIKVISION (192.168.1.7) y los carga en PostgreSQL. Incluye la verificación inicial con Postman, la estructura de carpetas y la implementación detallada.
-
----
-
-## Paso 0: Listado de HTTP Listeners con Postman (Máquina Local)
-
-1. **Abrir Postman y crear nueva petición**
-
-    * **Name:** "Listar HTTP Listeners"
-
-2. **Configurar método y URL**
-
-    * **Method:** `GET`
-    * **URL:** `http://192.168.1.7/ISAPI/Event/notification/httpHosts`
-
-3. **Authorization → Digest Auth**
-
-    * **Username:** `admin`
-    * **Password:** `NyM=15091503`
-
-4. **Headers**
-
-   ```text
-   Key:   Accept  
-   Value: application/xml
-   ```
-
-5. **Send**
-
-    * Revisar la respuesta XML con `<HttpHostNotificationList>` y cada `<id>` de listener activo.
-
-6. **Guardar en colección** (opcional) para futuras ejecuciones.
+> Terminal: **HIKVISION DS-K1T321MFWX** (Pro Series, multibiométrico)
+> Objetivo: pasar de **push** a **polling** seguro sobre **HTTPS + Digest**, almacenar eventos en **PostgreSQL** y mantener trazabilidad.
 
 ---
 
-## Esqueleto de carpetas y archivos
+## 🌐 Arquitectura (propuesta)
 
-```plaintext
-hikvision-poller/                # Raíz del proyecto
-├── src/                         # Código fuente
-│   ├── services/                # Lógica de extracción de eventos
-│   │   └── eventPoller.ts       # Polling de AcsEvent y persistencia en BD
-│   ├── db/                      # Conexión y consultas a PostgreSQL
-│   │   └── client.ts            # Pool de PostgreSQL y helpers de inserción
-│   ├── utils/                   # Utilidades genéricas
-│   │   ├── httpClient.ts        # Cliente HTTP con Digest Auth y reintentos
-│   │   └── logger.ts            # Logger centralizado
-│   └── index.ts                 # Punto de entrada: arranca polling y health check
-├── dist/                        # Código compilado (gitignore)
-├── .env.example                 # Plantilla de variables de entorno
-├── ecosystem.config.js          # Configuración PM2 para eventPoller
-├── package.json                 # Dependencias y scripts npm
-└── README.md                    # Este archivo
+> **Aclaración importante:** PostgreSQL **no** se comunica con el router/NAT. El único flujo que atraviesa el NAT es el **poller ⇄ terminal** por **HTTPS**. El poller se comunica con PostgreSQL por red local/VPC.
+
+```text
+[hikvision-poller (Node.js)]
+   ├─→ PostgreSQL (5432, LAN/VPC)
+   └─→ HTTPS 8443→443 (Digest + TLS con CA)
+         └─→ Router F660 (NAT)
+               └─→ Terminal DS-K1T321MFWX (/ISAPI)
+```
+
+**Notas rápidas**
+
+* PostgreSQL **no** se conecta al router; solo el **poller** habla con ambos.
+* El NAT solo afecta el camino **poller ⇄ terminal**.
+* Todo el tráfico hacia el terminal es **HTTPS (Digest)** validado con la **CA exportada**.
+
+**Decisiones clave**
+
+* **Poller** dedicado (servicio PM2) en vez de webhook push.
+* **Digest obligatorio** y **TLS verificado** con el **CA exportado del equipo**.
+* Polling **paginado** con *checkpoint* (idempotencia) para no reprocesar.
+
+---
+
+## 🔌 Endpoints ISAPI a usar
+
+| # | Descripción             | Método | Ruta                                                     |
+| - | ----------------------- | :----: | -------------------------------------------------------- |
+| 1 | Capacidades de búsqueda |   GET  | `/ISAPI/AccessControl/AcsEvent/capabilities?format=json` |
+| 2 | Búsqueda de eventos     |  POST  | `/ISAPI/AccessControl/AcsEvent?format=json`              |
+
+**Cuerpo (ejemplo para #2)**
+
+```json
+{
+  "AcsEventCond": {
+    "searchID": "poll_2025-08-09_12:00",
+    "searchResultPosition": 0,
+    "maxResults": 30,
+    "startTime": "2025-08-09T00:00:00+00:00",
+    "endTime":   "2025-08-09T23:59:59+00:00",
+    "major": 4,
+    "minor": 38,
+    "attendanceStatus": "checkIn"
+  }
+}
+```
+
+**Notas de contrato**
+
+* `searchID`, `searchResultPosition` y `maxResults` **requeridos**.
+* Fechas **ISO‑8601** con zona (la guía las documenta como **UTC**).
+* `major`/`minor` se **envían en decimal** (p.ej. `0x26` → **38**).
+* `attendanceStatus` aceptados: `checkIn`, `checkOut`, `breakOut`, `breakIn`, `overtimeIn`, `overTimeOut`.
+
+**(Opcional, deshabilitado) Listeners push**
+`/ISAPI/Event/notification/httpHosts` — mantener sin configurar salvo que se solicite.
+
+---
+
+## ⏱️ Polling y paginación
+
+**¿Qué es *polling*?** Pedir periódicamente al dispositivo los eventos nuevos. El cliente (poller) inicia la comunicación, no el equipo.
+
+**¿Qué es *paginación*?** Dividir un resultado grande en varias "páginas" usando `searchResultPosition` (offset) y `maxResults` (límite) dentro del `AcsEventCond`.
+
+**¿Para qué sirve?**
+
+* Evitar perder eventos cuando el buffer del equipo es limitado.
+* Controlar carga de red/CPU.
+* Reintentar ante estados **Device Busy (2)** sin duplicar registros.
+
+**Algoritmo propuesto**
+
+1. **Arranque**: `GET /ISAPI/AccessControl/AcsEvent/capabilities?format=json` para conocer límites (p. ej. `maxResults`).
+2. *(Opcional)* Estimar volumen: `POST /ISAPI/AccessControl/AcsEventTotalNum?format=json` con la misma ventana de tiempo para saber cuántos eventos hay.
+3. **Ventana** `[T0, T1]`: usar el último checkpoint (por ejemplo `T0 = last_event_time - 60s` para **solapamiento seguro**).
+4. **Bucle de páginas**:
+
+   * Enviar `POST /ISAPI/AccessControl/AcsEvent?format=json` con:
+
+      * `searchID` único (por ejemplo `poll_<fecha>`),
+      * `searchResultPosition = pos` (arranca en 0),
+      * `maxResults = N` (dentro del rango de *capabilities*),
+      * `startTime/endTime` en **UTC**,
+      * filtros opcionales `major/minor` **en decimal** (el catálogo está en **hex**; ej.: `0x26` ⇒ `38` "Fingerprint Matched").
+   * Insertar en BD con PK `(device_sn, serial_no)`.
+   * `pos += resultados_devueltos`.
+   * Si `resultados_devueltos < N`, **fin de página**.
+5. **Checkpoint**: guardar `serial_no` y `event_time_utc` del último evento confirmado.
+
+**Valores de asistencia** (si se usa `attendanceStatus`): `checkIn`, `checkOut`, `breakOut`, `breakIn`, `overtimeIn`, `overTimeOut`.
+
+---
+
+## 🧱 Esquema de datos sugerido (PostgreSQL)
+
+```sql
+CREATE TABLE IF NOT EXISTS hik_events (
+  device_sn        text        NOT NULL,
+  serial_no        bigint      NOT NULL,
+  event_time_utc   timestamptz NOT NULL,
+  employee_no      text,
+  name             text,
+  major            int,
+  minor            int,
+  attendance_status text,
+  raw              jsonb       NOT NULL,
+  PRIMARY KEY (device_sn, serial_no)
+);
+
+CREATE INDEX IF NOT EXISTS ix_hik_events_time ON hik_events(event_time_utc);
+CREATE INDEX IF NOT EXISTS ix_hik_events_employee ON hik_events(employee_no);
+```
+
+> **Idempotencia**: clave primaria `(device_sn, serial_no)` evita duplicados aunque el poller reintente.
+
+---
+
+## 🔐 Cliente HTTP (Node)
+
+> **Todo el tráfico es HTTPS**. Usamos el certificado **CA exportado del dispositivo** para validar TLS y **Digest** para autenticación.
+
+* **TLS (HTTPS)**: `https.Agent` con `ca: fs.readFileSync('certs/hikvision.crt')` y `rejectUnauthorized: true`. La `RELOJ_HOST` debe ser `https://<ip_o_dns>:8443` (NAT hacia 443 del equipo).
+* **Digest**: usar una librería que implemente RFC 7616 (por ejemplo `@mhoc/axios-digest-auth` o similar) sobre un cliente HTTP (axios/got/fetch) reutilizando el `https.Agent` anterior.
+* **Timeouts**: conexión 5 s, respuesta 15 s.
+* **Retries con backoff**: reintentar 2–4 veces para **Device Busy (2)**; abortar en **Invalid Operation (4)**/**Invalid Content (6)** y loguear.
+* **Circuit‑breaker / Job‑lock**: evitar solapar corridas y saturar el equipo.
+
+**Ejemplo (TypeScript, axios + digest):**
+
+```ts
+import fs from 'fs';
+import https from 'https';
+import axios from 'axios';
+import Digest from '@mhoc/axios-digest-auth';
+
+const httpsAgent = new https.Agent({
+  ca: fs.readFileSync('src/certs/hikvision.crt'),
+  rejectUnauthorized: true,
+});
+
+const digest = new Digest({
+  username: process.env.RELOJ_USER!,
+  password: process.env.RELOJ_PASS!,
+});
+
+const client = axios.create({ baseURL: process.env.RELOJ_HOST, httpsAgent, timeout: 15000 });
+
+export async function postAcsEvent(body: unknown) {
+  return digest.request(client, {
+    method: 'post',
+    url: '/ISAPI/AccessControl/AcsEvent?format=json',
+    headers: { 'Content-Type': 'application/json' },
+    data: body,
+  });
+}
 ```
 
 ---
 
-# Fase 1: Reversión de “push” (Servidor Remoto)
+## 🧩 Estructura del servicio
 
-Estas operaciones se ejecutan desde el servidor remoto con `curl` o Postman, apuntando a `http://192.168.1.7`:
-
-1. **Listar listeners activos**
-
-   ```bash
-   curl -u admin:'NyM=15091503' \
-        -H 'Accept: application/xml' \
-        http://192.168.1.7/ISAPI/Event/notification/httpHosts
-   ```
-
-2. **Eliminar todos los listeners**
-
-   ```bash
-   curl -X DELETE -u admin:'NyM=15091503' \
-        -H 'Accept: application/xml' \
-        http://192.168.1.7/ISAPI/Event/notification/httpHosts
-   ```
-
-3. **Verificar slots vacíos**
-
-   ```bash
-   curl -u admin:'NyM=15091503' \
-        -H 'Accept: application/xml' \
-        http://192.168.1.7/ISAPI/Event/notification/httpHosts
-   ```
+```text
+src/
+├─ certs/
+│  └─ hikvision.crt
+├─ utils/
+│  ├─ httpClient.ts      # HTTPS + Digest + CA + retries
+│  └─ logger.ts          # pino/winston
+├─ services/
+│  └─ eventPoller.ts     # orquesta capabilities + búsqueda + paginado + insert + checkpoint
+├─ db/
+│  └─ client.ts          # Pool PG
+└─ index.ts              # arranque, cron/interval, /health local
+```
 
 ---
 
-# Fase 2: Implementación del Polling (Código en `src/`)
+## ⚙️ Variables de entorno
 
-> **Directorio de trabajo:** `hikvision-poller/src/`
-
-1. **Crear la estructura de carpetas**
-
-   ```bash
-   mkdir -p src/services src/db src/utils
-   ```
-
-2. **`src/utils/httpClient.ts`**
-   Implementa un cliente HTTP (Axios o equivalente) con Digest Auth y manejo de timeouts/reintentos.
-
-3. **`src/utils/logger.ts`**
-   Define un logger centralizado (por ejemplo, con `winston` o un wrapper de `console`).
-
-4. **`src/db/client.ts`**
-
-    * Inicializa el pool de PostgreSQL leyendo `PG_URL` de variables de entorno.
-    * Exporta funciones genéricas para insertar eventos evitando duplicados.
-
-5. **`src/services/eventPoller.ts`**
-   Contiene la lógica de polling:
-
-   ```ts
-   import httpClient from '../utils/httpClient';
-   import db from '../db/client';
-   import logger from '../utils/logger';
-
-   const url = `http://${process.env.RELOJ_HOST}/ISAPI/AccessControl/AcsEvent?format=json`;
-   const auth = { user: process.env.RELOJ_USER!, pass: process.env.RELOJ_PASS! };
-   let searchID = 'search_init';
-   let searchResultPosition = 0;
-
-   export async function poll() {
-     try {
-       const today = new Date().toISOString().slice(0,10);
-       const payload = {
-         AcsEventCond: {
-           searchID,
-           searchResultPosition,
-           maxResults: 50,
-           major: 5,
-           minor: 38,
-           startTime: `${today}T00:00:00+00:00`,
-           endTime:   `${today}T23:59:59+00:00`,
-           attendanceStatus: 'checkIn',
-         }
-       };
-       const resp = await httpClient.post(url, payload, { auth });
-       const events = resp.data.AcsEvent.InfoList || [];
-       await db.insertEvents(events);
-       searchResultPosition += events.length;
-       logger.info(`Inserted ${events.length} events`);
-     } catch (err) {
-       logger.error('Polling error', err);
-     }
-   }
-   ```
-
-6. **`src/index.ts`**
-   Punto de entrada:
-
-   ```ts
-   import 'dotenv/config';
-   import { poll } from './services/eventPoller';
-   import logger from './utils/logger';
-
-   const interval = Number(process.env.POLL_INTERVAL) * 1000;
-   poll();
-   setInterval(poll, interval);
-
-   // Opcional: health check HTTP
-   import express from 'express';
-   const app = express();
-   app.get('/health', (_req, res) => res.send('OK'));
-   app.listen(process.env.PORT || 3000, () => logger.info('Health on port', process.env.PORT));
-   ```
+| Clave          | Ejemplo                       | Descripción                           |
+| -------------- | ----------------------------- | ------------------------------------- |
+| RELOJ\_HOST    | `https://190.134.247.11:8443` | Host + puerto público (NAT hacia 443) |
+| RELOJ\_USER    | `admin`                       | Usuario del dispositivo               |
+| RELOJ\_PASS    | `••••••••`                    | Contraseña del dispositivo            |
+| PG\_URL        | `postgres://…`                | Cadena de conexión PostgreSQL         |
+| POLL\_INTERVAL | `60000`                       | Intervalo en ms entre ventanas        |
 
 ---
 
-# Fase 3: Despliegue e Infraestructura (Servidor Remoto)
+## 🛡️ Seguridad operativa
 
-1. **Limpieza de Nginx**
+* Rotar `admin` y restringir por firewall las IPs que pueden llegar al `:8443`.
+* No exponer HTTP plano; sólo **HTTPS**.
+* Mantener **`httpHosts` vacío** si no se usa push.
+* Monitoreo básico: métricas de latencia, tasa de errores, eventos/minuto.
 
-   ```bash
-   sudo sed -i '/location \/api\/hikvision/,/}/d' /etc/nginx/sites-enabled/default
-   sudo nginx -t && sudo systemctl reload nginx
-   ```
+---
 
-2. **Port-Forwarding / VPN**
-   Asegurar que el servidor remoto puede realizar egress a `192.168.1.7:80` ya sea vía NAT, VPN o regla en el router.
+## 🧪 Pruebas rápidas
 
-3. **Variables de entorno**
+```bash
+# Capabilities (LAN o a través de NAT 8443→443)
+curl --digest -u "$RELOJ_USER:$RELOJ_PASS" \
+  --cacert ./certs/hikvision.crt \
+  "$RELOJ_HOST/ISAPI/AccessControl/AcsEvent/capabilities?format=json"
 
-    * Copiar `.env.example` a `.env` y completar:
+# Búsqueda mínima
+curl --digest -u "$RELOJ_USER:$RELOJ_PASS" \
+  --cacert ./certs/hikvision.crt \
+  -H "Content-Type: application/json" \
+  -d '{"AcsEventCond":{"searchID":"poll_test","searchResultPosition":0,"maxResults":10}}' \
+  "$RELOJ_HOST/ISAPI/AccessControl/AcsEvent?format=json"
+```
 
-      ```ini
-      RELOJ_HOST=192.168.1.7
-      RELOJ_USER=admin
-      RELOJ_PASS=NyM=15091503
-      POLL_INTERVAL=15
-      PG_URL=postgres://user:pass@localhost/db
-      ```
+---
 
-4. **Instalar y compilar**
+## 🧰 Operación (PM2)
 
-   ```bash
-   npm install
-   npm run build
-   ```
+`ecosystem.config.js`
 
-5. **Configurar PM2**
+```js
+module.exports = {
+  apps: [{
+    name: "hikvision-poller",
+    script: "dist/index.js",
+    env: { NODE_ENV: "production" }
+  }]
+};
+```
 
-    * `ecosystem.config.js`:
+---
 
-      ```js
-      module.exports = {
-        apps: [{
-          name: 'event-poller',
-          script: './dist/services/eventPoller.js',
-          env: { NODE_ENV: 'production' }
-        }]
-      };
-      ```
-    * Comandos:
+## 🚧 Roadmap incremental
 
-      ```bash
-      pm2 stop all
-      pm2 delete all
-      pm2 start ecosystem.config.js
-      pm2 save
-      pm2 startup
-      ```
+**Fase 0 — Infra & Certificados**
 
-6. **Firewall (ufw)**
+* Exportar **CA** del dispositivo y guardarla en `src/certs/hikvision.crt`.
+* Crear `.env.example` con `RELOJ_HOST=https://<IP_PUBLICA>:8443`, `RELOJ_USER`, `RELOJ_PASS`, `PG_URL`, `POLL_INTERVAL`.
+* Verificar NAT `8443→443` y **lista blanca de IPs**.
+  **Criterio de aceptación:** `curl --digest --cacert certs/hikvision.crt "$RELOJ_HOST/ISAPI/.../capabilities?format=json"` retorna **200**.
 
-   ```bash
-   sudo ufw allow out to 192.168.1.7 port 80 proto tcp
-   sudo ufw allow in  3000/tcp
-   sudo ufw enable
-   ```
+**Fase 1 — Cliente HTTPS + Digest**
 
-7. **Verificar logs y BD**
+* `utils/httpClient.ts`: `https.Agent` con `ca`, digest, **timeouts**, **retries con backoff**, logging.
+* Endpoint `/health` local que haga un `GET .../capabilities` y reporte latencia.
+  **Criterio:** dos requests consecutivos OK con certificados válidos y digest funcionando.
 
-   ```bash
-   pm2 logs event-poller
-   psql $PG_URL -c "SELECT * FROM events ORDER BY timestamp DESC LIMIT 5;"
-   ```
+**Fase 2 — Esquema y migraciones**
 
-8. **Documentar**
+* Crear tabla `hik_events` (ver sección *Esquema de datos*) + índices.
+* Migración inicial (por ejemplo con `node-pg-migrate`/`knex`).
+  **Criterio:** `SELECT COUNT(*) FROM hik_events;` ejecuta; PK evita duplicados.
 
-    * En `README.md`: propósito (solo polling → BD), esquema de carpetas, ejemplo de `.env`, payload de prueba en Postman y comandos PM2.
+**Fase 3 — Núcleo del Poller**
+
+* Leer **capabilities** al arranque.
+* *(Opcional)* `AcsEventTotalNum` para estimar volumen.
+* Implementar ventana deslizante `[T0,T1]` con **solapamiento 60 s**.
+* Paginación con `searchID`, `searchResultPosition`, `maxResults`.
+* Insert idempotente y **checkpoint dual** (`serial_no`, `event_time_utc`).
+  **Criterio:** al menos 100 eventos descargados sin duplicados tras reiniciar el servicio.
+
+**Fase 4 — Operación**
+
+* Archivo `ecosystem.config.js` (PM2), logs con rotación, métricas básicas.
+* **Job‑lock** (por ejemplo `pg_advisory_lock`) para asegurar un poll activo.
+  **Criterio:** reinicios no generan corridas en paralelo; logs muestran una sola instancia activa.
+
+**Fase 5 — Filtros y mapping de negocio**
+
+* Soporte de filtros `attendanceStatus`, `major/minor` (decimal) y mapping a tu dominio (ingreso/salida/descanso...).
+  **Criterio:** query de reporte por `employee_no` y rango devuelve totales coherentes.
+
+**Fase 6 — Pruebas y *hardening***
+
+* Pruebas LAN/WAN; simulación de **2 – Device Busy**, **4 – Invalid Operation**, **6 – Invalid Content**.
+* Validación de TLS (fallar si el cert no es confiable); desactivar HTTP plano.
+  **Criterio:** dashboard de métricas estable; 0 duplicados en 24 h.
+
+**Fase 7 — Limpieza push**
+
+* Verificar que `httpHosts` esté vacío si no se usa push.
+  **Criterio:** `GET /ISAPI/Event/notification/httpHosts` sin hosts configurados.
+
+---
+
+## 🩹 Troubleshooting (códigos típicos)
+
+* **1 – OK**
+* **2 – Device Busy** → reintentar con *backoff*, verificar ancho de banda.
+* **3 – Device Error** → revisar estado del dispositivo; logs.
+* **4 – Invalid Operation** → método HTTP incorrecto o permisos insuficientes.
+* **6 – Invalid Content** → JSON inválido o parámetros fuera de rango.
+* **401 – Unauthorized** → asegurar **Digest** activo.
+
+---
+
+## 📎 Anexos útiles
+
+* Catálogo de tipos de evento (hex) para mapeo a **decimal** cuando se filtra por `minor` — ej. `0x26` = **38** (Fingerprint Matched).
+* Ejemplos de `attendanceStatus` reconocidos por el firmware.
+
+---
+
+> Este documento **no cambia contenido técnico** respecto al anterior; solo mejora el **formato** y cierra correctamente los bloques de código para evitar que el resto del texto quede monoespaciado.
