@@ -1,0 +1,60 @@
+# ─────────────────────────────
+# IDEs / JetBrains & VS Code
+# ─────────────────────────────
+.idea/
+.vscode/
+
+# HTTP client y datasources de WebStorm
+httpRequests/
+dataSources/
+dataSources.local.xml
+
+# ─────────────────────────────
+# Node / NPM
+# ─────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+*.pid
+*.pid.lock
+
+# No ignores el lockfile: DEJA package-lock.json en el repo
+
+# ─────────────────────────────
+# Build / Cobertura / TS cache
+# ─────────────────────────────
+dist/
+build/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# ─────────────────────────────
+# Variables y secretos
+# ─────────────────────────────
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# ─────────────────────────────
+# Certificados/keys del dispositivo
+# (guardá solo placeholders .example o README)
+# ─────────────────────────────
+src/poller/certs/*
+!src/poller/certs/README.md
+!src/poller/certs/*.example
+
+# ─────────────────────────────
+# Archivos temporales / SO
+# ─────────────────────────────
+tmp/
+temp/
+*.local
+.DS_Store
+Thumbs.db
