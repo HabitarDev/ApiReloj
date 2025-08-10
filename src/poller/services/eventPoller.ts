@@ -2,13 +2,24 @@
 import { db } from "../../db/client";
 import { getCapabilities, searchEvents } from "../utils/httpClient";
 
-const PAGE = 30;        // ajusta según /AcsEvent/capabilities
-const WINDOW_S = 300;   // 5 min de ventana
-const OVERLAP_S = 60;   // 60 s de solape
-const MAX_PAGES = 1000; // guardarraíl anti-loop
-const LOCK_KEY = 42001; // clave fija para pg_advisory_lock
+// ── Configuración del poller (ajustable por .env) ─────────────────────────────
+const PAGE = 30;             // tamaño de página (ver /AcsEvent/capabilities)
+const WINDOW_S = 300;        // ventana: 5 min
+const OVERLAP_S = 60;        // solapamiento: 60 s
+const MAX_PAGES = 1000;      // guardarraíl anti-loop
+const LOCK_KEY = 42001;      // clave fija para pg_advisory_lock
 
-// --- Tipos laxos para tolerar variantes de firmware ---
+// Filtros requeridos por tu equipo (decimal)
+const MAJOR = Number(process.env.RELOJ_MAJOR ?? 5);   // Other events
+const MINOR = Number(process.env.RELOJ_MINOR ?? 38);  // Fingerprint Matched (0x26 → 38)
+const TZ_OFFSET = process.env.RELOJ_TZ_OFFSET ?? "+00:00"; // evita 'Z'
+const ATT_STATUS = process.env.RELOJ_ATT_STATUS || undefined; // opcional
+
+if (Number.isNaN(MAJOR) || Number.isNaN(MINOR)) {
+    throw new Error("RELOJ_MAJOR/RELOJ_MINOR inválidos en .env (deben ser decimales).");
+}
+
+// ── Tipos lazos para tolerar variantes de firmware ────────────────────────────
 type AcsEventList = any[];
 type SearchResp =
     | { AcsEvent?: { AcsEventInfo?: AcsEventList } }
@@ -27,7 +38,10 @@ type NormEvent = {
     raw: any;
 };
 
-// Normaliza un evento del payload del equipo a nuestro esquema
+// ── Utilidades ────────────────────────────────────────────────────────────────
+const toOffset = (d: Date, off = TZ_OFFSET) => d.toISOString().replace("Z", off);
+
+// Normaliza un evento del payload a nuestro esquema
 function normalize(ev: any): NormEvent {
     const deviceSn =
         ev.deviceSN ?? ev.devSN ?? ev.deviceSn ?? ev.deviceSNStr ?? "unknown";
@@ -55,7 +69,6 @@ function normalize(ev: any): NormEvent {
     };
 }
 
-// Carga el último checkpoint (si existe). Usa el máximo entre dispositivos.
 async function loadLastEventTime(): Promise<string | null> {
     const r = await db.query<{ t: string | null }>(
         `SELECT MAX(last_event_time_utc)::text AS t FROM public.poller_checkpoint`
@@ -93,8 +106,9 @@ async function insertEvent(ev: NormEvent): Promise<void> {
     );
 }
 
+// ── Loop de polling ───────────────────────────────────────────────────────────
 export async function pollOnce() {
-    // Job-lock para evitar dos pollers a la vez
+    // Evita dos pollers simultáneos
     const { rows } = await db.query<{ got: boolean }>(
         "SELECT pg_try_advisory_lock($1) AS got",
         [LOCK_KEY]
@@ -105,17 +119,14 @@ export async function pollOnce() {
     }
 
     try {
-        await getCapabilities(); // sanity check contra el equipo
+        // Sanity check (capabilities / límites)
+        await getCapabilities();
 
-        // Ventana con solape + checkpoint
         const end = new Date();
         const start = new Date(end.getTime() - WINDOW_S * 1000);
 
         const fromCheckpoint = await loadLastEventTime();
-        const baseStart = fromCheckpoint
-            ? new Date(fromCheckpoint)
-            : new Date(0);
-
+        const baseStart = fromCheckpoint ? new Date(fromCheckpoint) : new Date(0);
         const safeStart = new Date(
             Math.max(baseStart.getTime() - OVERLAP_S * 1000, start.getTime())
         );
@@ -123,16 +134,18 @@ export async function pollOnce() {
         let pos = 0;
 
         for (let page = 0; page < MAX_PAGES; page++) {
-            const body = {
+            const body: any = {
                 AcsEventCond: {
                     searchID: `poll_${Date.now()}`,
                     searchResultPosition: pos,
                     maxResults: PAGE,
-                    startTime: safeStart.toISOString(),
-                    endTime: end.toISOString(),
-                    // filtros opcionales: major/minor (DECIMAL), attendanceStatus
+                    startTime: toOffset(safeStart), // ISO con offset (no 'Z')
+                    endTime: toOffset(end),
+                    major: MAJOR,                   // requeridos por el equipo
+                    minor: MINOR,
                 },
             };
+            if (ATT_STATUS) body.AcsEventCond.attendanceStatus = ATT_STATUS;
 
             const { data } = await searchEvents<SearchResp>(body);
 
@@ -143,13 +156,12 @@ export async function pollOnce() {
 
             if (!Array.isArray(rowsAny) || rowsAny.length === 0) break;
 
-            // Procesar en orden temporal ascendente por seguridad
+            // Insertar en orden temporal para que el checkpoint avance correctamente
             const normalized = rowsAny.map(normalize).sort((a, b) =>
                 a.eventTimeUtc.localeCompare(b.eventTimeUtc)
             );
 
             for (const ne of normalized) {
-                // Inserción idempotente + actualización de checkpoint
                 await insertEvent(ne);
             }
 
