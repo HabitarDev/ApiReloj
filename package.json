@@ -9,20 +9,18 @@
     "start": "node dist/poller/index.js",
     "start:poller": "node dist/poller/index.js",
     "start:poller:insecure": "cross-env RELOJ_TLS_INSECURE=1 node dist/poller/index.js",
-    "start:poller:dev": "cross-env RELOJ_TLS_INSECURE=1 ts-node src/poller/index.ts"
+    "start:poller:dev": "ts-node src/poller/index.ts"
   },
   "dependencies": {
-    "@mhoc/axios-digest-auth": "^0.8.0",
     "axios": "^1.11.0",
-    "digest-fetch": "^3.1.1",
     "dotenv": "^16.6.1",
     "pg": "^8.16.3",
-    "pino": "^9.8.0"
+    "pino": "^9.8.0",
+    "cross-env": "^7.0.3"
   },
   "devDependencies": {
     "@types/node": "^20.19.10",
     "@types/pg": "^8.15.5",
-    "cross-env": "^7.0.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   }

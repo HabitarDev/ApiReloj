@@ -1,81 +1,123 @@
 // src/poller/utils/httpClient.ts
-import https from "https";
 import fs from "fs";
 import path from "path";
+import https from "https";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
+import crypto from "crypto";
 
 const INSECURE = process.env.RELOJ_TLS_INSECURE === "1";
 
-// Acepta RELOJ_HOST con o sin esquema
-const RAW_HOST = process.env.RELOJ_HOST || "";        // 186.48.x.x:8443 ó https://186.48.x.x:8443
-const BASE_URL = RAW_HOST.startsWith("http") ? RAW_HOST : `https://${RAW_HOST}`;
+// HOST puede venir con o sin esquema (acepta "https://IP:PORT" o "IP:PORT")
+const RAW_HOST = process.env.RELOJ_HOST || "";
+export const BASE_URL = RAW_HOST.startsWith("http") ? RAW_HOST : `https://${RAW_HOST}`;
 
-// CA para modo seguro (opcional)
+// CA opcional (solo si NO estás en modo inseguro)
 const CA_PATH =
     process.env.RELOJ_CA_CERT ||
     path.resolve(process.cwd(), "src/poller/certs/hikvision.crt");
 
-// Agent según modo
-let httpsAgent: https.Agent;
-if (INSECURE) {
-    httpsAgent = new https.Agent({
-        rejectUnauthorized: false,
-        // ignoramos CN/fecha en dev
-        checkServerIdentity: () => undefined as any,
-    });
-} else {
-    const opts: https.AgentOptions = { rejectUnauthorized: true };
-    try { opts.ca = fs.readFileSync(CA_PATH); } catch {}
-    httpsAgent = new https.Agent(opts);
+// Agent TLS (seguro o inseguro)
+const httpsAgent = INSECURE
+    ? new https.Agent({ rejectUnauthorized: false, checkServerIdentity: () => undefined })
+    : (() => {
+        const opts: https.AgentOptions = { rejectUnauthorized: true };
+        try { opts.ca = fs.readFileSync(CA_PATH); } catch {}
+        return new https.Agent(opts);
+    })();
+
+// Axios base (dejamos validateStatus para poder leer el 401 del reto Digest)
+const client: AxiosInstance = axios.create({
+    baseURL: BASE_URL,
+    httpsAgent,
+    timeout: 15000,
+    validateStatus: () => true,
+});
+
+const USER = process.env.RELOJ_USER || "admin";
+const PASS = process.env.RELOJ_PASS || "";
+
+// --- helpers digest ---
+const md5 = (s: string) => crypto.createHash("md5").update(s).digest("hex");
+
+function parseDigest(h: string): Record<string, string> {
+    // toma el primer “Digest ...”
+    const m = /Digest\s+(.*)/i.exec(h) || [];
+    const params: Record<string, string> = {};
+    (m[1] || h)
+        .split(/,\s*/)
+        .map(x => x.trim())
+        .forEach(kv => {
+            const mm = /(\w+)=("?)(.+?)\2$/.exec(kv);
+            if (mm) params[mm[1]] = mm[3];
+        });
+    return params;
 }
 
-// --- Carga perezosa de digest-fetch (ESM) desde CommonJS ---
-let dfPromise: Promise<any> | null = null;
-async function getDigestClient() {
-    if (!dfPromise) {
-        dfPromise = (async () => {
-            const mod = await import("digest-fetch");         // ESM dinámico
-            const DigestFetch = (mod as any).default ?? (mod as any);
-            return new DigestFetch(
-                process.env.RELOJ_USER || "admin",
-                process.env.RELOJ_PASS || "",
-                { algorithm: "MD5", basic: false }
-            );
-        })();
-    }
-    return dfPromise;
-}
-
-// Respuesta mínima para no chocar con tipos de axios
-type HttpResponse<T = any> = { data: T; status: number };
-
-async function digestJson<T = any>(
+async function requestWithDigest(
     method: "GET" | "POST",
-    pathWithQuery: string,
-    body?: any
-): Promise<HttpResponse<T>> {
-    const url = `${BASE_URL}${pathWithQuery}`;
-    const df = await getDigestClient();
+    urlPathAndQuery: string,            // ¡usar path + query, sin baseURL!
+    body?: any,
+    extraHeaders: Record<string, string> = {}
+): Promise<AxiosResponse<any>> {
 
-    const res = await df.fetch(url, {
+    // 1) primer intento para obtener WWW-Authenticate
+    const first = await client.request({
         method,
-        agent: httpsAgent as any,
+        url: urlPathAndQuery,
+        data: body,
+        headers: { Accept: "application/json", ...extraHeaders },
+    });
+
+    const www = first.headers["www-authenticate"] as string | undefined;
+    if (first.status !== 401 || !www || !/Digest/i.test(www)) {
+        // o ya respondió 200, o falló por otra causa
+        return first;
+    }
+
+    // 2) calculamos el header Digest y reintentamos
+    const d = parseDigest(www);
+    const realm = d.realm || "";
+    const nonce = d.nonce || "";
+    const qop = (d.qop || "auth").split(",")[0].trim();
+    const opaque = d.opaque;
+
+    const uri = urlPathAndQuery;                     // incluir ?format=json etc.
+    const cnonce = crypto.randomBytes(8).toString("hex");
+    const nc = "00000001";
+
+    const ha1 = md5(`${USER}:${realm}:${PASS}`);
+    const ha2 = md5(`${method}:${uri}`);
+    const response = qop
+        ? md5(`${ha1}:${nonce}:${nc}:${cnonce}:${qop}:${ha2}`)
+        : md5(`${ha1}:${nonce}:${ha2}`);
+
+    let auth =
+        `Digest username="${USER}", realm="${realm}", nonce="${nonce}", uri="${uri}", ` +
+        (qop ? `qop=${qop}, nc=${nc}, cnonce="${cnonce}", ` : "") +
+        `algorithm=MD5, response="${response}"`;
+    if (opaque) auth += `, opaque="${opaque}"`;
+
+    return client.request({
+        method,
+        url: urlPathAndQuery,
+        data: body,
         headers: {
             Accept: "application/json",
-            ...(body ? { "Content-Type": "application/json" } : {}),
+            Authorization: auth,
+            ...(method === "POST" ? { "Content-Type": "application/json" } : {}),
+            ...extraHeaders,
         },
-        body: body ? JSON.stringify(body) : undefined,
     });
-
-    const ct = res.headers.get("content-type") || "";
-    const data: T = ct.includes("json") ? await res.json() : ((await res.text()) as any);
-    return { data, status: res.status };
 }
 
-// ---- Endpoints ISAPI ----
-export function getCapabilities(): Promise<HttpResponse<any>> {
-    return digestJson("GET", "/ISAPI/AccessControl/AcsEvent/capabilities?format=json");
+// --- API helpers públicos ---
+export async function getCapabilities() {
+    // GET /ISAPI/AccessControl/AcsEvent/capabilities?format=json
+    // (endpoint documentado por Hikvision). :contentReference[oaicite:0]{index=0}
+    return requestWithDigest("GET", "/ISAPI/AccessControl/AcsEvent/capabilities?format=json");
 }
 
-export function searchEvents<T = any>(body: any): Promise<HttpResponse<T>> {
-    return digestJson("POST", "/ISAPI/AccessControl/AcsEvent?format=json", body);
+export async function searchEvents(body: any) {
+    // POST /ISAPI/AccessControl/AcsEvent?format=json (consulta de eventos). :contentReference[oaicite:1]{index=1}
+    return requestWithDigest("POST", "/ISAPI/AccessControl/AcsEvent?format=json", body);
 }
