@@ -147,8 +147,8 @@ export async function pollOnce() {
             };
             if (ATT_STATUS) body.AcsEventCond.attendanceStatus = ATT_STATUS;
 
-            const { data } = await searchEvents<SearchResp>(body);
-
+            const { data } = await searchEvents(body);
+            await getCapabilities();
             const rowsAny: AcsEventList =
                 (data as any)?.AcsEvent?.AcsEventInfo ??
                 (data as any)?.AcsEvent ??
