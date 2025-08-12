@@ -1,50 +1,82 @@
+// src/poller/utils/httpClient.ts
 import fs from "fs";
+import path from "path";
 import https from "https";
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import axios from "axios";
 import AxiosDigestAuth from "@mhoc/axios-digest-auth";
+import crypto from "crypto";
+import type { AxiosResponse } from "axios";  // <— NUEVO
 
-// HTTPS agent: valida contra el CA exportado del equipo
-export const httpsAgent = new https.Agent({
-    ca: fs.readFileSync("src/poller/certs/hikvision.crt"),
-    rejectUnauthorized: true,
+const INSECURE = process.env.RELOJ_TLS_INSECURE === "1";
+
+// BaseURL: acepta RELOJ_HOST con o sin esquema
+const RAW_HOST = process.env.RELOJ_HOST || "";        // ej: 167.62.x.y:8443 o https://167.62.x.y:8443
+const BASE_URL = RAW_HOST.startsWith("http") ? RAW_HOST : `https://${RAW_HOST}`;
+
+// CA solo para modo seguro
+const CA_PATH =
+    process.env.RELOJ_CA_CERT ||
+    path.resolve(process.cwd(), "src/poller/certs/hikvision.crt");
+
+// https.Agent según modo
+const httpsAgent = INSECURE
+    ? new https.Agent({
+        rejectUnauthorized: false,
+        checkServerIdentity: () => undefined,
+    })
+    : new https.Agent({
+        ca: fs.readFileSync(CA_PATH),
+        rejectUnauthorized: true,
+    });
+
+// Nuestra instancia de axios (para timeout y pinning)
+const client = axios.create({
+    baseURL: BASE_URL,
+    httpsAgent,
+    timeout: 15000,
 });
 
-// OJO: no pasamos nuestra instancia de axios al constructor de Digest
-// (evita choques de tipos entre axios de tu proyecto y el axios que usa la lib)
-const digest = new AxiosDigestAuth({
-    username: process.env.RELOJ_USER!,
-    password: process.env.RELOJ_PASS!,
+// Digest: pasamos el axios instance como any para evitar choque de tipos
+export const digest = new AxiosDigestAuth({
+    username: process.env.RELOJ_USER || "admin",
+    password: process.env.RELOJ_PASS || "",
+    axios: client as any,
 });
 
-const baseURL = process.env.RELOJ_HOST!;
+// Pinning opcional (recomendado si usas INSECURE)
+const EXPECTED_FP = (process.env.RELOJ_TLS_FP || "").toLowerCase();
+client.interceptors.response.use((resp) => {
+    if (INSECURE && EXPECTED_FP) {
+        const cert: any = resp?.request?.socket?.getPeerCertificate?.(true);
+        if (!cert || !cert.raw) throw new Error("TLS pinning: certificado ausente");
+        const got = crypto.createHash("sha256").update(cert.raw).digest("hex");
+        if (got !== EXPECTED_FP) {
+            throw new Error(`TLS pin mismatch: got=${got} expected=${EXPECTED_FP}`);
+        }
+    }
+    return resp;
+});
 
-// Helper con tipado estable: añadimos baseURL/httpsAgent y casteamos la respuesta
-async function digestRequest<T = any>(
-    cfg: AxiosRequestConfig
-): Promise<AxiosResponse<T>> {
-    const req: AxiosRequestConfig = { baseURL, httpsAgent, ...cfg };
-    // La lib devuelve tipos incompatibles con axios@1.x → cast seguro
-    const res = (await digest.request(req as any)) as unknown as AxiosResponse<T>;
-    return res;
-}
+// ---- Helpers: tipo mínimo para evitar choque de Axios ----
+type HttpResponse<T> = { data: T };
 
-// --- Endpoints ---
-
-export async function getCapabilities(): Promise<AxiosResponse<any>> {
-    return digestRequest({
+// Capabilities
+export async function getCapabilities(): Promise<HttpResponse<any>> {
+    const resp = await digest.request({
         method: "GET",
         url: "/ISAPI/AccessControl/AcsEvent/capabilities?format=json",
-    });
+    } as any);
+    // devolvemos un shape con { data } sin tipar con AxiosResponse
+    return resp as unknown as HttpResponse<any>;
 }
 
-export async function searchEvents<T = any>(
-    body: unknown
-): Promise<AxiosResponse<T>> {
-    return digestRequest<T>({
+// Búsqueda de eventos
+export async function searchEvents<T = any>(body: any): Promise<HttpResponse<T>> {
+    const resp = await digest.request({
         method: "POST",
         url: "/ISAPI/AccessControl/AcsEvent?format=json",
-        // headers de axios@1 (la lib usa otra firma, por eso casteamos):
-        headers: { "Content-Type": "application/json" } as any,
+        headers: { "Content-Type": "application/json" },
         data: body,
-    });
+    } as any);
+    return resp as unknown as HttpResponse<T>;
 }

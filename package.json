@@ -5,10 +5,11 @@
   "main": "dist/poller/index.js",
   "scripts": {
     "build": "tsc",
+    "build:watch": "tsc -w",
     "start": "node dist/poller/index.js",
     "start:poller": "node dist/poller/index.js",
-    "start:poller:dev": "ts-node src/poller/index.ts",
-    "build:watch": "tsc -w"
+    "start:poller:insecure": "cross-env RELOJ_TLS_INSECURE=1 node dist/poller/index.js",
+    "start:poller:dev": "cross-env RELOJ_TLS_INSECURE=1 ts-node src/poller/index.ts"
   },
   "dependencies": {
     "@mhoc/axios-digest-auth": "^0.8.0",
@@ -20,6 +21,7 @@
   "devDependencies": {
     "@types/node": "^20.19.10",
     "@types/pg": "^8.15.5",
+    "cross-env": "^7.0.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   }
