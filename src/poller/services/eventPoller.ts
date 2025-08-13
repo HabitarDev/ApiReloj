@@ -13,7 +13,7 @@ const LOCK_KEY = 42001;      // clave fija para pg_advisory_lock
 // Filtros requeridos por tu equipo (decimal)
 const MAJOR = Number(process.env.RELOJ_MAJOR ?? 5);    // Other events
 const MINOR = Number(process.env.RELOJ_MINOR ?? 38);   // Fingerprint Matched (0x26 → 38)
-const TZ_OFFSET = process.env.RELOJ_TZ_OFFSET ?? "+00:00"; // evita 'Z'
+const TZ_OFFSET = process.env.RELOJ_TZ_OFFSET ?? "-03:00"; // offset real del reloj (evitar 'Z')
 const ATT_STATUS = process.env.RELOJ_ATT_STATUS || undefined; // opcional
 
 if (Number.isNaN(MAJOR) || Number.isNaN(MINOR)) {
@@ -39,8 +39,26 @@ type NormEvent = {
     raw: any;
 };
 
-// ── Utilidades ────────────────────────────────────────────────────────────────
-const toOffset = (d: Date, off = TZ_OFFSET) => d.toISOString().replace("Z", off);
+// ── Fechas: sin milisegundos y con offset (no 'Z') ───────────────────────────
+function isoNoMsWithOffset(date: Date, offset = TZ_OFFSET): string {
+    const m = /^([+-])(\d{2}):(\d{2})$/.exec(offset);
+    if (!m) throw new Error(`RELOJ_TZ_OFFSET inválido: ${offset}`);
+    const sign = m[1] === "-" ? -1 : 1;
+    const oh = parseInt(m[2], 10), om = parseInt(m[3], 10);
+    const offsetMin = sign * (oh * 60 + om);
+
+    const shifted = new Date(date.getTime() + offsetMin * 60_000); // UTC + offset
+    const pad = (n: number) => (n < 10 ? "0" + n : "" + n);
+
+    const Y = shifted.getUTCFullYear();
+    const M = pad(shifted.getUTCMonth() + 1);
+    const D = pad(shifted.getUTCDate());
+    const h = pad(shifted.getUTCHours());
+    const m2 = pad(shifted.getUTCMinutes());
+    const s = pad(shifted.getUTCSeconds());
+
+    return `${Y}-${M}-${D}T${h}:${m2}:${s}${offset}`;
+}
 
 // Normaliza un evento del payload a nuestro esquema
 function normalize(ev: any): NormEvent {
@@ -100,9 +118,9 @@ async function insertEvent(ev: NormEvent): Promise<void> {
         `INSERT INTO public.poller_checkpoint(device_sn, last_serial_no, last_event_time_utc)
          VALUES ($1,$2,$3)
              ON CONFLICT (device_sn)
-         DO UPDATE SET last_serial_no = EXCLUDED.last_serial_no,
-                             last_event_time_utc = EXCLUDED.last_event_time_utc,
-                             updated_at = now()`,
+       DO UPDATE SET last_serial_no = EXCLUDED.last_serial_no,
+                           last_event_time_utc = EXCLUDED.last_event_time_utc,
+                           updated_at = now()`,
         [ev.deviceSn, ev.serialNo, ev.eventTimeUtc]
     );
 }
@@ -123,7 +141,7 @@ export async function pollOnce() {
     const end = new Date();
     const start = new Date(end.getTime() - WINDOW_S * 1000);
 
-    // variables para consolidar error ISAPI (si hubiera HTTP≠200 sin throw)
+    // para consolidar error ISAPI (HTTP≠200 sin throw)
     let lastStatusCode: number | null = null;
     let lastSubStatus: string | null = null;
     let lastErrorCode: number | null = null;
@@ -142,7 +160,7 @@ export async function pollOnce() {
         // Crear run
         const runIns = await db.query<{ id: number }>(
             `INSERT INTO public.poller_runs(window_start, window_end, major, minor, attendance_status)
-       VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+             VALUES ($1,$2,$3,$4,$5) RETURNING id`,
             [safeStart, end, MAJOR, MINOR, ATT_STATUS ?? null]
         );
         const runId = runIns.rows[0].id;
@@ -156,31 +174,31 @@ export async function pollOnce() {
         let finalRespStatus: string | null = null;
 
         for (; page < MAX_PAGES; page++) {
-            const startIso = toOffset(safeStart);
-            const endIso = toOffset(end);
+            const startIso = isoNoMsWithOffset(safeStart);
+            const endIso   = isoNoMsWithOffset(end);
 
             const body: any = {
                 AcsEventCond: {
                     searchID: `poll_${Date.now()}`,
                     searchResultPosition: pos,
                     maxResults: PAGE,
-                    startTime: startIso,  // ISO con offset (no 'Z')
+                    startTime: startIso,  // ISO sin milisegundos + offset
                     endTime: endIso,
-                    major: MAJOR,         // requeridos por el equipo
+                    major: MAJOR,
                     minor: MINOR,
+                    ...(ATT_STATUS ? { attendanceStatus: ATT_STATUS } : {}),
                 },
             };
-            if (ATT_STATUS) body.AcsEventCond.attendanceStatus = ATT_STATUS;
 
             const t0 = Date.now();
-            const resp = await searchEvents(body);
+            const resp = await searchEvents(body);     // ← sin genéricos
             const { data, status } = resp;
             const t1 = Date.now();
 
             if (httpFirst == null) httpFirst = status;
             httpLast = status;
 
-            // === NUEVO: manejo explícito de HTTP != 200 con log/BD y corte de ciclo ===
+            // Manejo explícito de HTTP != 200
             if (status !== 200) {
                 const errBody: any = data || {};
                 const sc   = (errBody?.statusCode ?? null) as number | null;
@@ -194,19 +212,18 @@ export async function pollOnce() {
                 lastErrorCode  = ecode;
                 lastErrorMsg   = emsg ?? sstr ?? null;
 
-                // Registrar la página con error
                 await db.query(
                     `INSERT INTO public.poller_requests
-             (run_id, page_no, position, ended_at, elapsed_ms, request_start, request_end,
-              query_start, query_end, http_status, response_status, num_of_matches, total_matches, rows_inserted, error_code, error_msg)
-           VALUES ($1,$2,$3, now(), $4, $5, $6, $7, $8, $9, NULL, NULL, NULL, 0, $10, $11)`,
+                     (run_id, page_no, position, ended_at, elapsed_ms, request_start, request_end,
+                      query_start, query_end, http_status, response_status, num_of_matches, total_matches, rows_inserted, error_code, error_msg)
+                     VALUES ($1,$2,$3, now(), $4, $5, $6, $7, $8, $9, NULL, NULL, NULL, 0, $10, $11)`,
                     [
                         runId, page, pos,
                         t1 - t0,
                         new Date(t0), new Date(t1),
                         safeStart, end,
                         status,
-                        ecode, (emsg ?? `${sc ?? ''} ${sstr ?? ''} ${ssub ?? ''}`).trim()
+                        ecode, (emsg ?? `${sc ?? ""} ${sstr ?? ""} ${ssub ?? ""}`).trim(),
                     ]
                 );
 
@@ -214,11 +231,10 @@ export async function pollOnce() {
                     { runId, page, pos, status, sc, sstr, ssub, errorCode: ecode, errorMsg: emsg, startIso, endIso, major: MAJOR, minor: MINOR },
                     "Página con HTTP != 200; corto el run"
                 );
-                break; // no continuamos paginando
+                break;
             }
-            // === FIN NUEVO ===
 
-            // Estructura tolerante a variantes (200 OK)
+            // 200 OK: normalizamos y guardamos
             const acs: any = (data as any)?.AcsEvent ?? {};
             const respStr: string | null = acs?.responseStatusStrg ?? null; // "OK"/"MORE"/"NO MATCH"
             const num = typeof acs?.numOfMatches === "number" ? acs.numOfMatches : undefined;
@@ -227,7 +243,6 @@ export async function pollOnce() {
             const rowsAny: AcsEventList =
                 acs?.InfoList ?? acs?.AcsEventInfo ?? (Array.isArray(acs) ? acs : []);
 
-            // Insertar eventos normalizados (ordenados por tiempo)
             const normalized = (Array.isArray(rowsAny) ? rowsAny : [])
                 .map(normalize)
                 .sort((a, b) => a.eventTimeUtc.localeCompare(b.eventTimeUtc));
@@ -240,19 +255,18 @@ export async function pollOnce() {
             totalInserted += inserted;
             totalSeen += Array.isArray(rowsAny) ? rowsAny.length : 0;
 
-            // Registrar request/página (200)
             await db.query(
                 `INSERT INTO public.poller_requests
-           (run_id, page_no, position, ended_at, elapsed_ms, request_start, request_end,
-            query_start, query_end, http_status, response_status, num_of_matches, total_matches, rows_inserted)
-         VALUES ($1,$2,$3, now(), $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                 (run_id, page_no, position, ended_at, elapsed_ms, request_start, request_end,
+                  query_start, query_end, http_status, response_status, num_of_matches, total_matches, rows_inserted)
+                 VALUES ($1,$2,$3, now(), $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
                 [
                     runId, page, pos,
                     t1 - t0,
                     new Date(t0), new Date(t1),
                     safeStart, end,
                     status, respStr, num ?? null, tot ?? null,
-                    inserted
+                    inserted,
                 ]
             );
 
@@ -267,18 +281,18 @@ export async function pollOnce() {
         // Cerrar RUN con consolidado (incluye error ISAPI si lo hubo sin throw)
         await db.query(
             `UPDATE public.poller_runs
-         SET ended_at = now(),
-             page_count = $2,
-             rows_seen = $3,
-             rows_inserted = $4,
-             http_status_first = $5,
-             http_status_final = $6,
-             response_status = $7,
-             status_code = $8,
-             sub_status = $9,
-             error_code = $10,
-             error_msg = $11
-       WHERE id = $1`,
+             SET ended_at = now(),
+                 page_count = $2,
+                 rows_seen = $3,
+                 rows_inserted = $4,
+                 http_status_first = $5,
+                 http_status_final = $6,
+                 response_status = $7,
+                 status_code = $8,
+                 sub_status = $9,
+                 error_code = $10,
+                 error_msg = $11
+             WHERE id = $1`,
             [
                 runId,
                 page + 1,
@@ -290,7 +304,7 @@ export async function pollOnce() {
                 lastStatusCode,
                 lastSubStatus,
                 lastErrorCode,
-                lastErrorMsg
+                lastErrorMsg,
             ]
         );
 
@@ -299,14 +313,12 @@ export async function pollOnce() {
             "Run cerrado OK"
         );
     } catch (e: any) {
-        // Registrar error en el último run abierto (si lo hubo)
         try {
             const sc    = e?.response?.data?.statusCode ?? null;
             const ssub  = e?.response?.data?.subStatusCode ?? null;
             const ecode = e?.response?.data?.errorCode ?? null;
             const emsg  = e?.response?.data?.errorMsg ?? e?.message ?? null;
 
-            // Buscar el run más reciente sin ended_at (opcional)
             const r = await db.query<{ id: number }>(
                 `SELECT id FROM public.poller_runs WHERE ended_at IS NULL ORDER BY id DESC LIMIT 1`
             );
@@ -315,26 +327,24 @@ export async function pollOnce() {
             if (openRunId) {
                 await db.query(
                     `UPDATE public.poller_runs
-             SET ended_at = now(),
-                 http_status_final = $2,
-                 status_code = $3,
-                 sub_status = $4,
-                 error_code = $5,
-                 error_msg = $6,
-                 error_stack = $7
-           WHERE id = $1`,
+                     SET ended_at = now(),
+                         http_status_final = $2,
+                         status_code = $3,
+                         sub_status = $4,
+                         error_code = $5,
+                         error_msg = $6,
+                         error_stack = $7
+                     WHERE id = $1`,
                     [openRunId, e?.response?.status ?? null, sc, ssub, ecode, emsg, e?.stack ?? null]
                 );
             }
 
             log.error({ err: e, http: e?.response?.status, sc, ssub, ecode, emsg }, "Run con error");
         } finally {
-            // desbloquear pase lo que pase
             await db.query("SELECT pg_advisory_unlock($1)", [LOCK_KEY]);
         }
         throw e;
     }
 
-    // desbloquear si no hubo error
     await db.query("SELECT pg_advisory_unlock($1)", [LOCK_KEY]);
 }
