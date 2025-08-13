@@ -100,9 +100,9 @@ async function insertEvent(ev: NormEvent): Promise<void> {
         `INSERT INTO public.poller_checkpoint(device_sn, last_serial_no, last_event_time_utc)
          VALUES ($1,$2,$3)
              ON CONFLICT (device_sn)
-       DO UPDATE SET last_serial_no = EXCLUDED.last_serial_no,
-                           last_event_time_utc = EXCLUDED.last_event_time_utc,
-                           updated_at = now()`,
+         DO UPDATE SET last_serial_no = EXCLUDED.last_serial_no,
+                             last_event_time_utc = EXCLUDED.last_event_time_utc,
+                             updated_at = now()`,
         [ev.deviceSn, ev.serialNo, ev.eventTimeUtc]
     );
 }
@@ -122,6 +122,12 @@ export async function pollOnce() {
     // Preparamos ventana y registramos RUN
     const end = new Date();
     const start = new Date(end.getTime() - WINDOW_S * 1000);
+
+    // variables para consolidar error ISAPI (si hubiera HTTP≠200 sin throw)
+    let lastStatusCode: number | null = null;
+    let lastSubStatus: string | null = null;
+    let lastErrorCode: number | null = null;
+    let lastErrorMsg: string | null = null;
 
     try {
         // Sanity check (capabilities / límites)
@@ -150,27 +156,69 @@ export async function pollOnce() {
         let finalRespStatus: string | null = null;
 
         for (; page < MAX_PAGES; page++) {
+            const startIso = toOffset(safeStart);
+            const endIso = toOffset(end);
+
             const body: any = {
                 AcsEventCond: {
                     searchID: `poll_${Date.now()}`,
                     searchResultPosition: pos,
                     maxResults: PAGE,
-                    startTime: toOffset(safeStart), // ISO con offset (no 'Z')
-                    endTime: toOffset(end),
-                    major: MAJOR,                   // requeridos por el equipo
+                    startTime: startIso,  // ISO con offset (no 'Z')
+                    endTime: endIso,
+                    major: MAJOR,         // requeridos por el equipo
                     minor: MINOR,
                 },
             };
             if (ATT_STATUS) body.AcsEventCond.attendanceStatus = ATT_STATUS;
 
             const t0 = Date.now();
-            const { data, status } = await searchEvents(body);
+            const resp = await searchEvents(body);
+            const { data, status } = resp;
             const t1 = Date.now();
 
             if (httpFirst == null) httpFirst = status;
             httpLast = status;
 
-            // Estructura tolerante a variantes
+            // === NUEVO: manejo explícito de HTTP != 200 con log/BD y corte de ciclo ===
+            if (status !== 200) {
+                const errBody: any = data || {};
+                const sc   = (errBody?.statusCode ?? null) as number | null;
+                const sstr = (errBody?.statusString ?? null) as string | null;
+                const ssub = (errBody?.subStatusCode ?? null) as string | null;
+                const ecode= (errBody?.errorCode ?? null) as number | null;
+                const emsg = (errBody?.errorMsg ?? null) as string | null;
+
+                lastStatusCode = sc;
+                lastSubStatus  = ssub;
+                lastErrorCode  = ecode;
+                lastErrorMsg   = emsg ?? sstr ?? null;
+
+                // Registrar la página con error
+                await db.query(
+                    `INSERT INTO public.poller_requests
+             (run_id, page_no, position, ended_at, elapsed_ms, request_start, request_end,
+              query_start, query_end, http_status, response_status, num_of_matches, total_matches, rows_inserted, error_code, error_msg)
+           VALUES ($1,$2,$3, now(), $4, $5, $6, $7, $8, $9, NULL, NULL, NULL, 0, $10, $11)`,
+                    [
+                        runId, page, pos,
+                        t1 - t0,
+                        new Date(t0), new Date(t1),
+                        safeStart, end,
+                        status,
+                        ecode, (emsg ?? `${sc ?? ''} ${sstr ?? ''} ${ssub ?? ''}`).trim()
+                    ]
+                );
+
+                log.warn(
+                    { runId, page, pos, status, sc, sstr, ssub, errorCode: ecode, errorMsg: emsg, startIso, endIso, major: MAJOR, minor: MINOR },
+                    "Página con HTTP != 200; corto el run"
+                );
+                break; // no continuamos paginando
+            }
+            // === FIN NUEVO ===
+
+            // Estructura tolerante a variantes (200 OK)
             const acs: any = (data as any)?.AcsEvent ?? {};
             const respStr: string | null = acs?.responseStatusStrg ?? null; // "OK"/"MORE"/"NO MATCH"
             const num = typeof acs?.numOfMatches === "number" ? acs.numOfMatches : undefined;
@@ -192,7 +240,7 @@ export async function pollOnce() {
             totalInserted += inserted;
             totalSeen += Array.isArray(rowsAny) ? rowsAny.length : 0;
 
-            // Registrar request/página
+            // Registrar request/página (200)
             await db.query(
                 `INSERT INTO public.poller_requests
            (run_id, page_no, position, ended_at, elapsed_ms, request_start, request_end,
@@ -216,7 +264,7 @@ export async function pollOnce() {
             if (!Array.isArray(rowsAny) || rowsAny.length < PAGE) break;
         }
 
-        // Cerrar RUN OK/NO MATCH/MORE
+        // Cerrar RUN con consolidado (incluye error ISAPI si lo hubo sin throw)
         await db.query(
             `UPDATE public.poller_runs
          SET ended_at = now(),
@@ -225,12 +273,31 @@ export async function pollOnce() {
              rows_inserted = $4,
              http_status_first = $5,
              http_status_final = $6,
-             response_status = $7
+             response_status = $7,
+             status_code = $8,
+             sub_status = $9,
+             error_code = $10,
+             error_msg = $11
        WHERE id = $1`,
-            [runId, page + 1, totalSeen, totalInserted, httpFirst, httpLast, finalRespStatus]
+            [
+                runId,
+                page + 1,
+                totalSeen,
+                totalInserted,
+                httpFirst,
+                httpLast,
+                finalRespStatus,
+                lastStatusCode,
+                lastSubStatus,
+                lastErrorCode,
+                lastErrorMsg
+            ]
         );
 
-        log.info({ runId, pages: page + 1, seen: totalSeen, inserted: totalInserted, httpFirst, httpLast, finalRespStatus }, "Run cerrado OK");
+        log.info(
+            { runId, pages: page + 1, seen: totalSeen, inserted: totalInserted, httpFirst, httpLast, finalRespStatus, lastStatusCode, lastSubStatus, lastErrorCode, lastErrorMsg },
+            "Run cerrado OK"
+        );
     } catch (e: any) {
         // Registrar error en el último run abierto (si lo hubo)
         try {
@@ -240,7 +307,9 @@ export async function pollOnce() {
             const emsg  = e?.response?.data?.errorMsg ?? e?.message ?? null;
 
             // Buscar el run más reciente sin ended_at (opcional)
-            const r = await db.query<{ id: number }>(`SELECT id FROM public.poller_runs WHERE ended_at IS NULL ORDER BY id DESC LIMIT 1`);
+            const r = await db.query<{ id: number }>(
+                `SELECT id FROM public.poller_runs WHERE ended_at IS NULL ORDER BY id DESC LIMIT 1`
+            );
             const openRunId = r.rows[0]?.id;
 
             if (openRunId) {
