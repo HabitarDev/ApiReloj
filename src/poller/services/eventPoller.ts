@@ -4,87 +4,62 @@ import { getCapabilities, searchEvents } from "../utils/httpClient";
 import { log } from "../logger";
 
 // ── Configuración del poller (ajustable por .env) ─────────────────────────────
-const PAGE = 30;             // tamaño de página (ver /AcsEvent/capabilities)
-const WINDOW_S = 300;        // ventana: 5 min
-const OVERLAP_S = 60;        // solapamiento: 60 s
-const MAX_PAGES = 1000;      // guardarraíl anti-loop
-const LOCK_KEY = 42001;      // clave fija para pg_advisory_lock
+const PAGE = 30;
+const WINDOW_S = 300;
+const OVERLAP_S = 60;
+const MAX_PAGES = 1000;
+const LOCK_KEY = 42001;
 
-// Filtros requeridos por tu equipo (decimal)
-const MAJOR = Number(process.env.RELOJ_MAJOR ?? 5);    // Other events
-const MINOR = Number(process.env.RELOJ_MINOR ?? 38);   // Fingerprint Matched (0x26 → 38)
-const TZ_OFFSET = process.env.RELOJ_TZ_OFFSET ?? "-03:00"; // offset real del reloj (evitar 'Z')
-const ATT_STATUS = process.env.RELOJ_ATT_STATUS || undefined; // opcional
+// Filtros requeridos (decimal)
+const MAJOR = Number(process.env.RELOJ_MAJOR ?? 5);
+const MINOR = Number(process.env.RELOJ_MINOR ?? 38);
+const TZ_OFFSET = process.env.RELOJ_TZ_OFFSET ?? "+00:00";
+const ATT_STATUS = process.env.RELOJ_ATT_STATUS || undefined;
 
 if (Number.isNaN(MAJOR) || Number.isNaN(MINOR)) {
     throw new Error("RELOJ_MAJOR/RELOJ_MINOR inválidos en .env (deben ser decimales).");
 }
 
-// ── Tipos lazos para tolerar variantes de firmware ────────────────────────────
-type AcsEventList = any[];
-type SearchResp =
-    | { AcsEvent?: { AcsEventInfo?: AcsEventList; InfoList?: AcsEventList; responseStatusStrg?: string; numOfMatches?: number; totalMatches?: number } }
-    | { AcsEvent?: AcsEventList }
-    | Record<string, unknown>;
-
-type NormEvent = {
-    deviceSn: string;
-    serialNo: number;
-    eventTimeUtc: string;
-    employeeNo: string | null;
-    name: string | null;
-    major: number | null;
-    minor: number | null;
-    attendanceStatus: string | null;
-    raw: any;
-};
-
-// ── Fechas: sin milisegundos y con offset (no 'Z') ───────────────────────────
-function isoNoMsWithOffset(date: Date, offset = TZ_OFFSET): string {
-    const m = /^([+-])(\d{2}):(\d{2})$/.exec(offset);
-    if (!m) throw new Error(`RELOJ_TZ_OFFSET inválido: ${offset}`);
-    const sign = m[1] === "-" ? -1 : 1;
-    const oh = parseInt(m[2], 10), om = parseInt(m[3], 10);
-    const offsetMin = sign * (oh * 60 + om);
-
-    const shifted = new Date(date.getTime() + offsetMin * 60_000); // UTC + offset
-    const pad = (n: number) => (n < 10 ? "0" + n : "" + n);
-
-    const Y = shifted.getUTCFullYear();
-    const M = pad(shifted.getUTCMonth() + 1);
-    const D = pad(shifted.getUTCDate());
-    const h = pad(shifted.getUTCHours());
-    const m2 = pad(shifted.getUTCMinutes());
-    const s = pad(shifted.getUTCSeconds());
-
-    return `${Y}-${M}-${D}T${h}:${m2}:${s}${offset}`;
+// ── Helpers de fecha ──────────────────────────────────────────────────────────
+// Hikvision exige sin milisegundos y con offset real del reloj (no 'Z')
+function toDeviceIsoNoMs(d: Date, off = TZ_OFFSET): string {
+    const s = d.toISOString().replace("Z", off); // 2025-08-13T16:41:57+00:00
+    return s.replace(/\.\d{3}(?=[+-]\d{2}:\d{2}$)/, ""); // sin ms
 }
 
-// Normaliza un evento del payload a nuestro esquema
-function normalize(ev: any): NormEvent {
+// ── Tipos tolerantes para variantes de firmware ───────────────────────────────
+type AnyList = any[];
+
+type AttMin = {
+    deviceSn: string;
+    serialNo: number;
+    employeeNo: string;
+    attendanceStatus: string;
+    timeDeviceStr: string; // viene del payload, ej: "2025-08-13T13:41:57-03:00"
+    timeUtcIso: string;    // derivado de lo anterior, para checkpoint
+};
+
+// Extrae lo mínimo del evento del payload
+function pickMinimal(ev: any): AttMin {
     const deviceSn =
         ev.deviceSN ?? ev.devSN ?? ev.deviceSn ?? ev.deviceSNStr ?? "unknown";
 
     const serialNo = Number(ev.serialNo ?? ev.serialNumber ?? ev.SN ?? 0);
 
-    const t =
-        ev.eventTime ??
-        ev.time ??
-        ev.occurTime ??
-        ev.Time ??
-        new Date().toISOString();
-    const eventTimeUtc = new Date(t).toISOString();
+    // El tiempo que viene del reloj (con offset)
+    const timeDeviceStr: string =
+        ev.time ?? ev.eventTime ?? ev.occurTime ?? ev.Time ?? new Date().toISOString();
+
+    // Para checkpoint calculamos el instante en UTC ISO
+    const timeUtcIso = new Date(timeDeviceStr).toISOString();
 
     return {
         deviceSn,
         serialNo,
-        eventTimeUtc,
-        employeeNo: ev.employeeNoString ?? ev.employeeNo ?? null,
-        name: ev.name ?? ev.personName ?? null,
-        major: typeof ev.major === "number" ? ev.major : null,
-        minor: typeof ev.minor === "number" ? ev.minor : null,
-        attendanceStatus: ev.attendanceStatus ?? null,
-        raw: ev,
+        employeeNo: ev.employeeNoString ?? ev.employeeNo ?? "",
+        attendanceStatus: ev.attendanceStatus ?? "",
+        timeDeviceStr,
+        timeUtcIso,
     };
 }
 
@@ -95,25 +70,17 @@ async function loadLastEventTime(): Promise<string | null> {
     return r.rows[0]?.t ?? null;
 }
 
-async function insertEvent(ev: NormEvent): Promise<void> {
+async function insertAttendance(row: AttMin): Promise<void> {
+    // 1) Insertar en la tabla mínima
     await db.query(
-        `INSERT INTO public.hik_events
-         (device_sn, serial_no, event_time_utc, employee_no, name, major, minor, attendance_status, raw)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        `INSERT INTO public.attendance_events
+             (device_sn, serial_no, employee_no, attendance_status, time_device)
+         VALUES ($1,$2,$3,$4,$5)
              ON CONFLICT (device_sn, serial_no) DO NOTHING`,
-        [
-            ev.deviceSn,
-            ev.serialNo,
-            ev.eventTimeUtc,
-            ev.employeeNo,
-            ev.name,
-            ev.major,
-            ev.minor,
-            ev.attendanceStatus,
-            ev.raw,
-        ]
+        [row.deviceSn, row.serialNo, row.employeeNo, row.attendanceStatus, row.timeDeviceStr]
     );
 
+    // 2) Avanzar checkpoint usando el instante UTC
     await db.query(
         `INSERT INTO public.poller_checkpoint(device_sn, last_serial_no, last_event_time_utc)
          VALUES ($1,$2,$3)
@@ -121,7 +88,7 @@ async function insertEvent(ev: NormEvent): Promise<void> {
        DO UPDATE SET last_serial_no = EXCLUDED.last_serial_no,
                            last_event_time_utc = EXCLUDED.last_event_time_utc,
                            updated_at = now()`,
-        [ev.deviceSn, ev.serialNo, ev.eventTimeUtc]
+        [row.deviceSn, row.serialNo, row.timeUtcIso]
     );
 }
 
@@ -138,10 +105,11 @@ export async function pollOnce() {
     }
 
     // Preparamos ventana y registramos RUN
-    const end = new Date();
+    const now = new Date();
+    const end = now; // fin de la ventana
     const start = new Date(end.getTime() - WINDOW_S * 1000);
 
-    // para consolidar error ISAPI (HTTP≠200 sin throw)
+    // variables para consolidar error ISAPI (si hubiera HTTP≠200 sin throw)
     let lastStatusCode: number | null = null;
     let lastSubStatus: string | null = null;
     let lastErrorCode: number | null = null;
@@ -153,9 +121,7 @@ export async function pollOnce() {
 
         const fromCheckpoint = await loadLastEventTime();
         const baseStart = fromCheckpoint ? new Date(fromCheckpoint) : new Date(0);
-        const safeStart = new Date(
-            Math.max(baseStart.getTime() - OVERLAP_S * 1000, start.getTime())
-        );
+        const safeStart = new Date(Math.max(baseStart.getTime() - OVERLAP_S * 1000, start.getTime()));
 
         // Crear run
         const runIns = await db.query<{ id: number }>(
@@ -174,31 +140,31 @@ export async function pollOnce() {
         let finalRespStatus: string | null = null;
 
         for (; page < MAX_PAGES; page++) {
-            const startIso = isoNoMsWithOffset(safeStart);
-            const endIso   = isoNoMsWithOffset(end);
+            const startIso = toDeviceIsoNoMs(safeStart, TZ_OFFSET);
+            const endIso = toDeviceIsoNoMs(end, TZ_OFFSET);
 
             const body: any = {
                 AcsEventCond: {
                     searchID: `poll_${Date.now()}`,
                     searchResultPosition: pos,
                     maxResults: PAGE,
-                    startTime: startIso,  // ISO sin milisegundos + offset
+                    startTime: startIso,
                     endTime: endIso,
                     major: MAJOR,
                     minor: MINOR,
-                    ...(ATT_STATUS ? { attendanceStatus: ATT_STATUS } : {}),
                 },
             };
+            if (ATT_STATUS) body.AcsEventCond.attendanceStatus = ATT_STATUS;
 
             const t0 = Date.now();
-            const resp = await searchEvents(body);     // ← sin genéricos
+            const resp = await searchEvents(body);  // <-- mantener así para evitar TS genéricos
             const { data, status } = resp;
             const t1 = Date.now();
 
             if (httpFirst == null) httpFirst = status;
             httpLast = status;
 
-            // Manejo explícito de HTTP != 200
+            // HTTP != 200: registrar y cortar
             if (status !== 200) {
                 const errBody: any = data || {};
                 const sc   = (errBody?.statusCode ?? null) as number | null;
@@ -223,7 +189,7 @@ export async function pollOnce() {
                         new Date(t0), new Date(t1),
                         safeStart, end,
                         status,
-                        ecode, (emsg ?? `${sc ?? ""} ${sstr ?? ""} ${ssub ?? ""}`).trim(),
+                        ecode, (emsg ?? `${sc ?? ""} ${sstr ?? ""} ${ssub ?? ""}`).trim()
                     ]
                 );
 
@@ -234,22 +200,25 @@ export async function pollOnce() {
                 break;
             }
 
-            // 200 OK: normalizamos y guardamos
+            // 200 OK: contemplar variantes de estructura
             const acs: any = (data as any)?.AcsEvent ?? {};
             const respStr: string | null = acs?.responseStatusStrg ?? null; // "OK"/"MORE"/"NO MATCH"
             const num = typeof acs?.numOfMatches === "number" ? acs.numOfMatches : undefined;
             const tot = typeof acs?.totalMatches === "number" ? acs.totalMatches : undefined;
 
-            const rowsAny: AcsEventList =
+            const rowsAny: AnyList =
                 acs?.InfoList ?? acs?.AcsEventInfo ?? (Array.isArray(acs) ? acs : []);
 
-            const normalized = (Array.isArray(rowsAny) ? rowsAny : [])
-                .map(normalize)
-                .sort((a, b) => a.eventTimeUtc.localeCompare(b.eventTimeUtc));
+            const minimal: AttMin[] = (Array.isArray(rowsAny) ? rowsAny : []).map(pickMinimal);
+
+            // ordenar por tiempo del dispositivo para avanzar checkpoint en orden
+            minimal.sort((a, b) =>
+                new Date(a.timeDeviceStr).toISOString().localeCompare(new Date(b.timeDeviceStr).toISOString())
+            );
 
             let inserted = 0;
-            for (const ne of normalized) {
-                await insertEvent(ne);
+            for (const r of minimal) {
+                await insertAttendance(r);
                 inserted++;
             }
             totalInserted += inserted;
@@ -266,7 +235,7 @@ export async function pollOnce() {
                     new Date(t0), new Date(t1),
                     safeStart, end,
                     status, respStr, num ?? null, tot ?? null,
-                    inserted,
+                    inserted
                 ]
             );
 
@@ -278,7 +247,6 @@ export async function pollOnce() {
             if (!Array.isArray(rowsAny) || rowsAny.length < PAGE) break;
         }
 
-        // Cerrar RUN con consolidado (incluye error ISAPI si lo hubo sin throw)
         await db.query(
             `UPDATE public.poller_runs
              SET ended_at = now(),
@@ -304,7 +272,7 @@ export async function pollOnce() {
                 lastStatusCode,
                 lastSubStatus,
                 lastErrorCode,
-                lastErrorMsg,
+                lastErrorMsg
             ]
         );
 
