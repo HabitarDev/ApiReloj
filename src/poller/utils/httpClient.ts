@@ -121,3 +121,10 @@ export async function searchEvents(body: any) {
     // POST /ISAPI/AccessControl/AcsEvent?format=json (consulta de eventos). :contentReference[oaicite:1]{index=1}
     return requestWithDigest("POST", "/ISAPI/AccessControl/AcsEvent?format=json", body);
 }
+
+// al final del archivo, junto a los otros helpers exportados
+export async function getDeviceInfo() {
+    // serialNumber está en /ISAPI/System/deviceInfo
+    return requestWithDigest("GET", "/ISAPI/System/deviceInfo?format=json");
+}
+

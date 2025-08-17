@@ -1,6 +1,6 @@
 // src/poller/services/eventPoller.ts
 import { db } from "../../db/client";
-import { getCapabilities, searchEvents } from "../utils/httpClient";
+import { getCapabilities, searchEvents, getDeviceInfo } from "../utils/httpClient";
 import { log } from "../logger";
 
 // ── Configuración del poller (ajustable por .env) ─────────────────────────────
@@ -27,6 +27,40 @@ function toDeviceIsoNoMs(d: Date, off = TZ_OFFSET): string {
     return d.toISOString().replace(/\.\d{3}Z$/, "Z").replace("Z", off);
 }
 
+// ── Resolver y cachear el device_sn del equipo ────────────────────────────────
+let DEFAULT_DEVICE_SN: string | null = null;
+
+async function ensureDeviceSn(): Promise<string> {
+    if (DEFAULT_DEVICE_SN) return DEFAULT_DEVICE_SN;
+
+    try {
+        const resp = await getDeviceInfo(); // /ISAPI/System/deviceInfo?format=json
+        if (resp?.status === 200) {
+            const d: any = resp.data;
+            const sn =
+                d?.DeviceInfo?.serialNumber ??
+                d?.deviceInfo?.serialNumber ??
+                d?.serialNumber ??
+                d?.deviceSerialNo ??
+                null;
+            if (sn) {
+                DEFAULT_DEVICE_SN = String(sn);
+                log.info({ deviceSn: DEFAULT_DEVICE_SN }, "Device SN resuelto desde /System/deviceInfo");
+                return DEFAULT_DEVICE_SN;
+            }
+        }
+    } catch (e) {
+        log.warn({ err: e }, "No pude leer /System/deviceInfo");
+    }
+
+    // Fallback: usa el host (al menos identifica el equipo)
+    const rawHost = process.env.RELOJ_HOST || "";
+    const host = rawHost.replace(/^https?:\/\//, "");
+    DEFAULT_DEVICE_SN = host;
+    log.warn({ deviceSn: DEFAULT_DEVICE_SN }, "Uso host como device_sn (no se obtuvo serialNumber)");
+    return DEFAULT_DEVICE_SN;
+}
+
 // ── Tipos mínimos de inserción ────────────────────────────────────────────────
 type AnyList = any[];
 
@@ -39,11 +73,16 @@ type AttMin = {
     timeUtcIso: string;    // derivado de lo anterior (para checkpoint)
 };
 
-function pickMinimal(ev: any): AttMin {
-    const deviceSn = ev.deviceSN ?? ev.devSN ?? ev.deviceSn ?? ev.deviceSNStr ?? "unknown";
+// Extrae lo mínimo del evento del payload (con fallback de device_sn)
+function pickMinimal(ev: any, fallbackDeviceSn: string): AttMin {
+    const deviceSn =
+        ev.deviceSN ?? ev.devSN ?? ev.deviceSn ?? ev.deviceSNStr ?? fallbackDeviceSn;
+
     const serialNo = Number(ev.serialNo ?? ev.serialNumber ?? ev.SN ?? 0);
-    const timeDeviceStr: string = ev.time ?? ev.eventTime ?? ev.occurTime ?? ev.Time ?? new Date().toISOString();
+    const timeDeviceStr: string =
+        ev.time ?? ev.eventTime ?? ev.occurTime ?? ev.Time ?? new Date().toISOString();
     const timeUtcIso = new Date(timeDeviceStr).toISOString();
+
     return {
         deviceSn,
         serialNo,
@@ -64,19 +103,19 @@ async function loadLastEventTime(): Promise<string | null> {
 async function insertAttendance(row: AttMin): Promise<void> {
     await db.query(
         `INSERT INTO public.attendance_events
-             (device_sn, serial_no, employee_no, attendance_status, time_device)
-         VALUES ($1,$2,$3,$4,$5)
-             ON CONFLICT (device_sn, serial_no) DO NOTHING`,
+       (device_sn, serial_no, employee_no, attendance_status, time_device)
+     VALUES ($1,$2,$3,$4,$5)
+       ON CONFLICT (device_sn, serial_no) DO NOTHING`,
         [row.deviceSn, row.serialNo, row.employeeNo, row.attendanceStatus, row.timeDeviceStr]
     );
 
     await db.query(
         `INSERT INTO public.poller_checkpoint(device_sn, last_serial_no, last_event_time_utc)
-         VALUES ($1,$2,$3)
-             ON CONFLICT (device_sn)
-       DO UPDATE SET last_serial_no = EXCLUDED.last_serial_no,
-                           last_event_time_utc = EXCLUDED.last_event_time_utc,
-                           updated_at = now()`,
+     VALUES ($1,$2,$3)
+       ON CONFLICT (device_sn)
+         DO UPDATE SET last_serial_no = EXCLUDED.last_serial_no,
+                       last_event_time_utc = EXCLUDED.last_event_time_utc,
+                       updated_at = now()`,
         [row.deviceSn, row.serialNo, row.timeUtcIso]
     );
 }
@@ -109,12 +148,17 @@ export async function pollOnce() {
 
         const fromCheckpoint = await loadLastEventTime();
         const baseStart = fromCheckpoint ? new Date(fromCheckpoint) : new Date(0);
-        const safeStart = new Date(Math.max(baseStart.getTime() - OVERLAP_S * 1000, start.getTime()));
+        const safeStart = new Date(
+            Math.max(baseStart.getTime() - OVERLAP_S * 1000, start.getTime())
+        );
+
+        // Resolver device_sn fallback (cacheado)
+        const deviceSnFallback = await ensureDeviceSn();
 
         // Crear run
         const runIns = await db.query<{ id: number }>(
             `INSERT INTO public.poller_runs(window_start, window_end, major, minor, attendance_status)
-             VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+       VALUES ($1,$2,$3,$4,$5) RETURNING id`,
             [safeStart, end, MAJOR, MINOR, ATT_STATUS ?? null]
         );
         const runId = runIns.rows[0].id;
@@ -189,8 +233,8 @@ export async function pollOnce() {
 
                 await db.query(
                     `INSERT INTO public.poller_requests
-           (run_id, page_no, position, ended_at, elapsed_ms, request_start, request_end,
-            query_start, query_end, http_status, response_status, num_of_matches, total_matches, rows_inserted, error_code, error_msg)
+             (run_id, page_no, position, ended_at, elapsed_ms, request_start, request_end,
+              query_start, query_end, http_status, response_status, num_of_matches, total_matches, rows_inserted, error_code, error_msg)
            VALUES ($1,$2,$3, now(), $4, $5, $6, $7, $8, $9, NULL, NULL, NULL, 0, $10, $11)`,
                     [
                         runId, page, pos,
@@ -213,7 +257,8 @@ export async function pollOnce() {
             const rowsAny: AnyList =
                 acs?.InfoList ?? acs?.AcsEventInfo ?? (Array.isArray(acs) ? acs : []);
 
-            const minimal: AttMin[] = (Array.isArray(rowsAny) ? rowsAny : []).map(pickMinimal);
+            const minimal: AttMin[] = (Array.isArray(rowsAny) ? rowsAny : [])
+                .map(ev => pickMinimal(ev, deviceSnFallback));
 
             // orden temporal para que el checkpoint avance correctamente
             minimal.sort((a, b) =>
@@ -236,9 +281,9 @@ export async function pollOnce() {
 
             await db.query(
                 `INSERT INTO public.poller_requests
-                 (run_id, page_no, position, ended_at, elapsed_ms, request_start, request_end,
-                  query_start, query_end, http_status, response_status, num_of_matches, total_matches, rows_inserted)
-                 VALUES ($1,$2,$3, now(), $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+           (run_id, page_no, position, ended_at, elapsed_ms, request_start, request_end,
+            query_start, query_end, http_status, response_status, num_of_matches, total_matches, rows_inserted)
+         VALUES ($1,$2,$3, now(), $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
                 [
                     runId, page, pos,
                     elapsedMs,
@@ -249,7 +294,7 @@ export async function pollOnce() {
                 ]
             );
 
-            // log “página procesada” (mantengo por compatibilidad)
+            // log “página procesada” (compatibilidad)
             log.info({ runId, page, pos, status, respStr, num, tot, inserted }, "Página procesada");
 
             pos += Array.isArray(rowsAny) ? rowsAny.length : 0;
@@ -260,18 +305,18 @@ export async function pollOnce() {
 
         await db.query(
             `UPDATE public.poller_runs
-             SET ended_at = now(),
-                 page_count = $2,
-                 rows_seen = $3,
-                 rows_inserted = $4,
-                 http_status_first = $5,
-                 http_status_final = $6,
-                 response_status = $7,
-                 status_code = $8,
-                 sub_status = $9,
-                 error_code = $10,
-                 error_msg = $11
-             WHERE id = $1`,
+         SET ended_at = now(),
+             page_count = $2,
+             rows_seen = $3,
+             rows_inserted = $4,
+             http_status_first = $5,
+             http_status_final = $6,
+             response_status = $7,
+             status_code = $8,
+             sub_status = $9,
+             error_code = $10,
+             error_msg = $11
+       WHERE id = $1`,
             [
                 runId,
                 page + 1,
