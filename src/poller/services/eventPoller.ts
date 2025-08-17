@@ -20,11 +20,27 @@ if (Number.isNaN(MAJOR) || Number.isNaN(MINOR)) {
     throw new Error("RELOJ_MAJOR/RELOJ_MINOR inválidos en .env (deben ser decimales).");
 }
 
-// ── Helpers de fecha ──────────────────────────────────────────────────────────
-// Hikvision exige sin milisegundos y con offset real del reloj (no 'Z')
-function toDeviceIsoNoMs(d: Date, off = TZ_OFFSET): string {
-    const s = d.toISOString().replace("Z", off); // 2025-08-13T16:41:57+00:00
-    return s.replace(/\.\d{3}(?=[+-]\d{2}:\d{2}$)/, ""); // sin ms
+// ── Helper de fecha: local correcto, sin milisegundos ─────────────────────────
+// Convierte un Date (instante) al ISO-8601 en la zona del equipo (offset) sin ms.
+// Ej.: 2025-08-16T21:28:44-03:00
+function toIsoNoMsLocal(d: Date, offset = TZ_OFFSET): string {
+    // offset en formato ±HH:MM
+    const sign = offset.startsWith("-") ? -1 : 1;
+    const [hh, mm] = offset.slice(1).split(":").map(Number);
+    const offsetMin = sign * (hh * 60 + mm);
+
+    // "Local" = UTC + offset
+    const local = new Date(d.getTime() + offsetMin * 60_000);
+
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const y = local.getUTCFullYear();
+    const M = pad(local.getUTCMonth() + 1);
+    const D = pad(local.getUTCDate());
+    const h = pad(local.getUTCHours());
+    const m = pad(local.getUTCMinutes());
+    const s = pad(local.getUTCSeconds());
+
+    return `${y}-${M}-${D}T${h}:${m}:${s}${offset}`;
 }
 
 // ── Tipos tolerantes para variantes de firmware ───────────────────────────────
@@ -35,8 +51,8 @@ type AttMin = {
     serialNo: number;
     employeeNo: string;
     attendanceStatus: string;
-    timeDeviceStr: string; // viene del payload, ej: "2025-08-13T13:41:57-03:00"
-    timeUtcIso: string;    // derivado de lo anterior, para checkpoint
+    timeDeviceStr: string; // ej: "2025-08-13T13:41:57-03:00"
+    timeUtcIso: string;    // derivado para checkpoint
 };
 
 // Extrae lo mínimo del evento del payload
@@ -46,11 +62,11 @@ function pickMinimal(ev: any): AttMin {
 
     const serialNo = Number(ev.serialNo ?? ev.serialNumber ?? ev.SN ?? 0);
 
-    // El tiempo que viene del reloj (con offset)
+    // Tiempo que entrega el equipo (con offset propio)
     const timeDeviceStr: string =
         ev.time ?? ev.eventTime ?? ev.occurTime ?? ev.Time ?? new Date().toISOString();
 
-    // Para checkpoint calculamos el instante en UTC ISO
+    // Para checkpoint guardamos el instante en UTC
     const timeUtcIso = new Date(timeDeviceStr).toISOString();
 
     return {
@@ -71,7 +87,7 @@ async function loadLastEventTime(): Promise<string | null> {
 }
 
 async function insertAttendance(row: AttMin): Promise<void> {
-    // 1) Insertar en la tabla mínima
+    // 1) Insert mínimo
     await db.query(
         `INSERT INTO public.attendance_events
              (device_sn, serial_no, employee_no, attendance_status, time_device)
@@ -80,7 +96,7 @@ async function insertAttendance(row: AttMin): Promise<void> {
         [row.deviceSn, row.serialNo, row.employeeNo, row.attendanceStatus, row.timeDeviceStr]
     );
 
-    // 2) Avanzar checkpoint usando el instante UTC
+    // 2) Avanzar checkpoint (UTC)
     await db.query(
         `INSERT INTO public.poller_checkpoint(device_sn, last_serial_no, last_event_time_utc)
          VALUES ($1,$2,$3)
@@ -106,22 +122,24 @@ export async function pollOnce() {
 
     // Preparamos ventana y registramos RUN
     const now = new Date();
-    const end = now; // fin de la ventana
+    const end = now;
     const start = new Date(end.getTime() - WINDOW_S * 1000);
 
-    // variables para consolidar error ISAPI (si hubiera HTTP≠200 sin throw)
+    // Consolidado de error ISAPI (si hay HTTP≠200 sin throw)
     let lastStatusCode: number | null = null;
     let lastSubStatus: string | null = null;
     let lastErrorCode: number | null = null;
     let lastErrorMsg: string | null = null;
 
     try {
-        // Sanity check (capabilities / límites)
+        // Sanity check
         await getCapabilities();
 
         const fromCheckpoint = await loadLastEventTime();
         const baseStart = fromCheckpoint ? new Date(fromCheckpoint) : new Date(0);
-        const safeStart = new Date(Math.max(baseStart.getTime() - OVERLAP_S * 1000, start.getTime()));
+        const safeStart = new Date(
+            Math.max(baseStart.getTime() - OVERLAP_S * 1000, start.getTime())
+        );
 
         // Crear run
         const runIns = await db.query<{ id: number }>(
@@ -140,8 +158,9 @@ export async function pollOnce() {
         let finalRespStatus: string | null = null;
 
         for (; page < MAX_PAGES; page++) {
-            const startIso = toDeviceIsoNoMs(safeStart, TZ_OFFSET);
-            const endIso = toDeviceIsoNoMs(end, TZ_OFFSET);
+            // ← aquí usamos el helper correcto
+            const startIso = toIsoNoMsLocal(safeStart, TZ_OFFSET);
+            const endIso   = toIsoNoMsLocal(end, TZ_OFFSET);
 
             const body: any = {
                 AcsEventCond: {
@@ -149,7 +168,7 @@ export async function pollOnce() {
                     searchResultPosition: pos,
                     maxResults: PAGE,
                     startTime: startIso,
-                    endTime: endIso,
+                    endTime:   endIso,
                     major: MAJOR,
                     minor: MINOR,
                 },
@@ -157,7 +176,7 @@ export async function pollOnce() {
             if (ATT_STATUS) body.AcsEventCond.attendanceStatus = ATT_STATUS;
 
             const t0 = Date.now();
-            const resp = await searchEvents(body);  // <-- mantener así para evitar TS genéricos
+            const resp = await searchEvents(body); // mantener así
             const { data, status } = resp;
             const t1 = Date.now();
 
@@ -167,11 +186,11 @@ export async function pollOnce() {
             // HTTP != 200: registrar y cortar
             if (status !== 200) {
                 const errBody: any = data || {};
-                const sc   = (errBody?.statusCode ?? null) as number | null;
-                const sstr = (errBody?.statusString ?? null) as string | null;
-                const ssub = (errBody?.subStatusCode ?? null) as string | null;
-                const ecode= (errBody?.errorCode ?? null) as number | null;
-                const emsg = (errBody?.errorMsg ?? null) as string | null;
+                const sc    = (errBody?.statusCode ?? null) as number | null;
+                const sstr  = (errBody?.statusString ?? null) as string | null;
+                const ssub  = (errBody?.subStatusCode ?? null) as string | null;
+                const ecode = (errBody?.errorCode ?? null) as number | null;
+                const emsg  = (errBody?.errorMsg ?? null) as string | null;
 
                 lastStatusCode = sc;
                 lastSubStatus  = ssub;
@@ -200,7 +219,7 @@ export async function pollOnce() {
                 break;
             }
 
-            // 200 OK: contemplar variantes de estructura
+            // 200 OK
             const acs: any = (data as any)?.AcsEvent ?? {};
             const respStr: string | null = acs?.responseStatusStrg ?? null; // "OK"/"MORE"/"NO MATCH"
             const num = typeof acs?.numOfMatches === "number" ? acs.numOfMatches : undefined;
@@ -211,10 +230,8 @@ export async function pollOnce() {
 
             const minimal: AttMin[] = (Array.isArray(rowsAny) ? rowsAny : []).map(pickMinimal);
 
-            // ordenar por tiempo del dispositivo para avanzar checkpoint en orden
-            minimal.sort((a, b) =>
-                new Date(a.timeDeviceStr).toISOString().localeCompare(new Date(b.timeDeviceStr).toISOString())
-            );
+            // Ordenar por instante para checkpoint
+            minimal.sort((a, b) => new Date(a.timeDeviceStr).getTime() - new Date(b.timeDeviceStr).getTime());
 
             let inserted = 0;
             for (const r of minimal) {
@@ -239,7 +256,8 @@ export async function pollOnce() {
                 ]
             );
 
-            log.info({ runId, page, pos, status, respStr, num, tot, inserted }, "Página procesada");
+            // Log enriquecido con la ventana enviada
+            log.info({ runId, page, pos, status, respStr, num, tot, inserted, startIso, endIso, major: MAJOR, minor: MINOR }, "Página procesada");
 
             pos += Array.isArray(rowsAny) ? rowsAny.length : 0;
             finalRespStatus = respStr ?? finalRespStatus;
