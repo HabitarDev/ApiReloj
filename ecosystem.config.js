@@ -19,6 +19,7 @@ module.exports = {
             // Variables de entorno en PRODUCCIÓN (forzamos modo inseguro)
             env: {
                 NODE_ENV: "production",
+                LOG_TZ_OFFSET: "-03:00",
                 RELOJ_TLS_INSECURE: "1"    // <- clave para aceptar certificado vencido/autofirmado
             }
         }
