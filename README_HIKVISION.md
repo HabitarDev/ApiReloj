@@ -186,7 +186,7 @@ pm2 startup
 
 ---
 
-## ✅ Verificación del sistema
+## po✅ Verificación del sistema
 
 Desde Postman o el propio reloj, enviar:
 ```
