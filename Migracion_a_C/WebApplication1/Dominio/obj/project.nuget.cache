@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ZEDJVtFBUnM=",
+  "dgSpecHash": "xTUgrPtzLD4=",
   "success": true,
-  "projectFilePath": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj",
+  "projectFilePath": "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/Dominio/Dominio.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

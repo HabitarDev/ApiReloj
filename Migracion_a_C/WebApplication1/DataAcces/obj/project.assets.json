@@ -1731,6 +1731,19 @@
         "runtime": {
           "bin/placeholder/Dominio.dll": {}
         }
+      },
+      "IDataAcces/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Dominio": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/IDataAcces.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/IDataAcces.dll": {}
+        }
       }
     }
   },
@@ -4409,11 +4422,17 @@
       "type": "project",
       "path": "../Dominio/Dominio.csproj",
       "msbuildProject": "../Dominio/Dominio.csproj"
+    },
+    "IDataAcces/1.0.0": {
+      "type": "project",
+      "path": "../IDataAcces/IDataAcces.csproj",
+      "msbuildProject": "../IDataAcces/IDataAcces.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net10.0": [
       "Dominio >= 1.0.0",
+      "IDataAcces >= 1.0.0",
       "Microsoft.EntityFrameworkCore >= 10.0.1",
       "Microsoft.EntityFrameworkCore.Design >= 10.0.1",
       "Microsoft.EntityFrameworkCore.InMemory >= 10.0.1",
@@ -4422,32 +4441,36 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\marti\\.nuget\\packages\\": {}
+    "/home/martin/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\DataAcces\\DataAcces.csproj",
+      "projectUniqueName": "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/DataAcces/DataAcces.csproj",
       "projectName": "DataAcces",
-      "projectPath": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\DataAcces\\DataAcces.csproj",
-      "packagesPath": "C:\\Users\\marti\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\DataAcces\\obj\\",
+      "projectPath": "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/DataAcces/DataAcces.csproj",
+      "packagesPath": "/home/martin/.nuget/packages/",
+      "outputPath": "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/DataAcces/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\marti\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/home/martin/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
+        "/usr/lib/dotnet/library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj": {
-              "projectPath": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj"
+            "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/Dominio/Dominio.csproj": {
+              "projectPath": "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/Dominio/Dominio.csproj"
+            },
+            "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/IDataAcces/IDataAcces.csproj": {
+              "projectPath": "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/IDataAcces/IDataAcces.csproj"
             }
           }
         }
@@ -4509,7 +4532,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Users\\marti\\.dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/10.0.100/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",

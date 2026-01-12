@@ -10,5 +10,8 @@ public class RelojConfig: IEntityTypeConfiguration<Reloj>
     {
         builder.ToTable("Relojes");
         builder.HasKey(x => x.IdReloj);
+
+        builder.Property(x => x.ResidentialId).IsRequired();
+        builder.HasIndex(x => x.ResidentialId);
     }
 }
