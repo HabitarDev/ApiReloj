@@ -18,10 +18,8 @@ public class RelojEntityService(IRelojesRepository repo, IResidentialsRepository
             if (residencialDuenio != null)
             {
                 relojParaRetornar = new Reloj();
-                relojParaRetornar._residentialId = residencialDuenio.IdResidential;
+                relojParaRetornar.ResidentialId = residencialDuenio.IdResidential;
                 relojParaRetornar.Puerto = dto._puerto;
-                relojParaRetornar.LastSeen = dto._lastSeen;
-                relojParaRetornar.SecretKey = dto._secretKey;
                 relojParaRetornar.Residential =  residencialDuenio;
                 relojParaRetornar.IdReloj = dto._idReloj;
             }
@@ -39,9 +37,7 @@ public class RelojEntityService(IRelojesRepository repo, IResidentialsRepository
         RelojDto paraDevolver = new RelojDto();
         paraDevolver._idReloj = relojRecibido.IdReloj;
         paraDevolver._puerto = relojRecibido.Puerto;
-        paraDevolver._lastSeen = relojRecibido.LastSeen;
-        paraDevolver._secretKey = relojRecibido.SecretKey;
-        paraDevolver._residentialId = relojRecibido._residentialId;
+        paraDevolver._residentialId = relojRecibido.ResidentialId;
         return paraDevolver;
     }
 }

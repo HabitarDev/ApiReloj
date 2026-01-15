@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\IDataAcces\\IDataAcces.csproj": {}
+    "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\IDataAcces\\IDataAcces.csproj": {}
   },
   "projects": {
-    "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj": {
+    "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj",
+        "projectUniqueName": "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj",
         "projectName": "Dominio",
-        "projectPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj",
-        "packagesPath": "C:\\Users\\gonza\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\obj\\",
+        "projectPath": "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj",
+        "packagesPath": "C:\\Users\\marti\\.nuget\\packages\\",
+        "outputPath": "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\gonza\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\marti\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -59,7 +59,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Users\\gonza\\.dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Users\\marti\\.dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -337,17 +337,17 @@
         }
       }
     },
-    "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\IDataAcces\\IDataAcces.csproj": {
+    "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\IDataAcces\\IDataAcces.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\IDataAcces\\IDataAcces.csproj",
+        "projectUniqueName": "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\IDataAcces\\IDataAcces.csproj",
         "projectName": "IDataAcces",
-        "projectPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\IDataAcces\\IDataAcces.csproj",
-        "packagesPath": "C:\\Users\\gonza\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\IDataAcces\\obj\\",
+        "projectPath": "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\IDataAcces\\IDataAcces.csproj",
+        "packagesPath": "C:\\Users\\marti\\.nuget\\packages\\",
+        "outputPath": "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\IDataAcces\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\gonza\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\marti\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -359,8 +359,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj": {
-                "projectPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj"
+              "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj": {
+                "projectPath": "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj"
               }
             }
           }
@@ -396,7 +396,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Users\\gonza\\.dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Users\\marti\\.dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",

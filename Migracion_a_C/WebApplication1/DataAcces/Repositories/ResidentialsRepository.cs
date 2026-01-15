@@ -19,6 +19,7 @@ public class ResidentialsRepository (SqlContext repos) : IResidentialsRepository
     {
         return _context.Residentials
             .Include(x => x.Relojes)
+            .Include(x => x.Devices)
             .FirstOrDefault(x => x.IdResidential == id);
     }
 

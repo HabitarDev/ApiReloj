@@ -2,7 +2,8 @@
 
 public class ResidentialDto
 {
-    private int _idResidential;
-    private string _ipActual = null!;
-    private List<RelojDto> _relojes = [];
+    public int _idResidential { get; set; }
+    public string _ipActual { get; set; } = null!;
+    public List<RelojDto> _relojes { get; set; } = [];
+    public List<DeviceDto> _devices { get; set; } = [];
 }

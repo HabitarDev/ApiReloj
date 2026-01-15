@@ -1,0 +1,4 @@
+POSTGRES_USER=Tu_Usuario
+POSTGRES_PASSWORD=Tu_Contrasenia
+POSTGRES_DB=Nombre_De_Tu_Db
+POSTGRES_PORT=Puerto_De_Tu_Db
