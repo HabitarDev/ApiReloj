@@ -7,7 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="IReloj\" />
+      <ProjectReference Include="..\Dominio\Dominio.csproj" />
+      <ProjectReference Include="..\Models\Models.csproj" />
     </ItemGroup>
 
 </Project>

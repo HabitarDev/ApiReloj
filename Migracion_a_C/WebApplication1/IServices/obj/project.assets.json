@@ -1,38 +1,79 @@
 {
   "version": 3,
   "targets": {
-    "net10.0": {}
+    "net10.0": {
+      "Dominio/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Dominio.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Dominio.dll": {}
+        }
+      },
+      "Models/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Models.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Models.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "Dominio/1.0.0": {
+      "type": "project",
+      "path": "../Dominio/Dominio.csproj",
+      "msbuildProject": "../Dominio/Dominio.csproj"
+    },
+    "Models/1.0.0": {
+      "type": "project",
+      "path": "../Models/Models.csproj",
+      "msbuildProject": "../Models/Models.csproj"
+    }
+  },
   "projectFileDependencyGroups": {
-    "net10.0": []
+    "net10.0": [
+      "Dominio >= 1.0.0",
+      "Models >= 1.0.0"
+    ]
   },
   "packageFolders": {
-    "/home/martin/.nuget/packages/": {}
+    "C:\\Users\\gonza\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/IServices/IServices.csproj",
+      "projectUniqueName": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\IServices\\IServices.csproj",
       "projectName": "IServices",
-      "projectPath": "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/IServices/IServices.csproj",
-      "packagesPath": "/home/martin/.nuget/packages/",
-      "outputPath": "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/IServices/obj/",
+      "projectPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\IServices\\IServices.csproj",
+      "packagesPath": "C:\\Users\\gonza\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\IServices\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/martin/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\gonza\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
-        "/usr/lib/dotnet/library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net10.0": {
           "targetAlias": "net10.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj": {
+              "projectPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj"
+            },
+            "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj": {
+              "projectPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
@@ -66,7 +107,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/10.0.100/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Users\\gonza\\.dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",
