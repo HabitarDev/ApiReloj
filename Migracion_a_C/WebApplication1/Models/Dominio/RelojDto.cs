@@ -2,9 +2,9 @@
 
 public class RelojDto
 {
-    private int _idReloj;
-    private int _puerto;
-    private string _secretKey = null!;
-    private DateTime? _lastSeen;
+    public int _idReloj;
+    public int _puerto;
+    public string _secretKey = null!;
+    public DateTime? _lastSeen;
     public int _residentialId { get; set; }   
 }
