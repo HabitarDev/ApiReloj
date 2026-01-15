@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj",
-      "projectName": "Dominio",
-      "projectPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj",
+      "projectUniqueName": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj",
+      "projectName": "Models",
+      "projectPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj",
       "packagesPath": "C:\\Users\\gonza\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\obj\\",
+      "outputPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\gonza\\AppData\\Roaming\\NuGet\\NuGet.Config"

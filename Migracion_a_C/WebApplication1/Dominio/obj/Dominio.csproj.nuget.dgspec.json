@@ -1,26 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/Dominio/Dominio.csproj": {}
+    "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj": {}
   },
   "projects": {
-    "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/Dominio/Dominio.csproj": {
+    "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/Dominio/Dominio.csproj",
+        "projectUniqueName": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj",
         "projectName": "Dominio",
-        "projectPath": "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/Dominio/Dominio.csproj",
-        "packagesPath": "/home/martin/.nuget/packages/",
-        "outputPath": "/home/martin/repos/ApiReloj/Migracion_a_C/WebApplication1/Dominio/obj/",
+        "projectPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj",
+        "packagesPath": "C:\\Users\\gonza\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\gonza\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/martin/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\gonza\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
-          "/usr/lib/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -60,7 +59,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/10.0.100/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Users\\gonza\\.dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",

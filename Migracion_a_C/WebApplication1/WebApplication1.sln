@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "Services\Servic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IDataAcces", "IDataAcces\IDataAcces.csproj", "{CA6E3667-37DE-4F55-B83C-B5433B0E9616}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Models\Models.csproj", "{15D1EFF0-137C-4F2F-B9C3-0DCC1EEA9025}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -94,6 +96,18 @@ Global
 		{CA6E3667-37DE-4F55-B83C-B5433B0E9616}.Release|x64.Build.0 = Release|Any CPU
 		{CA6E3667-37DE-4F55-B83C-B5433B0E9616}.Release|x86.ActiveCfg = Release|Any CPU
 		{CA6E3667-37DE-4F55-B83C-B5433B0E9616}.Release|x86.Build.0 = Release|Any CPU
+		{15D1EFF0-137C-4F2F-B9C3-0DCC1EEA9025}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15D1EFF0-137C-4F2F-B9C3-0DCC1EEA9025}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15D1EFF0-137C-4F2F-B9C3-0DCC1EEA9025}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{15D1EFF0-137C-4F2F-B9C3-0DCC1EEA9025}.Debug|x64.Build.0 = Debug|Any CPU
+		{15D1EFF0-137C-4F2F-B9C3-0DCC1EEA9025}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{15D1EFF0-137C-4F2F-B9C3-0DCC1EEA9025}.Debug|x86.Build.0 = Debug|Any CPU
+		{15D1EFF0-137C-4F2F-B9C3-0DCC1EEA9025}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15D1EFF0-137C-4F2F-B9C3-0DCC1EEA9025}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15D1EFF0-137C-4F2F-B9C3-0DCC1EEA9025}.Release|x64.ActiveCfg = Release|Any CPU
+		{15D1EFF0-137C-4F2F-B9C3-0DCC1EEA9025}.Release|x64.Build.0 = Release|Any CPU
+		{15D1EFF0-137C-4F2F-B9C3-0DCC1EEA9025}.Release|x86.ActiveCfg = Release|Any CPU
+		{15D1EFF0-137C-4F2F-B9C3-0DCC1EEA9025}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
