@@ -1,0 +1,1277 @@
+# Source: Access Control Event Types and Event Linkage Types.pdf
+# Pages: 31
+
+
+## Page 1
+ 
+Access Control Event Types 
+The access control events are classified as four major types, i.e., alarm events (0x1), exception 
+events (0x2), operation events (0x3), additional information (0x4) and other events (0x5). Each 
+major type corresponds to multiple minor types, see details below. 
+Alarm Events (0x1) 
+ 
+Value Description 
+0x1 Alarm Input 
+0x2 Alarm Output 
+0x3 Motion Detection Alarm Starts 
+0x4 Motion Detection Alarm Stops 
+0x5 Tampering Alarm Starts 
+0x6 Tampering Alarm Stops  
+0x7 VCA Alarm Starts 
+0x8 VCA Alarm Stops  
+0xb Network Alarm Starts 
+0xc Network Alarm Stops  
+0xd Restore Network Alarm 
+0x400 Zone Short Circuit Attempts Alarm 
+0x401 Zone Disconnected Alarm 
+0x402 Zone Exception Alarm 
+0x403 Zone Restored 
+0x404 Zone Tampering Alarm 
+0x405 Zone Tampering Restored 
+0x406 Card Reader Tampering Alarm 
+0x407 Card Reader Tampering Restored 
+0x408 Alarm Input Alarm Triggered 
+0x409 Alarm Input Restored 
+0x40a Duress Alarm 
+0x40b No Memory Alarm for Offline Events 
+0x40c Maximum Failed Card Authentications Alarm 
+0x40d SD Card Full Alarm 
+Themors
+programas054@gmail.com
+
+
+## Page 2
+ 
+Value Description 
+0x40e Capture Linkage Alarm 
+0x40f Secure Door Control Unit Tampering Alarm 
+0x410 Secure Door Control Unit Tampering Restored 
+0x411 POS Starts 
+0x412 POS Stops  
+0x413 Low Face Picture Quality 
+0x414 Low Fingerprint Picture Quality 
+0x415 Fire Input Short Circuit Attempts Alarm 
+0x416 Fire Input Open Circuit Attempts Alarm 
+0x417 Fire Input Restored 
+0x418 Fire Button Triggered 
+0x419 Fire Button Resumed 
+0x41a Maintenance Button Triggered 
+0x41b Maintenance Button Resumed 
+0x41c Panic Button Triggered 
+0x41d Panic Button Resumed 
+0x41e Distributed Elevator Controller Tampering Alarm 
+0x41f Distributed Elevator Controller Tampering Restored 
+0x420 People Density Overload Alarm Starts 
+0x421 People Density Overload Alarm Stops  
+0x422 Lane Controller Tampering Alarm 
+0x423 Lane Controller Tampering Alarm Restored 
+0x424 Lane Controller Fire Input Alarm 
+0x425 Lane Controller Fire Input Alarm Restored 
+0x426 Heart Rate Exception Alarm Starts 
+0x427 Heart Rate Exception Alarm Stops 
+0x428 Blood Oxygen Exception Alarm Starts 
+0x429 Blood Oxygen Exception Alarm Stops  
+0x42a Systolic Blood Pressure Exception Alarm Starts 
+0x42b Systolic Blood Pressure Exception Alarm Stops  
+0x42c Diastolic Blood Pressure Exception Alarm Starts 
+0x42d Diastolic Blood Pressure Exception Alarm Stops  
+0x42e Absence Detection Starts 
+0x42f Absence Detection Stops  
+Themors
+programas054@gmail.com
+
+
+## Page 3
+ 
+Value Description 
+0x430 Standing Detection Starts 
+0x431 Standing Detection Stops  
+0x434 People Counting Change Starts 
+0x435 People Counting Change Stops  
+0x438 People Running Starts 
+0x439 People Running Stops  
+0x43a Violent Motion Detection Starts 
+0x43b Violent Motion Detection Stops  
+0x43c People Falling Down Detection Starts 
+0x43d People Falling Down Detection Stops  
+0x43e People Overstay Detection Starts 
+0x43f People Overstay Detection Stops  
+0x440 No Paper in Printer Alarm 
+0x441 Failed Attempts of Opening Door via Password Exceeded Limit 
+0x442 No Memory Alarm for Valid Offline Events 
+0x900 to 0x93f Access Control: Custom Alarm Event 1 to Custom Alarm Event 64 
+0x950 Smart Lock Duress Alarm (Fingerprint) 
+0x951 Smart Lock Duress Alarm (Password) 
+0x952 Smart Lock Broken Alarm 
+0x953 Smart Lock Locked Alarm 
+0x954 Smart Lock Low Voltage Alarm 
+0x955 Smart Lock Blocklist Alarm 
+0x956 Smart Lock Device Offline Alarm 
+0x957 Smart Lock Unlatched Alarm 
+0x958 Smart Lock User Not In Alarm 
+0x959 Magnetic Contact Detector Alarm 
+0x95a Infrared Detector Alarm 
+0x95b Fingerprint Locked Alarm 
+0x95c Password Locked Alarm 
+0x95d Smart Door Lock Duress Alarm 
+0x95e Access Module Fire Input Short Circuit Alarm 
+0x95f Restore Access Module Fire Input 
+0x960 Network Loop Alarm 
+0x961 Restore Network Loop Alarm 
+  
+Exception Events (0x2) 
+Themors
+programas054@gmail.com
+
+
+## Page 4
+ 
+ 
+Value Description 
+0x21 Video Signal Loss 
+0x22 Illegal Access 
+0x23 HDD Full 
+0x24 HDD Error 
+0x25 MODEM Offline 
+0x26 IP Address Conflict 
+0x27 Network Disconnected 
+0x28 Recording Error 
+0x29 Network Camera Connection Error 
+0x2a Video Input Exception 
+0x2b Network Camera IP Address Conflicted 
+0x2e Video Standard Mismatch 
+0x31 Video Management System: Fan Status Exception 
+0x32 Video Management System: Fan Status Recovered 
+0x33 Video Management System: 6476 Reboot Exception  
+0x34 Video Management System: dm6467 Exception (Buzzer) 
+0x35 Network Exception 
+0x36 Memory Status Exception 
+0x37 File Status Exception 
+0x3a RS485 Connection Exception  
+0x3b RS485 Connection Restored  
+0x400 Power on 
+0x401 Power off 
+0x402 Watchdog Reset 
+0x403 Low Battery Voltage 
+0x404 Battery Voltage Restored 
+0x405 AC Power Disconnected 
+0x406 AC Power Restored 
+0x407 Network Restored 
+0x408 Flash Reading and Writing Exception 
+0x409 Card Reader Offline 
+0x40a Card Reader Online 
+0x40b Indicator Turns off 
+0x40c Indicator Resumed 
+Themors
+programas054@gmail.com
+
+
+## Page 5
+ 
+Value Description 
+0x40d Lane Controller Offline 
+0x40e Lane Controller Online 
+0x40f Secure Door Control Unit Offline 
+0x410 Secure Door Control Unit Online 
+0x411 Low Battery Voltage (Only for Face Recognition Terminal) 
+0x412 Battery Voltage Recovered (Only for Face Recognition Terminal) 
+0x413 Network of Distributed Access Controller Disconnected 
+0x414 Network of Distributed Access Controller Restored 
+0x415 RS485 Loop of Main Access Controller Disconnected 
+0x416 RS485 Loop of Main Access Controller Connected 
+0x417 Distributed Access Controller Offline 
+0x418 Distributed Access Controller Online 
+0x419 Downstream RS485 Loop of Distributed Access Control 
+Disconnected 
+0x41a Downstream RS485 Loop of Distributed Access Control Connected 
+0x41b Distributed Elevator Controller Online 
+0x41c Distributed Elevator Controller Offline 
+0x41d ID Card Reader Disconnected 
+0x41e ID Card Reader Connected 
+0x41f Fingerprint Module Disconnected 
+0x420 Fingerprint Module Connected 
+0x421 Camera Disconnected 
+0x422 Camera Connected 
+0x423 COM Port Disconnected 
+0x424 COM Port Connected 
+0x425 Device Unauthorized 
+0x426 Face Recognition Terminal Online 
+0x427 Face Recognition Terminal Offline 
+0x428 Local Login Lock 
+Themors
+programas054@gmail.com
+
+
+## Page 6
+ 
+Value Description 
+0x429 Local Login Unlock 
+0x42a Communication with Anti-passing Back Server Failed 
+0x42b Communication with Anti-passing Back Server Restored 
+0x42c Motor or Sensor Exception 
+0x42d CAN Bus Exception 
+0x42e CAN Bus Exception Restored 
+0x42f Too High Pedestal Temperature 
+0x430 Active Infrared Intrusion Detector Exception 
+0x431 Active Infrared Intrusion Detector Restored 
+0x432 Communication with Light Board Failed 
+0x433 Communication with Light Board Restored 
+0x434 Communication with IR Adaptor Failed 
+0x435 Communication with IR Adaptor Restored 
+0x436 Printer Online 
+0x437 Printer Offline 
+0x438 4G Module Online 
+0x439 4G Module Offline 
+0x43a DSP Starting Failed 
+0x43b Smart Rule Not Supported 
+0x43c Auxiliary Board Disconnected 
+0x43d Auxiliary Board Connected 
+0x43e Secure ID Card Unit Exception 
+0x43f Secure ID Card Unit Restored 
+0x440 Fingerprint Collection Peripheral Exception 
+0x441 Fingerprint Collection Peripheral Restored 
+0x442 Repetitive Attack 
+0x443 TLS Communication Exception 
+0x444 Smart Disk Offline 
+0x445 Smart Disk Online 
+0x446 Lock Refund 
+0x447 Coding Disk Online 
+0x448 Coding Disk Offline 
+Themors
+programas054@gmail.com
+
+
+## Page 7
+ 
+Value Description 
+0x449 Keypad Offline 
+0x44a Keypad Online 
+0x44b 5G Module Online 
+0x44c 5G Module Offline 
+0x44d 
+Extension Module (Modules Externally Accessed via USB and 
+Supporting Hot Swapping: E.g., ID Card Reader, Fingerprint Sensor, 
+Bluetooth, QR Code) Online 
+0x44e 
+Extension Module (Modules Externally Accessed via USB and 
+Supporting Hot Swapping: E.g., ID Card Reader, Fingerprint Sensor, 
+Bluetooth, QR Code) Offline 
+0x44f Disconnect from Multi-Door Interlocking Server 
+0x450 Restore Communication with Multi-Door Interlocking Server 
+0x451 QR Code Reader Offline 
+0x452 QR Code Reader Online 
+0x453 Lock Health Information Exception 
+0x454 Unlock Health Information Exception 
+0x455 Optional Board Offline 
+0x456 Restore Optional Board Offline 
+0x457 Lock Offline 
+0x458 Restore Lock Offline 
+0x459 Doorbell Offline 
+0x45a Restore Doorbell Offline 
+0x45b Exit Button Offline 
+0x45c Restore Exit Button Offline 
+0x45d Lock Low Battery 
+0x45e Lock Low Battery Restored 
+0x45f Lock Battery to Be Depleted 
+0x460 Card Reader Low Battery 
+0x461 Card Reader Low Battery Restored 
+0x462 Exit Button Low Battery 
+0x463 Exit Button Low Battery Restored 
+0x464 Unlocking Stops Unexpectedly 
+0x465 Locking Stops Unexpectedly 
+0x466 Relay Offline 
+0x467 Restore Relay Offline 
+0x468 Relay Low Battery 
+0x469 Relay Low Battery Restored 
+0x46a Lock Extremely Low Battery 
+0x900 to 0x93f Access Control: Custom Exception Event 1 to Custom Exception 
+Event 64 
+Themors
+programas054@gmail.com
+
+
+## Page 8
+ 
+Value Description 
+0x950 Switch to Wired Network 
+0x951 Switch to Wireless Network 
+0x952 Restore Smart Lock Offline 
+0x953 USB Camera Online 
+0x954 USB Camera Offline 
+0x955 Communication Exception Occurred During Distributed Controller 
+Backup  
+0x956 Social Security Card Reader Online 
+0x957 Social Security Card Reader Offline 
+0x958 Turnstile Infrared Component Exception 
+0x959 Turnstile Infrared Running Exception 
+0x95a Turnstile Infrared Detection Exception 
+0x95b No Calibration Target in Turnstile Infrared Detection 
+0x95c Incorrect Calibration Distance from Turnstile Infrared Target 
+0x95d Channel Width Not Applied to Turnstile Infrared Detector 
+0x95e Lock Control Board Online 
+0x95f Lock Control Board Offline 
+  
+Operation Events (0x3) 
+ 
+Value Description 
+0x41 Startup 
+0x42 Shutdown 
+0x43 Shutdown Exception 
+0x44 Local: Device Restart 
+0x50 Local Login 
+0x51 Local Logout 
+0x52 Local: Configuration 
+0x53 Local: Playback/Download by File 
+0x54 Local: Playback/Download by Time 
+0x55 Local: Start Recording 
+0x56 Local: Stop Recording 
+0x59 Local: Edit Time 
+0x5a Local Upgrade 
+0x5b Local: Back Up Recording File(s) 
+0x5c Local: Initialize HDD 
+0x5d Local: Export Configuration File 
+0x5e Local: Import Configuration File 
+Themors
+programas054@gmail.com
+
+
+## Page 9
+ 
+Value Description 
+0x5f Local: Back Up Files 
+0x60 Local: Lock Recording Files 
+0x61 Local: Unlock Recording Files 
+0x62 Local: Manually Clear and Trigger Alarms 
+0x66 Local: Start Backup 
+0x67 Local: Stop Backup 
+0x68 Local: Start Time of Backup 
+0x69 Local: End Time of Backup 
+0x6d Local: Restore Admin's Default Password 
+0x70 Remote Login 
+0x71 Remote Logout 
+0x72 Remote: Start Recording 
+0x73 Remote: Stop Recording 
+0x74 Start Transparent Transmission 
+0x75 Stop Transparent Transmission 
+0x76 Remote: Get Parameters 
+0x77 Remote: Configure Parameters 
+0x78 Remote: Get Status 
+0x79 Remote Arming 
+0x7a Remote Disarming 
+0x7b Remote Reboot 
+0x7c Start Two-Way Audio 
+0x7d Stop Two-Way Audio 
+0x7e Remote Upgrade 
+0x7f Remote: Playback/Download by File 
+0x80 Remote: Playback/Download by Time 
+0x83 Remote: Shutdown 
+0x84 Remote: Lock File 
+0x85 Remote: Unlock File 
+0x86 Remote Operation: Export Configuration File 
+0x87 Remote Operation: Import Configuration File 
+0x88 Remote: Export Recording Files 
+0x89 Remote: Manually Clear and Trigger Alarms 
+0x8a Remote: Add Network Camera 
+0x8b Remote: Delete Network Camera 
+0x8c Remote: Set Network Camera 
+Themors
+programas054@gmail.com
+
+
+## Page 10
+ 
+Value Description 
+0x9a Remote: Delete Exceptional HDD 
+0x9b Remote: Load HDD 
+0x9c Remote: Uninstall HDD 
+0x9d Local: Lock 
+0x9e Local: Unlock 
+0xd6 Remote Operation: Enable Alarm Output Manually 
+0xd7 Remote Operation: Disable Alarm Output Manually 
+0x137 Remote: Lock Login 
+0x138 Remote: Unlock Login 
+0x200 Other Operations 
+0x400 Door Remotely Open 
+0x401 Door Remotely Closed 
+0x402 Remain Open Remotely 
+0x403 Remain Closed Remotely 
+0x404 Remote: Manual Time Sync 
+0x405 Network Time Protocol Synchronization 
+0x406 Remote Operation: Clear All Card No. 
+0x407 Remote Operation: Restore Defaults 
+0x408 Zone Arming 
+0x409 Zone Disarming 
+0x40a Local Operation: Restore Defaults 
+0x40b Remote Operation: Capture 
+0x40c Edit Network Parameters 
+0x40d Edit GPRS Parameters 
+0x40e Edit Control Center Parameters 
+0x40f Enter Dismiss Code 
+0x410 Auto Renumber 
+0x411 Auto Supplement Number 
+0x412 Import Configuration File 
+0x413 Export Configuration File 
+Themors
+programas054@gmail.com
+
+
+## Page 11
+ 
+Value Description 
+0x414 Import Card Permission Parameters 
+0x415 Export Card Permission Parameters 
+0x416 Upgrade Device via USB Flash Drive 
+0x417 Visitor Calling Elevator 
+0x418 Resident Calling Elevator 
+0x419 Remotely Arming 
+0x41a Remotely Disarming 
+0x41b Operation Failed: Keyfob Not Pairing 
+0x41c Keyfob Operation: Close Door 
+0x41d Keyfob Operation: Open Door 
+0x41e Keyfob Operation: Remain Door Open 
+0x41f M1 Card Encryption Verification Enabled 
+0x420 M1 Card Encryption Verification Disabled 
+0x421 Opening Door with NFC Card Enabled 
+0x422 Opening Door with NFC Card Disabled 
+0x423 Export Offline Collected Data 
+0x42d Establish SSH Connection 
+0x42e Disconnect SSH Connection 
+0x42f Local: Import Person Data 
+0x430 Local: Export Person Data 
+0x431 Create Certificate 
+0x432 Upload Certificate 
+0x433 Delete Certificate 
+0x434 Consumption Armed 
+0x435 Consumption Disarmed 
+0x436 Change QR Code Secret Key 
+0x437 Remote: Upgrade Lock 
+0x438 Remote: Upgrade Card Reader 
+0x439 Remote: Upgrade Exit Button 
+0x43a Remote: Upgrade Doorbell 
+0x43b AP Mode Switch 
+0x43c Enable Registration Mode 
+0x43d Card Reader Added 
+0x43e Lock Added 
+Themors
+programas054@gmail.com
+
+
+## Page 12
+ 
+Value Description 
+0x43f Doorbell Added 
+0x440 Exit Button Added 
+0x441 Delete Card Reader (Unbound from Security Control Panel) 
+0x442 Delete Door Lock (Unbound from Security Control Panel) 
+0x443 Delete Doorbell (Unbound from Security Control Panel) 
+0x444 Delete Exit Button (Unbound from Security Control Panel) 
+0x445 Enable Card Swiping on Card Reader 
+0x446 Disable Swiping Card on Card Reader 
+0x447 Enable Card Reader Button  
+0x448 Disable Card Reader Button 
+0x449 Enable Card Reader Proximity Sensor 
+0x44a Disable Card Reader Proximity Sensor 
+0x44b Enable Card Reader Buzzer 
+0x44c Disable Card Reader Buzzer 
+0x44d Enable Card Reader Bluetooth 
+0x44e Disable Card Reader Bluetooth 
+0x44f Remote: Upgrade Relay 
+0x450 Relay Added 
+0x451 Delete Relay 
+0x900-0x93f Access Control: Custom Operation Event 1 to Custom Operation 
+Event 64 
+0x940 Live Broadcast 
+0x941 Scheduled Broadcast 
+0x942 Local: Import Cuisine Data 
+0x943 Local: Export Cuisine Data 
+0x950 Set Wi-Fi Parameters 
+0x951 Log In to Cloud Service 
+0x952 Log Out from Cloud Service 
+0x953 Add Smart Lock 
+0x954 Delete Smart Lock  
+0x955 Get Smart Lock Status 
+0x956 Apply Temporary Password of Smart Lock 
+0x957 Set Smart Lock Mute Parameters 
+0x958 Set Smart Lock Late-Return Notifications 
+0x959 Link Smart Lock with Network Camera 
+0x95a Unlink Smart Lock with Network Camera 
+0x95b Link Smart Lock with Detector 
+0x95c Unlink Smart Lock with Detector 
+0x95d Enable Smart Lock Message Notification 
+0x95e Disable Smart Lock Message Notification 
+0x95f Set Smart Lock Heartbeat 
+Themors
+programas054@gmail.com
+
+
+## Page 13
+ 
+Value Description 
+0x960 Reboot Smart Lock 
+0x961 Clear Users of Smart Lock 
+0x962 Format Smart Lock 
+0x963 Change Smart Lock Fingerprint 
+0x964 Change Smart Lock Password 
+0x965 Change Smart Lock Card Information 
+0x966 Change Smart Lock User Information 
+0x967 Change Smart Lock System Information 
+0x968 Add User to Smart Lock 
+0x969 Delete User from Smart Lock 
+0x96a Change Username of Smart Lock's Custom User 
+0x96b Change Smart Lock Keyfob Information 
+0x96c Add Fingerprint to Smart Lock 
+0x96d Delete Fingerprint from Smart Lock 
+0x96e Add Password to Smart Lock 
+0x96f Delete Password from Smart Lock 
+0x970 Add Card to Smart Lock 
+0x971 Delete Card from Smart Lock 
+0x972 Change Smart Lock Network Status 
+0x973 Clear Smart Lock Network Data 
+0x974 Clear Smart Lock Hosts 
+0x975 Clear Smart Lock Guests 
+0x976 Clear Keyfob User Information 
+0x977 Clear Normal Users' Fingerprints on Smart Lock  
+0x978 Clear All Cards on Smart Lock  
+0x979 Clear All Smart Lock Passwords 
+0x97a Enable Device Hotspot 
+0x97b Disable Device Hotspot 
+0x97c Authorize Panic Management Card to Normal Card 
+0x97d Change Channel Mode 
+0x97e Doorbell Event (Triggered by Lock Operation) 
+0x97f Access Module Restarts 
+0x980 Restore Access Module Parameters  
+0x981 Local: Restore Default Parameters of AP Password  
+0xf0 Local: Activate Device 
+0xf1 Remote: Activate Device 
+0xf2 Local: Restore Default Settings 
+0xf3 Remote: Restore Default Settings 
+0x2600 Local: Reset Admin Login Password  
+0x2601 Remote: Reset Admin Login Password  
+Themors
+programas054@gmail.com
+
+
+## Page 14
+ 
+Additional Information (0x4) 
+Value Description 
+0xa1 HDD information 
+0xaa System Running Status Information 
+0xbd Global Error Information 
+0xbe Buffer Status Log 
+0xbf HDD Error Detailed Information 
+0xc0 Cloud Storage Data Expired 
+0xc1 Platform Information 
+0xc2 Dial-Up Status 
+0xc3 Unlocking Log 
+0xc4 Zone Alarm 
+0xc5 Call Log 
+0xc6 Accessory Board Information 
+0xc9 Smart Board Status 
+0xcb Auto Time Sync 
+0xcc Cloud Service Running Status 
+0xd8 Formatting HDD Starts 
+0xd9 Formatting HDD Stops  
+0x400 Enable Live Facial Detection 
+0x401 Disable Live Facial Detection 
+0x402 Clear Collected Data 
+0x403 Delete Collected Data 
+0x404 Export Collected Data 
+0x405 Set Card Length 
+0x406 Initializing Database Failed 
+0x407 Upgrade Database Patch 
+0x408 Insert Psam Card 
+0x409 Pull out Psam Card 
+0x40a Hardware Restarts Unexpectedly (hardFault) 
+0x40b Psam Card Overcurrent Protection 
+0x40c Stack Overflow 
+0x40d Configure Parameters 
+0x40e Clear All Users 
+0x40f Clear All Cards 
+0x410 Clear All Fingerprints by Card Reader 
+0x411 Clear All Fingerprints by Card No. 
+0x412 Clear All Fingerprints by Employee ID 
+0x413 Delete a Fingerprint 
+0x414 Clear All Weekly Permission Schedules 
+0x415 Set Weekly Permission Schedule 
+Themors
+programas054@gmail.com
+
+
+## Page 15
+ 
+0x416 Set Holiday Permission Schedule 
+0x417 Clear All Holiday Permission Schedules 
+0x418 Set Holiday Group Permission Schedule 
+0x419 Clear All Holiday Group Permission Schedules 
+0x41a Clear All Permission Schedules 
+0x41b Set Permission Schedule 
+0x41c Add Card 
+0x41d Edit Card 
+0x41e Add Fingerprint by Card No. 
+0x41f Add Fingerprint by Employee ID 
+0x420 Edit Fingerprint by card No. 
+0x421 Edit Fingerprint by Employee ID 
+0x422 Import User List (Collected Offline) 
+0x423 USB Login 
+0x424 USB Logout 
+0x425 ISAPI and HTTP Login 
+0x426 ISAPI and HTTP Logout 
+0x427 ISAPI and HTTPS Login 
+0x428 ISAPI and HTTPS Logout 
+0x429 ISUP Online 
+0x42a ISUP Offline 
+0x42b Fingerprint Card Issuing Records 
+0x42c Face Picture Card Issuing Records 
+0x42d Add Iris 
+0x42e Edit Iris 
+0x42f Delete Users' Irises (By Employee ID) 
+0x430 Delete All Irises 
+0x431 Edit Iris Parameters 
+0x432 Add Person Information 
+0x433 Edit Person Information 
+0x434 Delete Person Information (by Employee ID) 
+0x435 Delete Card by Card No. or Employee ID 
+0x436 Delete All Cards 
+0x437 SIM Card Inserted 
+0x438 SIM Card Unplugged 
+0x439 Enable Fingerprint Recognition 
+0x43a Disable Fingerprint Recognition 
+0x43b Enable Face Capture 
+0x43c Disable Face Capture 
+0x43d Reset Online Card Reader 
+0x43e Clear Registered Iris Pictures 
+0x43f Add Voiceprint 
+Themors
+programas054@gmail.com
+
+
+## Page 16
+ 
+0x440 Edit Voiceprint 
+0x441 Delete Voiceprint 
+0x442 Delete All Voiceprints 
+0x443 Face Picture Data Library Upgrade Log Records 
+ 
+Other Events (0x5) 
+Value Description 
+0x01 Valid Card Authentication Completed 
+0x02 Card and Password Authentication Completed 
+0x03 Card and Password Authentication Failed 
+0x04 Card and Password Authentication Timed Out 
+0x05 Card and Password Authentication Timed Out 
+0x06 No Permission 
+0x07 Invalid Card Swiping Time Period 
+0x08 Expired Card 
+0x09 Card No. Not Exist 
+0x0a Anti-passing Back Authentication Failed 
+0x0b Interlocking Door Not Closed 
+0x0c Card Not in Multiple Authentication Group 
+0x0d Card Not in Multiple Authentication Duration 
+0x0e Multiple Authentications: Super Password Authentication Failed 
+0x0f Multiple Authentication Completed 
+0x10 Multiple Authenticated 
+0x11 Open Door with First Card Started 
+0x12 Open Door with First Card Stopped 
+0x13 Remain Open Started 
+0x14 Remain Open Stopped 
+0x15 Door Unlocked 
+0x16 Door Locked 
+0x17 Exit Button Pressed 
+0x18 Exit Button Released 
+Themors
+programas054@gmail.com
+
+
+## Page 17
+ 
+0x19 Door Open (Contact) 
+0x1a Door Closed (Contact) 
+0x1b Door Abnormally Open (Contact) 
+0x1c Door Open Timed Out (Contact) 
+0x1d Alarm Output Enabled 
+0x1e Alarm Output Disabled 
+0x1f Remain Closed Started 
+0x20 Remain Closed Stopped 
+0x21 Multiple Authentications: Remotely Open Door 
+0x22 Multiple Authentications: Super Password Authentication 
+Completed 
+0x23 Multiple Authentications: Repeated Authentication 
+0x24 Multiple Authentications Timed Out 
+0x25 Doorbell Ring 
+0x26 Fingerprint Matched 
+0x27 Fingerprint Mismatched 
+0x28 Card and Fingerprint Authentication Completed 
+0x29 Card and Fingerprint Authentication Failed 
+0x2a Card and Fingerprint Authentication Timed Out 
+0x2b Card and Fingerprint and Password Authentication Completed 
+0x2c Card and Fingerprint and Password Authentication Failed 
+0x2d Card and Fingerprint and Password Authentication Timed Out 
+0x2e Fingerprint and Password Authentication Completed 
+0x2f Fingerprint and Password Authentication Failed 
+0x30 Fingerprint and Password Authentication Timed Out 
+0x31 Fingerprint Not Exists 
+0x32 Card Platform Authentication 
+0x33 Call Center 
+0x34 Fire Relay Closed: Door Remains Open 
+0x35 Fire Relay Opened: Door Remains Closed 
+0x36 Access Granted by Face and Fingerprint 
+Themors
+programas054@gmail.com
+
+
+## Page 18
+ 
+0x37 Access Denied by Face and Fingerprint 
+0x38 Access Timed Out by Face and Fingerprint 
+0x39 Access Granted by Face and PIN 
+0x3a Access Denied by Face and PIN 
+0x3b Access Timed Out by Face and PIN 
+0x3c Access Granted by Face and Card 
+0x3d Access Denied by Face and Card 
+0x3e Access Timed Out by Face and Card 
+0x3f Access Granted by Face, PIN, and Fingerprint 
+0x40 Access Denied by Face, PIN, and Fingerprint 
+0x41 Access Timed Out by Face, PIN, and Fingerprint 
+0x42 Access Granted by Face, Card, and Fingerprint 
+0x43 Access Denied by Face, Card, and Fingerprint 
+0x44 Access Timed Out by Face, Card, and Fingerprint 
+0x45 Employee ID and Fingerprint Authentication Completed 
+0x46 Employee ID and Fingerprint Authentication Failed 
+0x47 Employee ID and Fingerprint Authentication Timed Out 
+0x48 Employee ID and Fingerprint and Password Authentication 
+Completed 
+0x49 Employee ID and Fingerprint and Password Authentication Failed 
+0x4a Employee ID and Fingerprint and Password Authentication Timed 
+Out 
+0x4b Face Authentication Completed 
+0x4c Face Authentication Failed 
+0x4d Employee ID and Face Authentication Completed 
+0x4e Employee ID and Face Authentication Failed 
+0x4f Employee ID and Face Authentication Timed Out 
+0x50 Face Recognition Failed 
+0x51 First Card Authorization Started 
+0x52 First Card Authorization Ended 
+0x53 Lock Input Short Circuit Attempts Alarm  
+0x54 Lock Input Open Circuit Attempts Alarm 
+0x55 Lock Input Exception Alarm 
+0x56 Contact Input Short Circuit Attempts Alarm 
+0x57 Contact Input Open Circuit Attempts Alarm 
+Themors
+programas054@gmail.com
+
+
+## Page 19
+ 
+0x58 Contact Input Exception Alarm 
+0x59 Exit Button Input Short Circuit Attempts Alarm 
+0x5a Exit Button Input Open Circuit Attempts Alarm 
+0x5b Exit Button Input Exception Alarm 
+0x5c Unlocking Exception 
+0x5d Unlocking Timed Out 
+0x5e Unauthorized First Card Opening Failed 
+0x5f Call Elevator Relay Open 
+0x60 Call Elevator Relay Closed 
+0x61 Auto Button Relay Open 
+0x62 Auto Button Relay Closed 
+0x63 Button Relay Open 
+0x64 Button Relay Closed 
+0x65 Employee ID and Password Authentication Completed 
+0x66 Employee ID and Password Authentication Failed 
+0x67 Employee ID and Password Authentication Timed Out 
+0x68 Human Detection Failed 
+0x69 Person and ID Card Matched 
+0x70 Person and ID Card Mismatched 
+0x71 Blocklist Event 
+0x72 Valid Message 
+0x73 Invalid Message 
+0x75 Authentication Failed: Door Remain Closed or Door in Sleeping 
+Mode 
+0x76 Authentication Failed: Authentication Schedule in Sleeping Mode 
+0x77 Card Encryption Verification Failed 
+0x78 Anti-passing Back Server Response Failed 
+0x82 Open Door via Exit Button Failed When Door Remain Closed or in 
+Sleeping Mode 
+0x84 Door Linkage Open Failed During Door Remain Close or Sleeping  
+0x85 Tailgating 
+Themors
+programas054@gmail.com
+
+
+## Page 20
+ 
+0x86 Reverse Passing 
+0x87 Force Accessing 
+0x88 Climb Over 
+0x89 Passing Timed Out 
+0x8a Intrusion Alarm 
+0x8b Authentication Failed When Free Passing 
+0x8c Barrier Obstructed 
+0x8d Barrier Restored 
+0x8e Failed to Update Local Face Modeling by Device 
+0x8f Overstay 
+0x90 Allowlist Authentication Succeeded 
+0x91 Authenticating Allowlist Failed 
+0x92 Face Picture Collecting Event (No Authentication, Uploaded 
+during Remote Verification) 
+0x93 Card Collecting Event (No Authentication, Uploaded during 
+Remote Verification) 
+0x94 Failed Attempts of Authentication via Password Reached Limit 
+0x95 ID Card Collecting Event (No Authentication, Uploaded during 
+Remote Verification) 
+0x96 Authentication via Password Failed 
+0x97 Passwords Mismatched 
+0x98 Employee ID Not Exists 
+0x99 Combined Authentication Completed 
+0x9a Combined Authentication Timed Out 
+0x9b Authentication Type Mismatched 
+0x9c Authenticated via QR Code 
+0x9d Authentication via QR Code Failed 
+0x9e Authenticated via Householder 
+0x9f Authenticated via Bluetooth 
+0xa0 Authentication via Bluetooth Failed 
+0xa1 Verifying Passport Failed 
+0xa2 Authentication Failed: Invalid M1 Card 
+0xa3 Verifying CPU Card Encryption Failed 
+0xa4 Disabling NFC Verification Failed 
+0xa5 LoRa Module Online 
+Themors
+programas054@gmail.com
+
+
+## Page 21
+ 
+0xa6 LoRa Module Offline 
+0xa7 MQTT Connection Status 
+0xa8 EM Card Recognition Disabled 
+0xa9 M1 Card Recognition Disabled 
+0xaa CPU Card Recognition Disabled 
+0xab ID Card Recognition Disabled 
+0xac Importing Key to Card Failed 
+0xad Local Upgrade Failed 
+0xae Remote Upgrade Failed 
+0xaf Extension Module is Remotely Upgraded 
+0xb0 Upgrading Extension Module Remotely Failed 
+0xb1 Fingerprint Module is Remotely Upgraded 
+0xb2 Upgrading Fingerprint Module Remotely Failed 
+0xb3 Dynamic Verification Code Authenticated 
+0xb4 Authentication with Verification Code Failed 
+0xb5 Password Authenticated 
+0xb6 Consumption Timed Out 
+0xb7 Refund Timed Out 
+0xb8 Consumption Amount Exceeded Limit 
+0xb9 Consumption Times Reached Limit 
+0xba Consumption Confirmation Timed Out 
+0xbb Number of Blocklists Reached Limit 
+0xbc Verifying Desfire Card Encryption Failed 
+0xbd Desfire Card Reading Disabled 
+0xbe Access Granted by Iris 
+0xbf Access Denied via Iris 
+0xc0 Iris Anti-Spoofing Detection Failed 
+0xc1 Number of People Exceeds 90% of Capacity 
+0xc2 Local Attendance Records Exceeded Limit 
+0xc3 Authentication of Dynamic Authentication Code Expired 
+0xc4 Meeting Not Checked In 
+0xc5 Meeting Check-In 
+0xc6 Meeting Late 
+0xc9 Deleting Multi-Door Interlocking Failed 
+0xca Authentication Failed: Fingerprint Recognition Not Enabled 
+0xcb Authentication Failed: Face Capture Disabled 
+Themors
+programas054@gmail.com
+
+
+## Page 22
+ 
+0xcc Open Door During Live View 
+0xcd Restore Card Reader to Factory Settings 
+0xce Card Reader ID Conflict 
+0xcf FeliCa Card Recognition Disabled 
+0xd0 Authentication Failed Due to Abnormal Features (e.g., Not 
+Wearing Mask or Hard Hat, Abnormal Temperature) 
+0xd1 Non Meeting Participant Check-In  
+0xd2 Meeting Participant Check-In In Vacant Status 
+0xd3 Duplicate Check-In by Meeting Participant  
+0xd4 Person Authentication Times Reached Limit 
+0xd5 Upgrading Face Modeling Failed Due to Incompatible Version 
+0xd6 Upload Device Unlocking Record Event 
+0xd7 Door Not-Opened Alarm  
+0xd8 Door Not-Closed Alarm 
+0xd9 Verifying QR Code Secret Key Failed 
+0xda Passing Event 
+0xdb Person and Social Security Card Matched 
+0xdc Person and Social Security Card Mismatched 
+0xdd Wearing Mask 
+0xdf Captured Picture Too Small 
+0xe0 Access Module Upgraded 
+0xe1 Upgrading Access Module Failed 
+0xe2 Access Granted by Employee ID 
+0xe3 Access Granted by NFC 
+0xe4 Access Denied by NFC 
+0xe5 Unlock by Public Password Event 
+0xe6 Card Reader Upgraded 
+0xe7 Upgrading Card Reader Failed 
+0x500 to 0x53f Access Control: Custom Event 1 to Custom Event 64 
+0x540 Electrostatic Discharge Testing Passed 
+0x541 Electrostatic Discharge Testing Not Passed (Door Not Opened) 
+0x542 Electrostatic Discharge Testing Not Passed (Door Opened) 
+0x543 Electrostatic Discharge Testing Timed Out 
+0x544 Remotely Import Person Data 
+0x545 Remotely Export Person Data 
+0x600 Smart Lock: Open Door with Fingerprint 
+0x601 Smart Lock: Open Door with Password 
+0x602 Smart Lock: Open Door by Card Swiping 
+0x603 Smart Lock: Open Door by Center 
+0x604 Smart Lock: Open Door with App 
+0x605 Smart Lock: Open Door with Key 
+0x606 Smart Lock: Open Door with Keyfob 
+Themors
+programas054@gmail.com
+
+
+## Page 23
+ 
+ 
+  
+ 
+0x607 Smart Lock: Open Door with Temporary Password 
+0x608 Smart Lock: Open Door by Bluetooth 
+0x609 Smart Lock: Open Door by Multi-Factor Authentication 
+0x700 Voiceprint Anti-Spoofing Detection Failed 
+0x701 Voiceprint Authentication Failed 
+0x702 Channel Upgrading 
+0x703 Channel Learning 
+0x704 Device Self-Testing 
+0x705 Motor Self-Testing 
+0x706 Barrier Angle Adjusting 
+0x707 Access Granted by Palmprint and Palm Veins 
+0x708 Access Denied by Palmprint and Palm Veins 
+0x709 Palmprint and Palm Veins Anti-Spoofing Detection Failed 
+0x800 Security Area Is Not Clear 
+0x801 Anti-Pinch area Is Not Clear 
+0x802 Motor Brake Is Operating 
+0x803 Infrared Self-Test Failed 
+0x804 Motor Studying Failed 
+0x805 Do Not Open Barrier When Lane Is Not Clear 
+0x806 Exception Occurred In Motor Drive Board 
+0x807 Exception Occurred In Motor Encoder 
+0x808 Motor Is Over Current 
+0x809 Motor Is Over Voltage 
+0x80a Motor Is Under Voltage 
+0x80b Exception Occurred In Motor 
+0x80c Permission Authentication Is Intercepted 
+0x80d Access Granted by Keyfob 
+0x80e Access Denied via Keyfob 
+0x80f Invalid Face Recognition Angle 
+0x810 Secondary Authentication of Large Consumption Failed 
+0x811 Secondary Authentication of Similar Consumer Failed 
+0x812 Door Offline 
+0x813 Door Interlocking Delaying 
+0x814 Passing Allowed (Door Not Used) 
+0x815 Lock When Failed Attempts to Authenticate via Card No. Exceed 
+Limit 
+0x816 Secure Door Control Unit Not Matched 
+0x817 Exceptional IR Auto Shield 
+0x818 Auto-Restore Exceptional IR 
+0x819 Incorrect Cabinet User Type for Article Deposit 
+Themors
+programas054@gmail.com
+
+
+## Page 24
+ 
+Event Linkage Types 
+For event card linkages, if the linkage type is event, four major event linkage types are available: 0-
+device event linkage, 1-alarm input event linkage, 2-access control point (e.g., doors, elevators, 
+etc.) event linkage, and 3-authentication unit (e.g., card reader, fingerprint module, etc.) event 
+linkage. Each major event linkage type corresponds multiple minor types of event linkage, see 
+details in the following content. 
+Device Event Linkage 
+Value Description 
+0 Access Controller Tampering Alarm 
+1 No Memory Alarm 
+2 Network Disconnected 
+3 Network Connected 
+4 Low Battery Voltage 
+5 Battery Fully Charged 
+6 AC Power Off 
+7 AC Power On 
+8 SD Card Full Alarm 
+9 Capture Linkage Event Alarm 
+10 Low Face Picture Quality 
+11 Low Fingerprint Picture Quality 
+12 Low Battery Voltage 
+13 Battery Fully Charged 
+14 Fire Input Short Circuit Attempts Alarm 
+15 Fire Input Open Circuit Attempts Alarm 
+16 Fire Input Alarm Restored 
+17 RS485 Loop of Main Access Controller Disconnected 
+18 RS485 Loop of Main Access Controller Connected 
+19 Distributed Access Controller Offline 
+20 Distributed Access Controller Online 
+Themors
+programas054@gmail.com
+
+
+## Page 25
+ 
+Value Description 
+21 Downstream RS485 Loop of Distributed Access Control Disconnected 
+22 Downstream RS485 Loop of Distributed Access Control Connected 
+23 Distributed Elevator Controller Online 
+24 Distributed Elevator Controller Offline 
+25 Fire Button Pressed 
+26 Fire Button Released 
+27 Maintenance Button Pressed 
+28 Maintenance Button Released 
+29 Panic Button Pressed 
+30 Panic Button Released 
+32 Communication with Anti-passing Back Server Failed 
+33 Communication with Anti-passing Back Server Restored 
+34 Remotely Armed 
+35 Remotely Disarmed 
+36 Motor or Sensor Exception 
+37 CAN Bus Exception 
+38 CAN Bus Restored 
+39 Too High Pedestal Temperature 
+40 Active Infrared Intrusion Detector Exception 
+41 Active Infrared Intrusion Detector Restored 
+42 Communication with Light Board Failed 
+43 Communication with Light Board Restored 
+44 Communication with IR Adaptor Failed 
+45 Communication with IR Adaptor Restored 
+46 Lane Controller Tampering Alarm 
+47 Lane Controller Tampering Alarm Restored 
+48 Lane Controller Fire Input Alarm 
+49 Lane Controller Fire Input Alarm Restored 
+50 Staying Event 
+Themors
+programas054@gmail.com
+
+
+## Page 26
+ 
+Value Description 
+51 No Memory for Unreported and Access Granted Events 
+52 Fire Input Alarm 
+53 No-Mask Alarm 
+54 Upload Fire Alarm Matrix 
+55 Lock Health Information Exception 
+56 Unlock Health Information Exception 
+57 Upload Network Camera Event 
+58 Optional Board Offline 
+59 Restore Optional Board 
+60 Access Module Fire Input Short Circuit Alarm 
+61 Restore Access Module Fire Input 
+62 Access Module Tempering Alarm 
+63 Restore Access Module Tempering Alarm 
+64 Panic Alarm 
+65 Consultation Calling 
+66 Main Station Calling 
+67 VoIP Calling 
+68 Terminal Zone Alarm 
+69 Terminal Tempering Alarm 
+70 Terminal: Sudden Increase/Decrease of Sound Intensity Alarm 
+  
+Alarm Input Event Linkage 
+ 
+Value Description 
+0 Zone Short Circuit Attempts Alarm 
+1 Zone Open Circuit Attempts Alarm 
+2 Zone Exception Alarm 
+3 Zone Alarm Restored 
+4 Alarm Input Alarm 
+5 Alarm Input Alarm Restored 
+6 I/O Port Short Circuit Alarm 
+  
+Access Control Point Event Linkage 
+Value Description 
+0 Open Door with First Card Started 
+Themors
+programas054@gmail.com
+
+
+## Page 27
+ 
+Value Description 
+1 Open Door with First Card Ended 
+2 Remain Open Started 
+3 Remain Open Ended 
+4 Remain Closed Started 
+5 Remain Closed Ended 
+6 Door Unlocked 
+7 Door Locked 
+8 Exit Button Pressed 
+9 Exit Button Released 
+10 Door Open (Contact) 
+11 Door Closed (Contact) 
+12 Door Abnormally Open (Contact) 
+13 Door Open Timed Out (Contact) 
+14 Door Remotely Open 
+15 Door Remotely Closed 
+16 Remain Open Remotely 
+17 Remain Closed Remotely 
+18 Card Not in Multiple Authentication Group 
+19 Card Not in Multiple Authentication Duration 
+20 Multiple Authentication Mode: Super Password Authentication Failed 
+21 Multiple Authentication Mode: Remote Authentication Failed 
+22 Multiple Authentication Completed 
+23 Multiple Authentication: Remotely Open Door 
+24 Multiple Authentication: Super Password Authentication Completed 
+25 Multiple Authentication: Repeated Authentication Failed 
+26 Multiple Authentication Timed Out 
+27 Remote Capture 
+28 Doorbell Ring 
+29 Secure Door Control Unit Tampering Alarm 
+Themors
+programas054@gmail.com
+
+
+## Page 28
+ 
+Value Description 
+30 Center Event 
+31 First Card Authentication Started 
+32 First Card Authentication End 
+33 Lock Input Short Circuit Attempts Alarm 
+34 Lock Input Open Circuit Attempts Alarm 
+35 Lock Input Exception Alarm 
+36 Contact Input Short Circuit Attempts Alarm 
+37 Contact Input Open Circuit Attempts Alarm 
+38 Contact Input Exception Alarm 
+39 Exit Button Input Short Circuit Attempts Alarm 
+40 Exit Button Input Open Circuit Attempts Alarm 
+41 Exit Button Input Exception Alarm 
+42 Unlocking Exception 
+43 Unlocking Timed Out 
+44 Unauthorized First Card Opening Failed 
+45 Call Elevator Relay Open 
+46 Call Elevator Relay Closed 
+47 Auto Button Relay Open 
+48 Auto Button Relay Closed 
+49 Button Relay Open 
+50 Button Relay Closed 
+51 Visitor Calling Elevator 
+52 Resident Calling Elevator 
+53 Valid Message 
+54 Invalid Message 
+55 Tailgating 
+56 Reverse Passing 
+57 Force Collision  
+58 Climbing Over 
+Themors
+programas054@gmail.com
+
+
+## Page 29
+ 
+Value Description 
+59 Passing Timed Out 
+60 Intrusion Alarm 
+61 Authentication Failed When Free Passing 
+62 Barrier Obstructed 
+63 Barrier Restored 
+64 Door Closed via Keyfob 
+65 Door Opened via Keyfob 
+66 Remain Open via Keyfob 
+  
+Authentication Unit Event Linkage 
+Value Description 
+0 Duress Alarm 
+1 Card Reader Tampering Alarm 
+2 Valid Card Authentication Completed 
+3 Card and Password Authentication Completed 
+4 Card and Password Authentication Failed 
+5 Card and Password Authentication Timed Out 
+6 Card Authentication Attempts Reach Limit 
+7 No Permission for Card 
+8 Invalid Card Swiping Time Period 
+9 Expired Card 
+10 Card No. Not Exist 
+11 Anti-passing Back Authentication Failed 
+12 Interlocking Door Not Closed 
+13 Fingerprint Matched 
+14 Fingerprint Mismatched 
+15 Card and Fingerprint Authentication Completed 
+16 Card and Fingerprint Authentication Failed 
+17 Card and Fingerprint Authentication Timed Out 
+Themors
+programas054@gmail.com
+
+
+## Page 30
+ 
+Value Description 
+18 Card, Fingerprint, and Password Authentication Completed 
+19 Card and Fingerprint Authentication Failed 
+20 Card and Fingerprint Authentication Timed Out 
+21 Fingerprint and Password Authentication Completed 
+22 Fingerprint and Password Authentication Failed 
+23 Fingerprint and Password Authentication Timed Out 
+24 Fingerprint Not Exist 
+42 Employee ID and Fingerprint Authentication Completed 
+43 Employee ID and Fingerprint Authentication Failed 
+44 Employee ID and Fingerprint Authentication Timed Out 
+45 Employee ID, Fingerprint, and Password Authentication Completed 
+46 Employee ID, Fingerprint, and Password Authentication Failed 
+47 Employee ID, Fingerprint, and Password Authentication Timed Out 
+52 Employee ID and Password Authentication Completed 
+52 Employee ID and Password Authentication Failed 
+53 Employee ID and Password Authentication Timed Out 
+57 Authentication Failed When Door Remain Closed or Door in Sleeping 
+Mode 
+58 Authentication Failed When Authentication Schedule in Sleeping Mode 
+59 Card Encryption Verification Failed 
+60 Anti-passing Back Server Response Failed 
+61 Password Mismatched 
+62 Employee ID Not Exist 
+63 Combined Authentication Completed 
+64 Combined Authentication Timed Out 
+65 Authentication Type Mismatched 
+67 Maximum Password Authentication Failure Attempts 
+68 Password Authenticated 
+69 Password Authentication Failed 
+Themors
+programas054@gmail.com
+
+
+## Page 31
+ 
+Value Description 
+70 QR Code Authenticated 
+71 QR Code Authentication Failed 
+72 Resident Authorization Authenticated 
+73 Bluetooth Authenticated 
+74 Bluetooth Authentication Failed 
+75 Authentication Failed: Invalid M1 Card 
+76 Verifying CPU Card Encryption Failed 
+77 Disabling NFC Verification Failed 
+78 EM Card Recognition Disabled 
+7 M1 Card Recognition Disabled 
+80 CPU Card Recognition Disabled 
+81 ID Card Recognition Disabled 
+82 Importing Key to Card Failed 
+83 Verifying Desfire Card Encryption Failed 
+84 Desfire Card Reading Disabled 
+85 Access Granted by Iris 
+86 Access Denied by Iris 
+87 Iris Anti-Spoofing Detection Failed 
+88 FeliCa Card Recognition Disabled 
+89 QR Code Recognized 
+90 Voiceprint Anti-Spoofing Detection Failed 
+91 Voiceprint Authentication Failed 
+92 Electrostatic Discharge Testing Passed 
+93 Electrostatic Discharge Testing Not Passed (Door Opened) 
+94 Electrostatic Discharge Testing Not Passed (Door Not Opened) 
+95 Electrostatic Discharge Testing Timed Out 
+96 Person and Social Security Card Matched 
+97 Person and Social Security Card Mismatched 
+98 Access Granted by Palmprint and Palm Veins  
+99 Access Denied by Palmprint and Palm Veins  
+100 Blocklist Event 
+ 
+ 
+ 
+Themors
+programas054@gmail.com
+

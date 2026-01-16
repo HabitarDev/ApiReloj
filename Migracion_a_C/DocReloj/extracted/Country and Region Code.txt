@@ -1,0 +1,337 @@
+# Source: Country and Region Code.pdf
+# Pages: 10
+
+
+## Page 1
+ 
+Country/Region Code 
+Here is the code list of the countries and regions that are supported by the algorithm library for 
+license plate recognition. 
+ 
+CRIndex (Country/Region Code) Description 
+0 Not supported by the algorithm 
+1 Czech Republic 
+2 France 
+3 Germany 
+4 Spain 
+5 Italy 
+6 Netherlands 
+7 Poland 
+8 Slovakia 
+9 Belarus 
+10 Moldova 
+11 Russia 
+12 Ukraine 
+13 Belgium 
+14 Bulgaria 
+15 Denmark 
+16 Finland 
+17 United Kingdom 
+18 Greece 
+19 Croatia 
+20 Hungary 
+21 Israel 
+22 Luxembourg 
+23 Macedonia (changed to North Macedonia in 2018) 
+24 Norway 
+Themors
+programas054@gmail.com
+
+
+## Page 2
+ 
+CRIndex (Country/Region Code) Description 
+25 Portuga 
+26 Romania 
+27 Serbia 
+28 Azerbaijan 
+29 Georgia 
+30 Kazakhstan 
+31 Lithuania 
+32 Turkmenistan 
+33 Uzbekistan 
+34 Latvia 
+35 Estonia 
+36 Albania 
+37 Austria 
+38 Bosnia and Herzegovina 
+39 Ireland 
+40 Iceland 
+41 Vatican 
+42 Malta 
+43 Sweden 
+44 Switzerland 
+45 Cyprus 
+46 Turkey 
+47 Slovenia 
+48 Montenegro 
+49 Kosovo 
+50 Andorra 
+51 Armenia 
+52 Monaco 
+53 Liechtenstein 
+Themors
+programas054@gmail.com
+
+
+## Page 3
+ 
+CRIndex (Country/Region Code) Description 
+54 San Marino 
+55 Reserved 
+56 Reserved 
+57 Reserved 
+58 Reserved 
+59 China 
+60 Bahrain 
+61 South Korea 
+62 Lebanon 
+63 Nepal 
+64 Thailand 
+65 Pakistan 
+66 United Arab Emirates 
+67 Bhutan 
+68 Oman 
+69 North Korea 
+70 Philippines 
+71 Cambodia 
+72 Qatar 
+73 Kyrgyzstan 
+74 Maldives 
+75 Malaysia 
+76 Mongolia 
+77 Saudi Arabia 
+78 Brunei 
+79 Laos 
+80 Japan 
+81 Turkey 
+82 Palestinian 
+Themors
+programas054@gmail.com
+
+
+## Page 4
+ 
+CRIndex (Country/Region Code) Description 
+83 Tajikistan 
+84 Kuwait 
+85 Syria 
+86 India 
+87 Indonesia 
+88 Afghanistan 
+89 Sri Lanka 
+90 Iraq 
+91 Vietnam 
+92 Iran 
+93 Yemen 
+94 Jordan 
+95 Myanmar 
+96 Sikkim 
+97 Bangladesh 
+98 Singapore 
+99 Democratic Republic of Timor-Leste 
+100 Reserved 
+101 Reserved 
+102 Reserved 
+103 Reserved 
+104 Egypt 
+105 Libya 
+106 Sudan 
+107 Tunisia 
+108 Algeria 
+109 Morocco 
+110 Ethiopia 
+111 Eritrea 
+Themors
+programas054@gmail.com
+
+
+## Page 5
+ 
+CRIndex (Country/Region Code) Description 
+112 Somalia Democratic 
+113 Djibouti 
+114 Kenya 
+115 Tanzania 
+116 Uganda 
+117 Rwanda 
+118 Burundi 
+119 Seychelles 
+120 Chad 
+121 Central African 
+122 Cameroon 
+123 Equatorial Guinea 
+124 Gabon 
+125 Congo 
+126 Democratic Republic of the Congo 
+127 Sao Tome and Principe 
+128 Mauritania 
+129 Western Sahara 
+130 Senegal 
+131 Gambia 
+132 Mali 
+133 Burkina Faso 
+134 Guinea 
+135 Guinea-Bissau 
+136 Cape Verde 
+137 Sierra Leone 
+138 Liberia 
+139 Ivory Coast 
+140 Ghana 
+Themors
+programas054@gmail.com
+
+
+## Page 6
+ 
+CRIndex (Country/Region Code) Description 
+141 Togo 
+142 Benin 
+143 Niger 
+144 Zambia 
+145 Angola 
+146 Zimbabwe 
+147 Malawi 
+148 Mozambique 
+149 Botswana 
+150 Namibia 
+151 South Africa 
+152 Swaziland 
+153 Lesotho 
+154 Madagasca 
+155 Comoros 
+156 Mauritius 
+157 Nigeria 
+158 South Sudan 
+159 Saint Helena 
+160 Mayotte 
+161 Reunion 
+162 Canary Islands 
+163 AZORES 
+164 Madeira 
+165 Reserved 
+166 Reserved 
+167 Reserved 
+168 Reserved 
+169 Canada 
+Themors
+programas054@gmail.com
+
+
+## Page 7
+ 
+CRIndex (Country/Region Code) Description 
+170 Greenland Nuuk 
+171 Pierre and Miquelon 
+172 United State 
+173 Bermuda 
+174 Mexico 
+175 Guatemala 
+176 Belize 
+177 El Salvador 
+178 Honduras 
+179 Nicaragua 
+180 Costa Rica 
+181 Panama 
+182 Bahamas 
+183 Turks and Caicos Islands 
+184 Cuba 
+185 Jamaica 
+186 Cayman Islands 
+187 Haiti 
+188 Dominican 
+189 Puerto Rico 
+190 United States Virgin Islands 
+191 British Virgin Islands 
+192 Anguilla 
+193 Antigua and Barbuda 
+194 Collectivité de Saint-Martin 
+195 Autonomous country 
+196 Saint-Barthélemy 
+197 Saint Kitts and Nevis 
+198 Montserrat 
+Themors
+programas054@gmail.com
+
+
+## Page 8
+ 
+CRIndex (Country/Region Code) Description 
+199 Guadeloupe 
+200 Dominica 
+201 Martinique 
+202 St. Lucia 
+203 Saint Vincent and the Grenadines 
+204 Grenada 
+205 Barbados 
+206 Trinidad and Tobago 
+207 Curaçao 
+208 Aruba 
+209 Netherlands Antilles 
+210 Colombia 
+211 Venezuela 
+212 Guyana 
+213 Suriname 
+214 Guyane Francaise 
+215 Ecuador 
+216 Peru 
+217 Bolivia 
+218 Paraguay 
+219 Chile 
+220 Brazil 
+221 Uruguay 
+222 Argentina 
+223 Reserved 
+224 Reserved 
+225 Reserved 
+226 Reserved 
+227 Australia 
+Themors
+programas054@gmail.com
+
+
+## Page 9
+ 
+CRIndex (Country/Region Code) Description 
+228 New Zealand 
+229 Papua New Guinea 
+230 Salomonen 
+231 Vanuatu 
+232 New Caledonia 
+233 Palau 
+234 Federated States of Micronesia 
+235 Marshall Island 
+236 Northern Mariana Islands 
+237 Guam 
+238 Nauru 
+239 Kiribati 
+240 Fidschi 
+241 Tonga 
+242 Tuvalu 
+243 Wallis et Futuna 
+244 Samoa 
+245 Eastern Samoa 
+246 Tokelau 
+247 Niue 
+248 Cook Islands 
+249 French Polynesia 
+250 Pitcairn Islands 
+251 Hawaii State 
+252 Reserved 
+253 Reserved 
+254 Unrecognized 
+255 ALL 
+256 Taiwan (China) 
+Themors
+programas054@gmail.com
+
+
+## Page 10
+ 
+CRIndex (Country/Region Code) Description 
+257 Hong Kong (China) 
+258 Macau (China) 
+  
+Themors
+programas054@gmail.com
+

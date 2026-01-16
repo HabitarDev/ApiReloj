@@ -1,0 +1,1004 @@
+# Source: Log.pdf
+# Pages: 27
+
+
+## Page 1
+ 
+ 
+B.1 Log Types for ISAPI 
+There are four major log types, i.e., alarm log, exception log, operation log, event log, and 
+information log. And each major type contains multiple minor types, see details in the following 
+contents. 
+Alarm Logs 
+ 
+Log Type Description 
+shortCircuit Short Circuit Alarm 
+dataPrealarm Data warning 
+vehicleMonitor Vehicle arming alarm 
+peopleCounting People counting alarm 
+framesPeopleCounting Regional people counting alarm 
+brokenCircuit Open Circuit Alarm 
+alarmReset Alarm Reset 
+alarmNormal Return to Normal 
+passwordError Incorrect Password 
+idCardIllegally Invalid Card ID 
+keyPADRemove Keypad Tampered 
+keyPADRemoveRestore Keypad Restored 
+devRemove Device Tampered 
+devRemoveRestore Device Restored 
+belowAlarmLimit1 Sensor Value is Lower than Alarm Limit Value 1 
+belowAlarmLimit2 Sensor Value is Lower than Alarm Limit Value 2 
+belowAlarmLimit3 Sensor Value is Lower than Alarm Limit Value 3 
+belowAlarmLimit4 Sensor Value is Lower than Alarm Limit Value 4 
+aboveAlarmLimit1 Sensor Value is Higher than Alarm Limit Value 1 
+aboveAlarmLimit2 Sensor Value is Higher than Alarm Limit Value 2 
+aboveAlarmLimit3 Sensor Value is Higher than Alarm Limit Value 3 
+aboveAlarmLimit4 Sensor Value is Higher than Alarm Limit Value 4 
+UrgencyBtnON Panic Button Triggered 
+Themors
+programas054@gmail.com
+
+
+## Page 2
+ 
+ 
+Log Type Description 
+UrgencyBtnOFF Panic Button Restored 
+virtualDefenceBandit Virtual Zone Burglary Alarm 
+virtualDefenceFire Virtual Zone Fire Alarm 
+virtualDefenceUrgent Virtual Zone Panic Alarm 
+motDetStart Motion Detection Alarm Started 
+motDetStop Motion Detection Alarm Stopped 
+hideAlarmStart Device Blocked 
+hideAlarmStop Device Blocking Alarm Restored 
+UPSAlarm UPS Alarm 
+electricityMeterAlarm Coulombmeter Alarm 
+switchPowerAlarm Switch Power Supply Alarm 
+GasDetectSys Gas Detection Alarm 
+transformerTempAlarm Transformer Temperature Alarm 
+tempHumiAlarm Temperature and Humidity Sensor Alarm 
+UPSAlarmRestore UPS Alarm Restored 
+electricityMeterAlarmRestore Coulombmeter Alarm Restored 
+switchPowerAlarmRestore Switch Power Supply Alarm Restored 
+GasDetectSysRestore Gas Detection Alarm Restored 
+transformerTempAlarmRestore Transformer Temperature Alarm Restored 
+tempHumiAlarmRestore Temperature-Humidity Sensor Alarm Restored 
+waterLevelSensorAlarm Temperature-Humidity Sensor Alarm Restored 
+waterLevelSensorAlarmRestore Flood Sensor Restored 
+dustNoiseAlarm Dust and Noise Sensor Alarm 
+dustNoiseAlarmRestore Dust and Noise Sensor Alarm Restored 
+environmentalLogger Environmental Data Collector Alarm 
+environmentalLoggerAlarm Environmental Data Collector Restored 
+triggerTemper Detector Tampered 
+triggerTemperRestore Detector Restored 
+emergencyCallHelp Panic Alarm 
+Themors
+programas054@gmail.com
+
+
+## Page 3
+ 
+ 
+Log Type Description 
+emergencyCallHelpRestore Panic Alarm Restored 
+consult Consultation Alarm 
+consultRestore Consultation Alarm Restored 
+deviceMoveAlarm Device Motion Alarm 
+deviceMoveAlarmRestore Device Motion Alarm Restored 
+earlyWarningAlarm Early Warning Zone Alarm 
+earlyWarningAlarmRestore Early Warning Zone Restored 
+warningAlarm Warning Zone Alarm 
+warningAlarmRestore Warning Zone Restored 
+wirelessOutputModTamperEvident Wireless Output Expander Tampered 
+wirelessOutputModTamperEvidentReset Wireless Output Expander tamper Restored 
+wirelessRepeaterTamperEvident Wireless Repeater Tampered 
+wirelessRepeaterTamperEvidentReset Wireless Repeater tamper Restored 
+wirelessSirenTamperEvident Wireless Siren Tampered 
+wirelessSirenTamperEvidentReset Wireless Siren Tamper Restored 
+wirelessKeypadTamperEvident Wireless Keypad Tampered 
+wirelessKeypadTamperEvidentReset Wireless Keypad Tamper Restored 
+wirelessCardReaderTamperEvident Wireless Card Reader Tampered 
+wirelessCardReaderTamperEvidentReset Wireless Card Reader Tamper Restored 
+softZoneMedicalAlarm Virtual Zone Medical Alarm 
+accessControllerEvent Access Controller Event 
+videoIntercomEvent Video Intercom Event 
+GJDEvent GJD Security Control Panel Event 
+LuminateEvent LUMINITE Security Control Panel Event 
+OPTEXEvent OPTEX Security Control Panel Event 
+cameraDetectorEvent Detector Event 
+securityControlPanelEvent Security Control Panel Event 
+RS-485AlarmInputModuleEvident RS-485 Zone Module Tampered 
+RS-485AlarmInputModuleTamperReset RS-485 Zone Module Tampering Reset 
+Themors
+programas054@gmail.com
+
+
+## Page 4
+ 
+ 
+Log Type Description 
+RS-485WirelessReceiverTamperEvident RS-485 Wireless Receiver Module Tampered 
+RS-485WirelessReceiverTamperEvidentReset RS-485 Wireless Receiver Module Tampering 
+Reset 
+dredgerDetectionAlarm Dredger Detection Alarm 
+crossLineAlarm Line Crossing Alarm 
+crossLineAlarmRestore Line Crossing Alarm Restored 
+HFPDAlarmStart High Frequently Appeared Person Alarm Started 
+HFPDAlarmStop High Frequently Appeared Person Alarm 
+Stopped 
+LFPDAlarmStart Low Frequency Person Alarm Started 
+LFPDAlarmStop Low Frequency Person Alarm Stopped 
+safetyHelmetAlarmStart Hard Hat Detection Alarm Started 
+safetyHelmetAlarmStop Hard Hat Detection Alarm Stopped 
+dataPrealarm Traffic Pre-alarm 
+playCellphoneStart Playing Cellphone Alarm Started 
+playCellphoneStop Playing Cellphone Alarm Stopped 
+sleepOnDutyStart Sleeping on Duty Alarm Started 
+sleepOnDutyStop Sleeping on Duty Alarm Stopped 
+vibrationDetectionStart Vibration Detection Alarm Started 
+vibrationDetectionStop Vibration Detection Alarm Stopped 
+fireEscapeDetectionStart Fire Engine Access Detection Started 
+fireEscapeDetectionStop Fire Engine Access Detection Ended 
+takingElevatorDetectionStart Elevator Detection Started 
+takingElevatorDetectionStop Elevator Detection Ended 
+unregisteredStreetVendorStart Unlicensed Business Vendor Detection Started 
+unregisteredStreetVendorStop Unlicensed Business Vendor Detection Ended 
+stallOutsideShopStart Business Outside Store Detection Started 
+stallOutsideShopStop Business Outside Store Detection Ended 
+stallOccupyingRoadStart Business on Sidewalk Detection Started 
+stallOccupyingRoadStop Business on Sidewalk Detection Ended 
+Themors
+programas054@gmail.com
+
+
+## Page 5
+ 
+ 
+Log Type Description 
+illegalHeapStart Pile Goods or Materials in Chaos Detection 
+Started 
+illegalHeapStop Pile Goods or Materials in Chaos Detection 
+Ended 
+illParkofNonMotorVehicleStart Non-Motor Vehicles Parking in Chaos Detection 
+Started 
+illParkofNonMotorVehicleStop Non-Motor Vehicles Parking in Chaos Detection 
+Ended 
+illegalOutdoorAdvertisementStart Unauthorized Outdoor Advertisement Detection 
+Started 
+illegalOutdoorAdvertisementStop Unauthorized Outdoor Advertisement Detection 
+Ended 
+packGarbageStart Packaged Garbage Detection Started 
+packGarbageStop Packaged Garbage Detection Ended 
+stallUnderUmbrellaStart Running Business with Patio Umbrella Detection 
+Started 
+stallUnderUmbrellaStop Running Business with Patio Umbrella Detection 
+Ended 
+dustbinOverflowStart Overflowing Dustbin Detection Started 
+dustbinOverflowStop Overflowing Dustbin Detection Ended 
+exposeGarbageStart Exposed Garbage Detection Started 
+exposeGarbageStop Exposed Garbage Detection Ended 
+hangClothingAlongStreetStart Hanging Clothes On Street Detection Started 
+hangClothingAlongStreetStop Hanging Clothes On Street Detection Ended 
+ATMPanelStart ATM Panel Alarm Started 
+ATMPanelStop ATM Panel Alarm Ended 
+ATMSurroundStart ATM Surround Alarm Started 
+ATMSurroundStop ATM Surround Alarm Ended 
+ATMFaceStart ATM Face Alarm Started 
+ATMFaceStop ATM Face Alarm Ended 
+ATMSafetyCabinStart ATM Safety Cabin Alarm Started 
+ATMSafetyCabinStop ATM Safety Cabin Alarm Ended 
+Themors
+programas054@gmail.com
+
+
+## Page 6
+ 
+ 
+Log Type Description 
+soundIntensityMutation Sudden Increase of Sound Intensity Detection 
+soundIntensityMutationStop Sudden Increase of Sound Intensity Detection 
+Ended 
+soundIntensitySteepFall Sudden Decrease of Sound Intensity Detection 
+soundIntensitySteepFallStop Sudden Decrease of Sound Intensity Detection 
+Ended 
+moveAlarm Motion Alarm 
+moveAlarmRestored Motion Alarm Restored 
+lowTemperatureAlarm Low Temperature Alarm 
+lowTemperatureAlarmRestored Low Temperature Alarm Restored 
+highTemperatureAlarm High Temperature Alarm 
+highTemperatureAlarmRestored High Temperature Alarm Restored 
+TemperatureIntervalMeasurementStart Interval Temperature Measurement Started 
+TemperatureIntervalMeasurementStop Interval Temperature Measurement Stopped 
+laneOccupationbyMotorVehicleStart Lane Occupation by Motor Vehicle Detection 
+Started 
+humanBodyStart Mass Incident Detection Started 
+hangingOutdoorBannerStart Hanging Banner Outdoors Detection Started 
+illegalAdvertisementStart Illegal Advertisement Detection Started 
+illegalAdvertisementBannerStart Illegal Advertisement Banner Detection Started 
+dirtyWaterbodyStart Dirty Waters Detection Started 
+puttingTemporaryShelterIllegallyStart Illegally Putting Temporary Shelter Detection 
+Started 
+dirtyRoadStart Dirty Road Detection Started 
+heapingWasteIllegallyStart Illegally Heaping Waste Detection Started 
+stagnantRoadStart Stagnant Road Detection Started 
+burningRubbishandLeavesStart Burning Garbage and Leaves Detection Started 
+destroyingandOccupyingGreenBeltStart Destroying and Occupying the Green Belt 
+Detection Started 
+laneOccupationbyConstructionStart Lane Occupation by Construction Detection 
+Started 
+Themors
+programas054@gmail.com
+
+
+## Page 7
+ 
+ 
+Log Type Description 
+improperRubbishBinStart Improper Dustbin Detection Started 
+abandonedFurnitureStart Abandoned Furniture Detection Started 
+outsideAirConditionerHangingLowStart Hanging the Air Conditioner Lowly Outside 
+Detection Started 
+puttingInflatableArchIllegallyStart Illegally Putting Inflatable Arch Detection 
+Started 
+roadDamagedStart Road Damaged Detection Started 
+constructionMaterialsMisplacedStart Construction Materials Misplaced Detection 
+Started 
+settingUpSlopeIllegallyStart Illegally Setting Up Slope Detection Started 
+laneOccupationbyWasteRecyclingStart Lane Occupation by Waste Recycling Detection 
+Started 
+wasteWaterDischargedonRoadStart Waste Water Discharged on Road Detection 
+Started 
+barbecueStallinPublicSitesStart Barbecue Stall in Public Sites Detection Started 
+litteringWasteonRoadStart Littering Waste on Road Detection Started 
+distributingFlyersinPublicSitesStart Distributing Flyers in Public Sites Detection 
+Started 
+roadCollapsedStart Road Collapsed Detection Started 
+constructionWasteMisplacedStart Construction Water Misplaced Detection 
+Started 
+greeningWasteStart Greening Waste Detection Started 
+nonDecorativeHangingonTreeStart Non-Decorative Tree Hangings Detection 
+Started 
+installingWiresandPipesIllegallyStart Illegally Installing Wires and Pipes Detection 
+Started 
+raisingDomesticAnimalsStart Raising Domestic Animals Detection Started 
+carcassNotClearedStart Carcass Not Cleared Detection Started 
+streetSlaughterStart Slaughtering Animals Along the Street Detection 
+Started 
+dustbinExceptionStart Dustbin Exception Detection Started 
+shortcutIsolationPileExceptionStart Shortcut Isolation Pile Exception Detection 
+Started 
+Themors
+programas054@gmail.com
+
+
+## Page 8
+ 
+ 
+Log Type Description 
+laneSeparatorDamagedStart Lane Separator Damaged Detection Started 
+antiCollisionBarrelDamagedStart Anti-Collision Barrel Damaged Detection Started 
+fireFightingFacilityDamagedStart Fire Facility Damaged Detection Started 
+electricPowerFacilityExceptionStart Power Facility Damaged Detection Started 
+transformerTankExceptionStart Transformer Box Exception Detection Started 
+streetTreeExceptionStart Street Tree Exception Detection Started 
+treeProtectionFacilityDamagedStart Tree-Protection Facility Damaged Detection 
+Started 
+manholeCoverExceptionStart Manhole Cover Exception Detection Started 
+drainGratingDamagedStart Drain Grating Damaged Detection Started 
+billboardDamagedStart Billboard Damaged Detection Started 
+advertisingSignDamagedStart Advertising Sign Damaged Detection Started 
+laneOccupationbyMotorVehicleStop Lane Occupation by Motor Vehicle Detection 
+Ended 
+humanBodyStop Mass Incident Detection Ended 
+hangingOutdoorBannerStop Hanging Banner Outdoors Detection Ended 
+illegalAdvertisementStop Illegal Advertisement Detection Ended 
+illegalAdvertisementBannerStop Illegal Advertisement Banner Detection Ended 
+dirtyWaterbodyStop Dirty Waters Detection Ended 
+puttingTemporaryShelterIllegallyStop Illegally Putting Temporary Shelter Detection 
+Ended 
+dirtyRoadStop Dirty Road Detection Ended 
+heapingWasteIllegallyStop Illegally Heaping Waste Detection Ended 
+stagnantRoadStop Stagnant Road Detection Ended 
+burningRubbishandLeavesStop Burning Garbage and Leaves Detection Ended 
+destroyingandOccupyingGreenBeltStop Destroying and Occupying the Green Belt 
+Detection Ended 
+laneOccupationbyConstructionStop Lane Occupation by Construction Detection 
+Ended 
+improperRubbishBinStop Improper Dustbin Detection Ended 
+abandonedFurnitureStop Abandoned Furniture Detection Ended 
+Themors
+programas054@gmail.com
+
+
+## Page 9
+ 
+ 
+Log Type Description 
+outsideAirConditionerHangingLowStop Hanging the Air Conditioner Lowly Outside 
+Detection Ended 
+puttingInflatableArchIllegallyStop Illegally Putting Inflatable Arch Detection Ended 
+roadDamagedStop Road Damaged Detection Ended 
+constructionMaterialsMisplacedStop Construction Materials Misplaced Detection 
+Ended 
+settingUpSlopeIllegallyStop Illegally Setting Up Slope Detection Ended 
+laneOccupationbyWasteRecyclingStop Lane Occupation by Waste Recycling Detection 
+Ended 
+wasteWaterDischargedonRoadStop Waste Water Discharged on Road Detection 
+Ended 
+barbecueStallinPublicSitesStop Barbecue Stall in Public Sites Detection Ended 
+litteringWasteonRoadStop Littering Waste on Road Detection Ended 
+distributingFlyersinPublicSitesStop Distributing Flyers in Public Sites Detection 
+Ended 
+roadCollapsedStop Road Collapsed Detection Ended 
+constructionWasteMisplacedStop Construction Water Misplaced Detection Ended 
+greeningWasteStop Greening Waste Detection Ended 
+nonDecorativeHangingonTreeStop Non-Decorative Tree Hangings Detection Ended 
+installingWiresandPipesIllegallyStop Illegally Installing Wires and Pipes Detection 
+Ended 
+raisingDomesticAnimalsStop Raising Domestic Animals Detection Ended 
+carcassNotClearedStop Carcass Not Cleared Detection Ended 
+streetSlaughterStop Slaughtering Animals Along the Street Detection 
+Ended 
+dustbinExceptionStop Dustbin Exception Detection Ended 
+shortcutIsolationPileExceptionStop Shortcut Isolation Pile Exception Detection 
+Ended 
+laneSeparatorDamagedStop Lane Separator Damaged Detection Ended 
+antiCollisionBarrelDamagedStop Anti-Collision Barrel Damaged Detection Ended 
+fireFightingFacilityDamagedStop Fire Facility Damaged Detection Ended 
+electricPowerFacilityExceptionStop Power Facility Damaged Detection Ended 
+Themors
+programas054@gmail.com
+
+
+## Page 10
+ 
+ 
+Log Type Description 
+transformerTankExceptionStop Transformer Box Exception Detection Ended 
+streetTreeExceptionStop Street Tree Exception Detection Ended 
+treeProtectionFacilityDamagedStop Tree-Protection Facility Damaged Detection 
+Ended 
+manholeCoverExceptionStop Manhole Cover Exception Detection Ended 
+drainGratingDamagedStop Drain Grating Damaged Detection Ended 
+billboardDamagedStop Billboard Damaged Detection Ended 
+advertisingSignDamagedStop Advertising Sign Damaged Detection Ended 
+thermalCalibrationFileExceptionStart Calibration file exception alarm started 
+thermalCalibrationFileExceptionStop Calibration file exception alarm ended 
+  
+Exception Logs 
+ 
+Log Type Description 
+powerOn Power on 
+powerOff Power off 
+AIOPDetResolutionOverflow Resolution of the detection stream in AI open 
+platform exceeds the limit 
+HEOPDetResolutionOverflow Resolution of the detection stream in Embedded 
+Open Platform exceeds the limit 
+WDTReset WDT Reset 
+lowBatteryVoltage Low Battery Voltage 
+ACLoss AC Power Disconnected 
+ACRestore AC Power Restored 
+RTCException RTC Real-time Clock Exception 
+netFailure Network Disconnected 
+netRestore Network Connected 
+telLineBroken Telephone Line Disconnected 
+telLineRestore Telephone Line Connected 
+expanderBusLoss Bus Expander Disconnected 
+expanderBusRestore Bus Expander Connected 
+Themors
+programas054@gmail.com
+
+
+## Page 11
+ 
+ 
+Log Type Description 
+keypadBusLoss Keypad Expander Disconnected 
+keypadBusRestore Keypad Expander Connected 
+sensorFailure Analog Sensor Fault 
+sensorRestore Analog Sensor Restored 
+RS485DisConnect RS-485 Channel Disconnected 
+RS485Connect RS-486 Channel Connected 
+batteryVoltageRestore Battery Voltage Restored 
+wiredNetAbnormal Wired Network Exception 
+wiredNetRestore Wired Network Restored 
+GPRSAbnormal GPRS Exception 
+GPRSRestore GPRS Restored 
+3GAbnormal 3G Network Exception 
+3GRestore 3G Network Restored 
+SIMCardAbnormal SIM Card Exception 
+SIMCardRestore SIM Card Restored 
+VILost Video Loss 
+illegalAccess Illegal Login 
+HDFull HDD Full 
+HDError HDD Error 
+DCDLost MODEM Disconnected 
+IPConflict IP Address Conflicted 
+netbroken Network Disconnected 
+recError Recording Error 
+VIError Video Input Exception(Only for Analog Channel) 
+formatHDDError Remote HDD Formatting Failed 
+USBError USB Communication Error 
+USBRestore USB Communication Error Restored 
+printError Printer Error 
+printRestore Printer Error Restored 
+Themors
+programas054@gmail.com
+
+
+## Page 12
+ 
+ 
+Log Type Description 
+subsystemCommunicationError Sub-board Communication Error 
+IPCIPconflict Network Camera IP Address Conflicted 
+VIMisMatch Video Standard Mismatches 
+MCURestart MCU Restarted 
+GprsMouleFault GPRS Module Fault 
+telephoneFault Telephone Module Fault 
+wifiAbnormal Wi-Fi Exception 
+wifiRestore Wi-Fi Restored 
+RFAbornal RF Exception 
+RFRestore RF Restored 
+detectorOnline Detector Connected 
+detectorOffline Detector Disconnected 
+detectorBatteryNormal Detector Battery Restored 
+detectorBatteryLow Detector Battery Low 
+dataTrafficOverflow Cellular Network Data Exceeded 
+radarSignalFault Radar Transmitter Fault 
+radarSignalFaultRestore Radar Transmitter Restored 
+wirelessOutputModOffline Wireless Output Expander Disconnected 
+wirelessOutputModOnline Wireless Output Expander Connected 
+wirelessRepeaterOffline Wireless Repeater Disconnected 
+wirelessRepeaterOnline Wireless Repeater Connected 
+triggerOffline Trigger Disconnected 
+triggerOnline Trigger Connected 
+wirelessSirenOffline Wireless Siren Disconnected 
+wirelessSirenOnline Wireless Siren Connected 
+sirenLowPower Siren Battery Low 
+sirenPowerRecovery Siren Battery Restored 
+ipcDisconnect Network Camera Disconnected 
+ipcConnectRecovery Network Camera Connected 
+Themors
+programas054@gmail.com
+
+
+## Page 13
+ 
+ 
+Log Type Description 
+sendMailFailed Sending Email Failed 
+eventUploadException Uploading Event Failed or Uploaded Event Lost 
+keyfobLowPower Low Keyfob Battery 
+keyfobPowerRecovery Normal Keyfob Battery 
+detectorOvertime Detector Heartbeat Timed Out 
+detectorOvertimeRecovery Detector Heartbeat Timeout Restored 
+wSirenOvertime Wireless Siren Heartbeat Timed Out 
+wSirenOvertimeRecovery Wireless Siren Heartbeat Timeout Restored 
+wOutputOvertime Wireless Output Module Heartbeat Timed Out 
+wOutputOvertimeRecovery Wireless Output Module Heartbeat Timeout 
+Restored 
+wRepeaterOvertime Wireless Repeater Heartbeat Timed Out 
+wRepeaterOvertimeRecovery Wireless Repeater Heartbeat Timeout Restored 
+rfJamming RF Wireless Communication Blocked 
+rfJammingRecovery RF Wireless Communication Blocking Restored 
+batteryMiss Storage Battery Loss 
+batteryMissRecovery Storage Battery Restored 
+ARCUploadFailed Uploading to ARC Failed 
+ARCUploadSuccessed Uploaded to ARC 
+ARCUploadRecovery Uploading to ARC Restored 
+wirelessKeypadOffline Wireless Keypad Disconnected 
+wirelessKeypadOnline Wireless Keypad Connected 
+wirelessCardReaderOffline Wireless Card Reader Disconnected 
+wirelessCardReaderOnline Wireless Card Reader Connected 
+keypadLowPower Low Keypad Battery 
+keypadLowPowerRecovery Low Keypad Battery Recovered 
+cardReaderLowPower Low Card Reader Battery 
+cardReaderLowPowerRecovery Low Card Reader Battery Recovered 
+wKeypadOvertime Wireless Keypad Heartbeat Timed Out 
+Themors
+programas054@gmail.com
+
+
+## Page 14
+ 
+ 
+Log Type Description 
+wKeypadOvertimeRecovery Wireless Keypad Heartbeat Timeout Recovered 
+wCardReaderOvertime Wireless Card Reader Heartbeat Timed Out 
+wCardReaderOvertimeRecovery Wireless Card Reader Heartbeat Timeout 
+Recovered 
+ATSFailed ATS Failed 
+ATSRecovery ATS Recovered 
+LANPathFailed Wired or Wireless Connection Failed 
+LANPathRecovery Wired or Wireless Connection Recovered 
+mobileNetPathFailed Mobile Network Connection Failed 
+mobileNetPathRecovery Mobile Network Connection Recovered 
+RS-485AlarmInputModuleDisconnected RS-485 Zone Module Offline 
+RS-485AlarmInputModuleConnected RS-485 Zone Module Online 
+RS-485WirelessReceiverDisconnected RS-485 Wireless Receiver Module Offline 
+RS-485WirelessReceiverConnected RS-485 Wireless Receiver Module Online 
+keypadDisconnected Keypad Offline 
+keypadConnected Keypad Online 
+overvoltage High Supply Voltage 
+undervoltage Low Supply Voltage 
+highHDTemperature HDD High Temperature 
+lowHDTemperature HDD Low Temperature 
+hdImpact HDD Impact 
+hdBadBlock HDD Bad Sector 
+severeHDFailure HDD Severe Fault 
+safetyHelmetException Hard Hat Detection Exception 
+ezvizUpgradeException EZ Upgrade Exception 
+  
+Operation Logs 
+ 
+Log Type Description 
+guard Normal Arming 
+Themors
+programas054@gmail.com
+
+
+## Page 15
+ 
+ 
+Log Type Description 
+unguard Normal Disarming 
+bypass Bypass 
+duressAccess Duress 
+localReboot Local Reboot 
+remoteReboot Remote Reboot 
+localUpgrade Local Upgrade 
+remoteUpgrade Remote Upgrade 
+recoveryDefultParam Restore Default Settings 
+outpulAlarm Remote Alarm Output Control 
+accessOpen Access Control: Open 
+accessClose Access Control : Closed 
+sirenOpen Siren: On 
+sirenClose Siren: Off 
+modZoneConfig Zone Settings 
+modAlarmoutConfig Alarm Output Settings 
+modAnalogConfig Sensor Settings 
+RS485Config RS-485 Channel Settings 
+phoneConfig Dialing Settings 
+addAdmin Added Administrator 
+modAdminParam Edited Administrator 
+delAdmin Deleted Administrator 
+addNetUser Added DVR/NVR Operator 
+modNetUserParam Edited DVR/NVR Operator 
+delNetUser Deleted DVR/NVR Operator 
+addOperator Added Camera Operator 
+modOperatorPw Edited Camera Operator Password 
+delOperator Deleted Camera Operator Password 
+addKeyPadUser Added Keypad/Card Reader User 
+delKeyPadUser Deleted Keyboard/Card Reader User 
+Themors
+programas054@gmail.com
+
+
+## Page 16
+ 
+ 
+Log Type Description 
+remoteUserLogin Remote Login 
+remoteUserLogout Remote Logout 
+remoteGuard Remote Arming 
+remoteUnguard Remote Disarming 
+modHostConfig Edited Control Panel Settings 
+restoreBypass Bypass Restored 
+alarmOutOpen Turned on Output 
+alarmOutClose Turned off Output 
+modSubsystemParam Edited Subsystem Parameters 
+groupBypass Group Bypass 
+groupBypassRestore Group Bypass Restored 
+modGprsParam Edited GPRS Parameters 
+modNetReportParam Edited Network Report Settings 
+modReportMode Edited Uploading Mode 
+modGatewayParam Edited Access Control Settings 
+remoteStartRec Remote: Started Recording 
+remoteStopRec Remote: Stopped Recording 
+transChanStart Transparent Transmission Started 
+transChanStop Transparent Transmission Stopped 
+startVoiceTalk Two-way Audio Started 
+stopVoiceTalk Two-way Audio Terminated 
+remotePlayByFile Remote: Playback or Downloaded by File 
+remotePlayByTime Remote: Playback by Time 
+remotePTZCtrl Remote: PTZ Control 
+remoteLockFile Remote: Locked File 
+remoteUnlockFile Remote: Unlocked File 
+remoteFormatHd Remote: Formatted HDD 
+remoteDownloadCfgFile Remote: Exported Configuration Files 
+remoteUploadCfgFile Remote: Imported Configuration Files 
+Themors
+programas054@gmail.com
+
+
+## Page 17
+ 
+ 
+Log Type Description 
+remoteDownloadRecFile Remote: Exported File 
+stayArm Stay Arming 
+quickArm Instant Arming 
+keyswitchArm Key Zone Arming 
+keyswitckDisarm Key Zone Disarming 
+clearAlarm Alarm Cleared 
+modFaultConfig Edited System Fault Settings 
+modAlarmOutConfig Edited Event Alarm Output Settings 
+searchExternalModule Searched for External Module 
+registerExternalModule Re-registered External Module 
+closeKeypadAlarm Disabled Keypad Beep 
+mod3GConfig Edited Mobile Parameters 
+modPrintConfig Edited Printer Parameters 
+SDCardFormat Formatted SD Card 
+upgradeSubsystem Upgraded Sub-board 
+planArmConfig Arming/Disarming Schedule Configuration 
+phoneArm SMS Arming 
+phoneStayArm SMS Stay Arming 
+phoneQuickArm SMS Instant Arming 
+phoneDisarm SMS Disarming 
+phoneClearAlarm SMS Alarm Cleared 
+whiteConfig Allowlist Settings 
+timeTriggerConfig Enabled/Disabled Trigger Configuration by 
+Schedule 
+pictureConfig Capture Settings 
+tamperConfig Zone Tamper-Proof Settings 
+remoteKeypadUpgrade Remote: Upgraded Keypad 
+singlePartionArmORDisarm Single-Zone Arming/Disarming 
+cardConfiguration Card Settings 
+Themors
+programas054@gmail.com
+
+
+## Page 18
+ 
+ 
+Log Type Description 
+cardAramORDisarm Arming/Disarming by Card 
+expendNetCenterConfig Extension Network Center Settings 
+netCardConfig NIC Settings 
+DDNSConfig DDNS Settings 
+RS485BusConfig RS-485 Bus Settings 
+RS485BusReRegistration RS-485 Bus Re-registration 
+remoteOpenElectricLock Remote: Unlocked 
+remoteCloseElectricLock Remote: Locked 
+localOpenElectricLock Local: Unlocked 
+localCloseElectricLock Local: Locked 
+openAlarmLamp Remote: Turned On Alarm Lamp 
+closeAlarmLamp Remote: Turned Off Strobe 
+temporaryPassword Operation Record of Temporary Password 
+oneKeyAwayArm One-Push Away Arming 
+oneKeyStayArm One-Push Stay Arming 
+remoteDelAllVideoAnalysisTask Empty All Video Analysis Tasks Remotely 
+singleZoneArm Single-Zone Arming 
+singleZoneDisarm Single-Zone Disarming 
+HIDDNSConfig HiDDNS Settings 
+remoteKeypadUpdata Remote: Upgraded Keypad 
+zoneAddDetector Added Detector 
+zoneDelDetector Deleted Detector 
+qureyDetectorSignal Checked Detector Signal Strength on Security 
+Control Panel 
+qureyDetectorBattery Checked Detector Remaining Battery on Security 
+Control Panel 
+setDetectorGuard Detector Arming 
+setDetectorUnguard Detector Disarming 
+setWifiParm Wi-Fi Settings 
+voiceOpen Audio On 
+Themors
+programas054@gmail.com
+
+
+## Page 19
+ 
+ 
+Log Type Description 
+voiceClose Mute 
+functionKeyEnable Enabled Function Key 
+functionKeyDisable Disabled Panel Function Button 
+readCard Swiped Patrol Card 
+localDeviceActive Activated Device Remotely 
+localFactoryDefault Restored Factory Settings Locally 
+remoteFactoryDefault Restored Factory Settings Remotely 
+addWirelessOutputMod Added Wireless Output Module 
+delWirelessOutputMod Deleted Wireless Output Module 
+addWirelessRepeater Added Wireless Repeater 
+delWirelessRepeater Deleted Wireless Repeater 
+telListConfig Mobile Phone Number Settings 
+searchRFSignal Checked RF Signal 
+addWirelessSiren Added Wireless Siren 
+delWirelessSiren Deleted Wireless Siren 
+flowConfig Cellular Data Limit Settings 
+addRemoter Added Keyfob 
+delRemoter Deleted Keyfob 
+addCard Added Card 
+delCard Deleted Card 
+remoteAddIpc Added Network Camera 
+remoteDelIpc Deleted Network Camera 
+remoteSetIpc Edited Network Camera 
+localAddressFilterConfig/remoteAddressFi
+lterConfig Local/Remote Address Filter Configuration 
+enterProgramMode Programming Mode Enabled for Keypad 
+existProgramMode Programming Mode Disabled for Keypad 
+localIOTCfgFileInput Local operation: import IoT configuration file 
+localIOTCfgFileOutput Local operation: export IoT configuration file 
+Themors
+programas054@gmail.com
+
+
+## Page 20
+ 
+ 
+Log Type Description 
+remoteIOTCfgFileInput Remote operation: import IoT configuration file 
+remoteIOTCfgFileOutput Remote operation: export IoT configuration file 
+localIOTAdd Local operation: add IoT channel 
+remoteIOTAdd Remote operation: add IoT channel 
+localIOTDelete Local operation: delete IoT channel 
+remoteIOTDelete Remote operation: delete IoT channel 
+localIOTSet Local operation: configure IoT channel 
+remoteIOTSet Remote operation: configure IoT channel 
+armWithFault Armed with Fault 
+entryDelay Entering and Exiting Delay 
+modArmConfig Edit Arming Parameters 
+modCertificateStandard Edit Authentication Standard 
+entryPaceTest Pacing Mode Entered 
+exitPaceTest Pacing Mode Exited 
+addNetOperator Add Operator 
+modNetOperator Edit Operator Information 
+delNetOperator Delete Operator 
+addNetInstaller Add Installer 
+modNetInstaller Edit Installer Information 
+delNetInstaller Delete Installer 
+addManufacturer Add Manufacturer 
+modManufacturer Edit Manufacturer Information 
+delManufacturer Delete Manufacturer 
+upgradeSuccessed Upgraded 
+upgradeFailed Upgrading Failed 
+zoneDisabled Zone Shielded 
+localCfgSecurity Security Parameter Configured Locally 
+remoteCfgSecurity Security Parameter Configured Remotely 
+remoteGetParaSecurity Security Parameters Obtained Remotely 
+Themors
+programas054@gmail.com
+
+
+## Page 21
+ 
+ 
+Log Type Description 
+delRS-485InputModule RS-485 Zone Module Deleted 
+delRS-485OutputModule RS-485 Output Module Deleted 
+delRS-485WirelessReceiver RS-485 Wireless Receiver Module Deleted 
+enrollRS-485InputModule RS-485 Zone Module Registered 
+enrollRS-485OutputModule RS-485 Output Module Registered 
+delRS-485OutputModule RS-485 Output Module Deleted 
+enrollRS-485WirelessReceiver RS-485 Wireless Receiver Module Registered 
+enrollKeypad Keypad Registered 
+delKeypad Keypad Deleted 
+scheduledAngleCalibration Scheduled Angle Calibration 
+addZone Added Zone 
+modZone Edited Zone 
+delZone Deleted Zone 
+addAlarmLine Added Trigger Line 
+modAlarmLine Edited Trigger Line 
+delAlarmLine Deleted Trigger Line 
+remoteHFPDconfig/localHFPDconfig Remote/Local Configuration of Frequently 
+Appeared Person Detection 
+remoteLFPDconfig Remote Configuration of Low Frequency Person 
+Detection 
+modifyUserPassword Password Changed 
+logOut Logged Out 
+indicatorStatusSettings Indicator Switch Settings 
+wiredNetworkSettings Wired Network Settings 
+notificationSettings Message Notification Settings 
+alarmCenterSettings Alarm Receiving Center Settings 
+videoRecordStrategySettings Video Recording Strategy Settings 
+cameraLinkageSettings Camera Linkage Settings 
+armingDisarmingScheduleSettings Arming and Disarming Schedule Settings 
+alarmSpeedSettings Speed Threshold Settings for Triggering Alarms 
+Themors
+programas054@gmail.com
+
+
+## Page 22
+ 
+ 
+Log Type Description 
+videoTrackingSwitchSettings Video Tracking Switching Settings 
+frequencySettings Frequency Band Settings 
+masterSlaveTrackingSettings Smart Linkage Settings 
+parkingPointSettings Parking Point Settings 
+administratorEdited Administrator Parameters Edited 
+securityConfigured Security Settings 
+relayParametersEdited Relay Parameters Edited 
+radarSensitivitySettings Radar Sensitivity Settings 
+detectAngandDistanceSettings Detector Angle and Range Settings 
+masterSlaveRadarSettings Main Radar and Sub Radar Settings 
+remoteCheckTime Remote: Manual Time Synchronization 
+remoteParamSimpleDefault Remote: Partly Restore to Default Settings 
+remoteParamFactoryDefault Remote: Restore All to Default Settings 
+localAutoSwitchConfig Configure Auto Power On or Off Locally 
+remoteAutoSwitchConfig Configure Auto Power On or Off Remotely 
+remoteCfgWirelessDialParam Configure wireless dial-up parameters remotely 
+localCfgWirelessDialParam Configure wireless dial-up parameters locally 
+remoteCfgWirelessSmsParam Configure wireless message parameters remotely 
+localCfgWirelessSmsParam Configure wireless message parameters locally 
+remoteCfgWirelessSmsSelfHelp Configure SMS self-service parameters remotely 
+localCfgWirelessSmsSelfHelp Configure SMS self-service parameters locally 
+remoteCfgWirelessNetFlowParam Configure wireless traffic parameters remotely 
+localCfgWirelessNetFlowParam Configure wireless traffic parameters locally 
+scaleCfg Scale Settings 
+radarTrailCfg Radar Pattern Settings 
+MapImportCfg Map Importing Settings 
+radarCalibrationCfg Radar Calibration Settings 
+LocalEzvizOperation Local EZ Operations 
+RemoteEzvizOperation Remote EZ Operations 
+Themors
+programas054@gmail.com
+
+
+## Page 23
+ 
+ 
+Log Type Description 
+SSHEnabled SSH Enabled 
+SSHDisabled SSH Disabled 
+installationModeEntered Installation Mode Enabled 
+installationModeExited Installation Mode Disabled 
+diagnosisModeConfigured Diagnosis Mode Configured 
+fileExported File Exported 
+audioFileUploaded Audio File Uploaded 
+audioFileDeleted Audio File Deleted 
+PIRCAMCapture PIRCAM Captured 
+SIPIntercomStarted SIP Intercom Started 
+SIPIntercomEnded SIP Intercom Ended 
+enrollmentModeEntered Registration Mode Enabled 
+enrollmentModeExited Registration Mode Disabled 
+videoAudioSelfCheckStarted Self-Test of Audio and Video Started 
+videoAudioSelfCheckStopped Self-Test of Audio and Video Stopped 
+cardReaderunlocked Card Reader Unlocked 
+cardReaderlocked Card Reader Locked 
+videoAudioSelfCheckEnded Self-Test of Audio and Video Ended 
+previewStart Live View Started 
+previewStop Live View Stopped 
+remoteDelAllVideoAnalysisTask All Video Analysis Tasks Cleared (One-Touch) 
+localSSDOperateStart Local SSD operation (firmware operations) started 
+localSSDOperateStop Local SSD operation (firmware operations) ended 
+remoteSSDOperateStart Remote SSD operation (firmware operations) 
+started 
+remoteSSDOperateStop Remote SSD operation (firmware operations) 
+ended 
+AITargetBPAdd Reference picture for AI target comparison added 
+AITargetBPDelete Reference picture for AI target comparison deleted 
+AITargetBPSearch Reference picture for AI target comparison AI 
+Themors
+programas054@gmail.com
+
+
+## Page 24
+ 
+ 
+Log Type Description 
+searched for 
+AITargetBPUpdate Reference picture for AI target comparison 
+updated 
+AIRuleConfigTrigger AI rule linkage configured 
+AudioFileImport Audio file imported 
+AudioFileDownLoad Audio file downloaded 
+cardNoNotRegistered Card No. not registered 
+LocalBackupConfig Local hot spare device configuration 
+RemoteBackupConfig Remote hot spare device configuration 
+remoteAIModelAdd Model package added 
+remoteAIModelQuery Model package searched 
+remoteAIModelDelete Model package deleted 
+remoteAIModelUpdate Model package updated 
+remoteAIPicturePollingTaskAdd Picture polling analysis task added 
+remoteAIPicturePollingTaskQuery Picture polling analysis task searched 
+remoteAIPicturePollingTaskDelete Picture polling analysis task deleted 
+remoteAIPicturePollingTaskModify Picture polling analysis task edited 
+remoteAIVideoTaskAdd Video analysis task added 
+remoteAIVideoTaskQuery Video analysis task searched 
+remoteAIVideoTaskDelete Video analysis task deleted 
+remoteAIVideoTaskModify Video analysis task edited 
+remoteAIPictureTaskAdd Picture analysis task added 
+remoteAIPictureTaskQuery Picture analysis task searched 
+remoteAIPictureTaskDelete Picture analysis task deleted 
+remoteAIPictureTaskModify Picture analysis task edited 
+remoteAIVideoPollingTaskAdd Video polling analysis task added 
+remoteAIVideoPollingTaskQuery Video polling analysis task searched 
+remoteAIVideoPollingTaskDelete Video polling analysis task deleted 
+remoteAIVideoPollingTaskModify Video polling analysis task edited 
+AIRuleConfig AI rule configuration 
+Themors
+programas054@gmail.com
+
+
+## Page 25
+ 
+ 
+Log Type Description 
+localParamFactoryDefault Restore to default settings locally 
+remoteParamFactoryDefault Restore to default settings remotely 
+remoteDeleteAllVerifyOrCapPics Delete all authenticated or captured face pictures 
+remotely 
+localDeleteAllVerifyOrCapPics Delete all authenticated or captured face pictures 
+locally 
+remoteDeleteEventsAtSpecTime Delete events by specified time remotely 
+localDeleteEventsAtSpecTime Delete events by specified time locally 
+remoteOpenSummerTime Enable DST remotely 
+localOpenSummerTime Enable DST locally 
+remoteCloseSummerTime Disable DST remotely 
+localCloseSummerTime Disable DST locally 
+remoteEZVIZUnbind Unbind from EZ cloud remotely 
+localEZVIZUnbind Unbind from EZ cloud locally 
+enterLocalUIBackground Enter UI background 
+remoteDeleteFaceBaseMap Delete registered face pictures remotely 
+localDeleteFaceBaseMap Delete registered face pictures locally 
+SVCEnhanced Enhance SVC 
+remoteImportEventTableFile Remotely import the customized list of events 
+remoteExportEventTableFile Remotely export the customized list of events 
+remoteEventTypeCfg Remotely configure event type 
+  
+Event Logs 
+ 
+Log Type Description 
+SDKSchool SDK Synchronization 
+presetsSatatusChange Status of preset changed 
+selfTimeSchool Time Synchronization by Schedule 
+insertSubsystem Plugged in Sub-board 
+pullOutSubsystem Pulled out Sub-board 
+Themors
+programas054@gmail.com
+
+
+## Page 26
+ 
+ 
+Log Type Description 
+autoArm Auto Arming 
+autoDisarm Auto Disarming 
+triggerOn Activated Trigger by Schedule 
+triggerOff Deactivated Trigger by Schedule 
+autoArmFailed Auto Arming Failed 
+autoDisarmFailed Auto Disarming Failed 
+triggerOnFailed Activating Trigger Failed 
+triggerOffFailed Deactivating Trigger Failed 
+mandatoryAlarm Forced Arming 
+keyPADlocked Keypad Locked 
+keyPADunlocked Keypad Unlocked 
+insetUSB Plugged in USB Flash Drive 
+pulloutUSB Removed USB Flash Drive 
+lateRemind Late to Disarm 
+keypadUnlocked Unlocked Keypad 
+timeSynchronization Time Synchronization 
+armFailed Arming Failed 
+ARCStart ARC Connected 
+locked Locked 
+  
+Information Logs 
+ 
+Log Type Description 
+doubleVerificationPass Double Verification Completed 
+hdFormatStart Formatting HDD Started 
+hdFormatStop Formatting HDD Stopped 
+wirelessRunningStatus Wireless Network Running Status 
+BackupInfo Hot Spare Information 
+addUserInfo Added person information (access control 
+permission) 
+Themors
+programas054@gmail.com
+
+
+## Page 27
+ 
+ 
+Log Type Description 
+modifyUserInfo Edit person information (access control permission) 
+clearUserInfo Delete person information by employee No. 
+(access control permission) 
+clearAllUser Delete all person information (access control 
+permission) 
+ezvizLinkageInfo EZ linkage information 
+  
+Themors
+programas054@gmail.com
+
