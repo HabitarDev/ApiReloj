@@ -1,0 +1,27 @@
+# Source: Region Code.pdf
+# Pages: 1
+
+
+## Page 1
+ 
+Region Code 
+Here is the code list of the regions that are supported by the algorithm library for license plate 
+recognition. 
+ 
+region (Region Code) Description 
+ER Russian Region 
+EU Europe Region 
+EUandCIS EU&CIS 
+ME Middle East 
+other Other 
+APAC Asia-Pacific Region 
+AFandAM Africa and America 
+THAandLA Thailand and Laos 
+HKandMO Hong Kong (China) and Macao (China) 
+India India 
+All All regions 
+  
+ 
+Themors
+programas054@gmail.com
+
