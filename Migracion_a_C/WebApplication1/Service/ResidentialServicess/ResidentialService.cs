@@ -84,10 +84,11 @@ public class ResidentialService(IResidentialsRepository repo, IResidentialEntity
         DeviceDto buscado = EsMio(dto.DeviceId, residential);
         if (SignatureAprobada(dto.Signature, buscado, dto.TimeStamp))
         {
+            DateTime timeStampEnDateTime = DateTimeOffset.FromUnixTimeSeconds(dto.TimeStamp).UtcDateTime;
             Residential resiFinal = entity.ToEntity(residential);
             resiFinal.IpActual = ipNueva;
             Modificar(resiFinal);
-            buscado._lastSeen = dto.TimeStamp;
+            buscado._lastSeen = timeStampEnDateTime;
         }
     }
 
@@ -101,7 +102,7 @@ public class ResidentialService(IResidentialsRepository repo, IResidentialEntity
         return buscado;
     }
     
-    private bool SignatureAprobada(string signature, DeviceDto deviceBuscado, DateTime? timeStamp)
+    private bool SignatureAprobada(string signature, DeviceDto deviceBuscado, long timeStamp)
     {
         string claveJunta = $"{timeStamp}|{deviceBuscado._deviceId}|{deviceBuscado._residentialId}";
         var keyBytes = Encoding.UTF8.GetBytes(deviceBuscado._secretKey);

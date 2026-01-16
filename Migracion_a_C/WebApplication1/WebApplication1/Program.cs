@@ -1,41 +1,61 @@
+using DataAcces.Context;
+using DataAcces.Repositories;
+using IDataAcces;
+using IServices.IDevice;
+using IServices.IReloj;
+using IServices.IResidentials;
+using Microsoft.EntityFrameworkCore;
+using Service.DeviceServicess;
+using Service.RelojServicess;
+using Service.ResidentialServicess;
+using WebApplication1.Filters;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddControllers(opts =>
+{
+    opts.Filters.Add<GlobalExceptionFilter>();
+});
+
+builder.Services.AddDbContext<SqlContext>(opt =>
+{
+    var cn = builder.Configuration.GetConnectionString("Default")
+             ?? throw new InvalidOperationException("Falta ConnectionStrings:Default en appsettings.json");
+    opt.UseNpgsql(cn); // Postgres
+});
+
+// Repos
+builder.Services.AddScoped<IRelojesRepository, RelojesRepository>();
+builder.Services.AddScoped<IResidentialsRepository, ResidentialsRepository>();
+builder.Services.AddScoped<IDevicesRepository, DevicesRepository>();
+
+// Reloj
+builder.Services.AddScoped<IRelojEntityService, RelojEntityService>();
+builder.Services.AddScoped<IRelojValidacionService, RelojValidationService>();
+builder.Services.AddScoped<IRelojMantenimientoService, RelojMantenimientoService>();
+builder.Services.AddScoped<IRelojService, RelojService>();
+
+// Residential
+builder.Services.AddScoped<IResidentialEntityService, ResidentialEntityService>();
+builder.Services.AddScoped<IResidentialValidationService, ResidentialValidationService>();
+builder.Services.AddScoped<IResidentialMantenimientoService, ResidentialMantenimientoService>();
+builder.Services.AddScoped<IResidentialService, ResidentialService>();
+
+// Device
+builder.Services.AddScoped<IDeviceEntityService, DeviceEntityService>();
+builder.Services.AddScoped<IDeviceValidationService, DeviceValidationService>();
+builder.Services.AddScoped<IDeviceMantenimientoService, DeviceMantenimientoService>();
+builder.Services.AddScoped<IDeviceService, DeviceService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast");
-
+app.MapControllers();
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

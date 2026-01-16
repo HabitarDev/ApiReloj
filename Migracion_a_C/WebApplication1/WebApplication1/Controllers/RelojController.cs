@@ -5,7 +5,7 @@ using Models.WebApi;
 
 namespace WebApplication1.Controllers;
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class RelojController(IRelojService relojService) : ControllerBase
 {
     private readonly IRelojService _relojService = relojService;
@@ -16,7 +16,7 @@ public class RelojController(IRelojService relojService) : ControllerBase
         return _relojService.Listar();
     }
 
-    [HttpGet]
+    [HttpGet("{id}")]
     public ActionResult<RelojDto> ListarPorId([FromRoute] int id)
     {
         return _relojService.GetById(id);

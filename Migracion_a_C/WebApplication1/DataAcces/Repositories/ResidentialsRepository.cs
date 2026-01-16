@@ -25,7 +25,7 @@ public class ResidentialsRepository (SqlContext repos) : IResidentialsRepository
 
     public List<Residential> GetAll()
     {
-        return _context.Residentials.ToList();
+        return _context.Residentials.Include(x => x.Relojes).Include(x => x.Devices).ToList();
     }
 
     public void update(Residential residential)

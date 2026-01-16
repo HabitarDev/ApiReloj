@@ -16,7 +16,7 @@ public class ResidentialController(IResidentialService service) : ControllerBase
         return  Ok(_service.Listar());
     }
 
-    [HttpGet]
+    [HttpGet("{id}")]
     public ActionResult<ResidentialDto> BuscarPorId([FromRoute] int id)
     {
         return Ok(_service.GetById(id));
@@ -29,7 +29,7 @@ public class ResidentialController(IResidentialService service) : ControllerBase
         return _service.GetById(residential.IdResidential);
     }
 
-    [HttpPut]
+    [HttpPost("heartbeat")]
     public void HeartBeat([FromBody] HeartBeatDto heartBeat)
     {
         var ip = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();

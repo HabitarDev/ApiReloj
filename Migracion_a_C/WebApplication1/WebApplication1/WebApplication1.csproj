@@ -17,11 +17,11 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.1" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.1" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.1">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,7 +31,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\DataAcces\DataAcces.csproj" />
       <ProjectReference Include="..\IServices\IServices.csproj" />
+      <ProjectReference Include="..\Service\Service.csproj" />
     </ItemGroup>
 
 </Project>

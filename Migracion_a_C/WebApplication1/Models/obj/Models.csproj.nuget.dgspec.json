@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj": {}
+    "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj": {}
   },
   "projects": {
-    "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj": {
+    "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj",
+        "projectUniqueName": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj",
         "projectName": "Models",
-        "projectPath": "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj",
+        "projectPath": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj",
         "packagesPath": "C:\\Users\\marti\\.nuget\\packages\\",
-        "outputPath": "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\obj\\",
+        "outputPath": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\marti\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -59,7 +59,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Users\\marti\\.dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",

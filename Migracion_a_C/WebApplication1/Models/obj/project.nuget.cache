@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Xk0ocv2uT34=",
+  "dgSpecHash": "8dc0O6OpaAg=",
   "success": true,
-  "projectFilePath": "\\\\wsl.localhost\\Ubuntu-20.04\\home\\taller\\dale\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj",
+  "projectFilePath": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Models\\Models.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

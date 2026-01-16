@@ -6,12 +6,11 @@ using Models.Dominio;
 
 namespace Service.RelojServicess;
 
-public class RelojMantenimientoService(IRelojEntityService relojEntityService,IRelojesRepository relojesRepository,IResidentialsRepository residentialRepo, IResidentialEntityService residentialEntityService): IRelojMantenimientoService
+public class RelojMantenimientoService(IRelojEntityService relojEntityService,IRelojesRepository relojesRepository,IResidentialsRepository residentialRepo): IRelojMantenimientoService
 {
     private IRelojEntityService _relojEntityService = relojEntityService;
     private IRelojesRepository _relojesRepository = relojesRepository;
     private IResidentialsRepository _residentialRepo = residentialRepo;
-    private IResidentialEntityService _residentialEntityService = residentialEntityService;
     
     public void Crear(RelojDto reloj)
     {
