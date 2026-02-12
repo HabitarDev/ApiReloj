@@ -4,7 +4,9 @@ public class Reloj
 {
     private int _idReloj;
     private int _puerto;
-    
+    private string? _deviceSn = null;
+    private DateTimeOffset? _lastPushEvent = null;
+    private DateTimeOffset? _lastPollEvent = null;
     private int _residentialId { get; set; }     // FK explícita
     private Residential _residential { get; set; } = null!;
 
@@ -46,5 +48,23 @@ public class Reloj
     {
         get => _residential;
         set => _residential = value;
+    }
+
+    public DateTimeOffset? LastPushEvent
+    {
+        get => _lastPushEvent;
+        set => _lastPushEvent = value;
+    }
+
+    public DateTimeOffset? LastPollEvent
+    {
+        get => _lastPollEvent;
+        set => _lastPollEvent = value;
+    }
+    
+    public string? DeviceSn
+    {
+        get => _deviceSn;
+        set => _deviceSn = value;
     }
 }

@@ -62,6 +62,129 @@ ApiReloj ----poll----> Reloj (backfill cada 30 min)
 3. ApiReloj reenvia la request a ISAPI.
 4. ApiReloj devuelve la respuesta al backend.
 
+## Endpoints propuestos (contratos normalizados)
+### A) Backend -> ApiReloj (publicos)
+
+#### Crear persona (normalizado)
+**POST** `/api/v1/residentials/{residentialId}/relojes/{relojId}/persons`
+
+Body normalizado (desde backend):
+```json
+{
+  "employeeNo": "123",
+  "name": "Juan Perez",
+  "userType": "normal"
+}
+```
+
+Traduccion a ISAPI (ejemplo):
+```
+PUT /ISAPI/AccessControl/UserInfo/SetUp?format=json
+{
+  "UserInfo": {
+    "employeeNo": "123",
+    "name": "Juan Perez",
+    "userType": "normal"
+  }
+}
+```
+
+Notas:
+- Solo se normaliza persona (sin huellas, sin cara).
+- `userType` segun guia: normal, visitor, blacklist, administrators.
+- El reloj puede aceptar `employeeNoString`; ApiReloj debe ajustar segun capabilities.
+
+#### Modificar persona (normalizado)
+**PUT** `/api/v1/residentials/{residentialId}/relojes/{relojId}/persons/{employeeNo}`
+
+Body normalizado:
+```json
+{
+  "name": "Juan Perez",
+  "userType": "normal"
+}
+```
+
+Traduccion a ISAPI (ejemplo):
+```
+PUT /ISAPI/AccessControl/UserInfo/Modify?format=json
+{
+  "UserInfo": {
+    "employeeNo": "123",
+    "name": "Juan Perez",
+    "userType": "normal"
+  }
+}
+```
+
+#### Eliminar persona (normalizado)
+**DELETE** `/api/v1/residentials/{residentialId}/relojes/{relojId}/persons/{employeeNo}`
+
+Traduccion a ISAPI (ejemplo):
+```
+PUT /ISAPI/AccessControl/UserInfoDetail/Delete?format=json
+{
+  "UserInfoDetail": {
+    "mode": "byEmployeeNo",
+    "EmployeeNoList": [
+      { "employeeNo": "123" }
+    ]
+  }
+}
+```
+
+Opcional en ISAPI:
+- `operateType`: byTerminal / byOrg / byTerminalOrg
+- `terminalNoList` / `orgNoList`
+
+#### Consultar eventos (desde BD local)
+**GET** `/api/v1/residentials/{residentialId}/events`
+
+Query sugerida:
+- `from`, `to` (ISO 8601)
+- `employeeNo`
+- `deviceSn`
+- `attendanceStatus`
+- `verifyMode`
+- `limit`, `offset`
+
+Respuesta (ejemplo):
+```json
+{
+  "items": [
+    {
+      "deviceSn": "DS-K1T...",
+      "serialNo": 987654,
+      "eventTimeUtc": "2025-09-01T12:00:00Z",
+      "employeeNo": "123",
+      "major": 5,
+      "minor": 38,
+      "attendanceStatus": "checkIn"
+    }
+  ]
+}
+```
+
+### B) Reloj -> ApiReloj (ingesta push)
+**POST** `/api/v1/ingest/hikvision/events`
+- Recibe eventos del reloj (XML/JSON o multipart).
+- Inserta en BD con idempotencia.
+
+### C) Heartbeat
+**POST** `/api/v1/heartbeat`
+```json
+{
+  "DeviceId": 1,
+  "ResidentialId": 10,
+  "TimeStamp": 1730000000,
+  "Signature": "HEX_HMAC"
+}
+```
+
+### D) Admin / Jobs (interno)
+- **POST** `/api/v1/admin/poll/run` (opcional por residential/reloj)
+- **GET** `/api/v1/admin/poll/status`
+
 ## Push vs Poll (resumen)
 - Push: baja latencia, menor carga del reloj, depende de reachability desde reloj.
 - Poll: mas robusto para backfill, requiere reachability desde servidor al reloj.
@@ -75,14 +198,14 @@ ApiReloj ----poll----> Reloj (backfill cada 30 min)
 
 Pseudo:
 ```
-if !last_event_time:
-  last_event_time = get_oldest_event_time()
+if !last_poll_event:
+  last_poll_event = get_oldest_event_time()
 
-gap = now - last_event_time
+gap = now - last_poll_event
 if gap <= 30m:
   poll(now-30m, now)
 else:
-  for window in [last_event_time, now] step 30m:
+  for window in [last_poll_event, now] step 30m:
     poll(window.start, window.end)
 ```
 
@@ -112,21 +235,16 @@ Indices sugeridos:
 - (event_time_utc)
 - (employee_no)
 
-Checkpoint por dispositivo:
-```
-poller_checkpoint (
-  device_sn text primary key,
-  last_serial_no bigint,
-  last_event_time_utc timestamptz,
-  updated_at timestamptz
-)
-```
+Estado de polling en Reloj:
+- `Last_Push_Event`: ultima hora recibida por push (solo monitoreo).
+- `Last_Poll_Event`: ultimo limite cubierto por backfill (cursor real del poll).
 
 ## Seguridad y red
-- Auth: HTTP Digest.
+- Auth: HTTP Digest (hacia reloj).
 - TLS: preferir HTTPS con CA del dispositivo.
 - Push: requiere que reloj alcance el servidor (NAT o VPN).
 - Poll: requiere que servidor alcance el reloj (NAT o VPN).
+- Auth para backend: opcional hoy, se puede agregar luego sin romper contratos.
 
 ## Observabilidad
 - Logs de requests/errores y tiempos.
@@ -145,6 +263,23 @@ poller_checkpoint (
 - Filtrar eventos de asistencia en lectura (o guardar solo los relevantes).
 - Para obtener el evento mas antiguo disponible: POST /ISAPI/AccessControl/AcsEvent?format=json
   con startTime muy antiguo, endTime=now, timeReverseOrder=false y maxResults=1.
+- `Last_Push_Event` se actualiza solo al recibir push.
+- `Last_Poll_Event` se actualiza solo al finalizar cada ventana de poll.
+
+## Cambios en dominio (propuesta)
+- Nueva entidad `AccessEvent` (tabla access_events).
+- Entidad `Reloj` agrega:
+  - `DeviceSn`
+  - `Last_Push_Event` (DateTimeOffset?)
+  - `Last_Poll_Event` (DateTimeOffset?)
+- DTOs separados del dominio para endpoints (personas, eventos, etc.).
+
+## DTOs (fuera del dominio)
+Ejemplos:
+- `PersonCreateDto`: employeeNo, name, userType.
+- `PersonUpdateDto`: name?, userType?
+- `EventsQueryDto`: from, to, employeeNo, attendanceStatus, limit, offset.
+- `EventsResponseDto`: items[], total?, paging?.
 
 ## Decisiones acordadas
 - Modo hibrido: push + poll.
@@ -152,3 +287,4 @@ poller_checkpoint (
 - Guardado permanente.
 - Idempotencia: device_sn + serial_no.
 - Si no hay last_event_time, iniciar desde el evento mas antiguo disponible.
+- Estado de polling en Reloj: Last_Push_Event y Last_Poll_Event.
