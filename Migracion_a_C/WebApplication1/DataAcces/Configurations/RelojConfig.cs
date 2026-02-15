@@ -12,7 +12,13 @@ public class RelojConfig: IEntityTypeConfiguration<Reloj>
         builder.HasKey(x => x.IdReloj);
         builder.Property(x => x.IdReloj).ValueGeneratedNever();
 
+        builder.Property(x => x.Puerto).IsRequired();
         builder.Property(x => x.ResidentialId).IsRequired();
+        builder.Property(x => x.DeviceSn);
+        builder.Property(x => x.LastPushEvent);
+        builder.Property(x => x.LastPollEvent);
+
         builder.HasIndex(x => x.ResidentialId);
+        builder.HasIndex(x => x.DeviceSn).IsUnique();
     }
 }

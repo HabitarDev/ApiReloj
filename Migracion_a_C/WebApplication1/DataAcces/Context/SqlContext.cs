@@ -8,6 +8,7 @@ public sealed class SqlContext : DbContext
     public DbSet<Reloj> Relojes => Set<Reloj>();
     public DbSet<Residential> Residentials => Set<Residential>();
     public DbSet<Device> Devices => Set<Device>();
+    public DbSet<AccessEvents> AccessEvents => Set<AccessEvents>();
 
     public SqlContext(DbContextOptions<SqlContext> options)
         : base(options)

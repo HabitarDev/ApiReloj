@@ -288,3 +288,63 @@ Ejemplos:
 - Idempotencia: device_sn + serial_no.
 - Si no hay last_event_time, iniciar desde el evento mas antiguo disponible.
 - Estado de polling en Reloj: Last_Push_Event y Last_Poll_Event.
+
+## Implementacion V1 Push (httpHosts)
+### Endpoint implementado
+- `POST /AccessEvents/push/{relojId}`
+- El `relojId` en path identifica de forma determinista a que reloj pertenece el evento.
+
+### Seguridad implementada
+- Filtro dedicado: `AuthorizationPushFilter` aplicado al endpoint push.
+- El filtro valida:
+  - `relojId` existente.
+  - `Residential` del reloj existente.
+  - IP origen del request (`RemoteIpAddress`) igual a `Residential.IpActual`.
+  - `DeviceSn` del reloj cargado.
+- Si falla la validacion:
+  - `401` si IP no autorizada.
+  - `404` si reloj/residential no existe.
+  - `422` si el reloj no tiene `DeviceSn`.
+
+### Formatos de entrada soportados
+- `application/xml`
+- `application/json`
+- `multipart/form-data`
+- Para `multipart/form-data`:
+  - Se toma la parte de evento (`Event_Type` y variantes de nombre).
+  - La imagen se ignora en V1.
+
+### Reglas de procesamiento push
+- Solo se procesa `eventType = AccessControllerEvent`.
+- Si llega otro `eventType` (ej. `heartBeat`), se responde `200` con estado `ignored`.
+- Si falta `serialNo`, se responde `200` con estado `ignored` y razon `missing_serial_no`.
+- Normalizacion:
+  - `deviceSn` = `Reloj.DeviceSn`.
+  - `serialNumber` = `AccessControllerEvent.serialNo`.
+  - `eventTimeUtc` = `dateTime` convertido a UTC.
+  - `timeDevice` = valor original de `dateTime`.
+  - `employeeNumber` = prioridad `employeeNoString`, fallback `employeeNo`.
+  - `major` = `majorEventType`.
+  - `minor` = `subEventType`.
+  - `attendanceStatus` = `attendanceStatus`.
+  - `raw` = payload crudo recibido.
+
+### Idempotencia y checkpoint
+- Insercion por `AddIfNotExists` con PK `(device_sn, serial_no)`.
+- Resultado de push:
+  - `inserted`
+  - `duplicate`
+  - `ignored`
+- `LastPushEvent` del reloj se actualiza con regla `max(actual, eventTimeUtc)` en `inserted` y `duplicate`.
+
+### Checklist de configuracion de reloj (operacion)
+1. Confirmar que el reloj soporte `httpHosts`:
+   - `GET /ISAPI/Event/notification/httpHosts/capabilities`
+2. Configurar host de escucha:
+   - `PUT /ISAPI/Event/notification/httpHosts...`
+3. Configurar `Request_URI` hacia ApiReloj por reloj:
+   - `http(s)://<api-reloj>/AccessEvents/push/{relojId}`
+4. Habilitar servicio de escucha en el reloj.
+5. Probar envio desde reloj:
+   - endpoint debe responder `200` para eventos validos/duplicados/ignorados.
+6. Verificar que la IP del reloj coincida con `Residential.IpActual` en BD.

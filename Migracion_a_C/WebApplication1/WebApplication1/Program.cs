@@ -1,10 +1,12 @@
 using DataAcces.Context;
 using DataAcces.Repositories;
 using IDataAcces;
+using IServices.IAccesEvent;
 using IServices.IDevice;
 using IServices.IReloj;
 using IServices.IResidentials;
 using Microsoft.EntityFrameworkCore;
+using Service.AccesEventsServicess;
 using Service.DeviceServicess;
 using Service.RelojServicess;
 using Service.ResidentialServicess;
@@ -30,6 +32,8 @@ builder.Services.AddDbContext<SqlContext>(opt =>
 builder.Services.AddScoped<IRelojesRepository, RelojesRepository>();
 builder.Services.AddScoped<IResidentialsRepository, ResidentialsRepository>();
 builder.Services.AddScoped<IDevicesRepository, DevicesRepository>();
+builder.Services.AddScoped<IAccesEventsRepository, AccessEventsRepository>();
+builder.Services.AddScoped<AuthorizationPushFilter>();
 
 // Reloj
 builder.Services.AddScoped<IRelojEntityService, RelojEntityService>();
@@ -48,6 +52,12 @@ builder.Services.AddScoped<IDeviceEntityService, DeviceEntityService>();
 builder.Services.AddScoped<IDeviceValidationService, DeviceValidationService>();
 builder.Services.AddScoped<IDeviceMantenimientoService, DeviceMantenimientoService>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
+
+// Access Events
+builder.Services.AddScoped<IAccesEventEntityService, AccesEventEntityService>();
+builder.Services.AddScoped<IAccesEventValidationService, AccesEventValidationService>();
+builder.Services.AddScoped<IAccesEventMantenimientoService, AccesEventMantentimientoService>();
+builder.Services.AddScoped<IAccesEventService, AccesEventService>();
 
 var app = builder.Build();
 
