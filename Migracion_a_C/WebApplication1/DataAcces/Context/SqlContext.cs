@@ -13,10 +13,6 @@ public sealed class SqlContext : DbContext
     public SqlContext(DbContextOptions<SqlContext> options)
         : base(options)
     {
-        if(!Database.IsInMemory())
-        {
-            Database.Migrate();
-        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

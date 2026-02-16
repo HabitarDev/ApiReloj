@@ -32,6 +32,11 @@ public class AccesEventService(
         _validation.Validar(dto);
     }
 
+    public List<AccesEventDto> ListarTodos()
+    {
+        return _mantenimiento.ListarTodos();
+    }
+
     public PushIngestResultDto ProcesarPush(HikvisionPushEnvelopeDto envelope, PushAuthContext authContext)
     {
         _validation.ValidarEnvelope(envelope);

@@ -46,6 +46,14 @@ public class RelojService (IRelojMantenimientoService mantenimientoService,IRelo
         mantenimiento.Modificar(reloj);
     }
 
+    public void ModificarDesdeDto(ActualizarRelojRequest relojDto)
+    {
+        RelojDto dtoNecesario = GetById(relojDto._idReloj);
+        Reloj entidad =  ToEntity(dtoNecesario);
+        entidad.DeviceSn = relojDto._deviceSn;
+        Modificar(entidad);
+    }
+
     public void Eliminar(int id)
     {
         mantenimiento.Eliminar(id);

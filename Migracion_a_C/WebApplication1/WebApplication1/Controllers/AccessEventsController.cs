@@ -1,5 +1,6 @@
 ﻿using IServices.IAccesEvent;
 using Microsoft.AspNetCore.Mvc;
+using Models.Dominio;
 using Models.WebApi;
 using WebApplication1.Filters;
 
@@ -42,6 +43,12 @@ public class AccessEventsController(
             "Push endpoint result: status={Status}, reason={Reason}, eventType={EventType}, serialNo={SerialNo}, deviceSn={DeviceSn}, relojId={RelojId}, remoteIp={RemoteIp}, contentType={ContentType}",
             result.Status, result.Reason, result.EventType, result.SerialNo, result.DeviceSn, relojId, remoteIp, contentType);
         return Ok(result);
+    }
+
+    [HttpGet]
+    public ActionResult<List<AccesEventDto>> Get()
+    {
+        return Ok(_accesEventService.ListarTodos());
     }
 
     private async Task<(string payload, bool hasPicture)> ReadEventPayloadAsync(string contentType)

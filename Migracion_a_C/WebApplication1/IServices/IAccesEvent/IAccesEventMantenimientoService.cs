@@ -1,8 +1,10 @@
-﻿using Models.WebApi;
+﻿using Models.Dominio;
+using Models.WebApi;
 
 namespace IServices.IAccesEvent;
 
 public interface IAccesEventMantenimientoService
 {
     PushIngestResultDto ProcesarPush(HikvisionPushEnvelopeDto envelope, PushAuthContext authContext);
+    List<AccesEventDto> ListarTodos();
 }

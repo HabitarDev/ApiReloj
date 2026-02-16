@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using Dominio;
 using IDataAcces;
 using IServices.IAccesEvent;
+using Models.Dominio;
 using Models.WebApi;
 
 namespace Service.AccesEventsServicess;
@@ -61,6 +62,19 @@ public class AccesEventMantentimientoService(
             DeviceSn = normalized._deviceSn,
             EventTimeUtc = normalized._eventTimeUtc
         };
+    }
+
+    public List<AccesEventDto> ListarTodos()
+    {
+        List<AccessEvents> lista = _accessEventsRepository.GetAll();
+        List<AccesEventDto> listaARetornar = new List<AccesEventDto>();
+        foreach (var evento in lista)
+        {
+            AccesEventDto eventoDto = _entityService.FromEntity(evento);
+            listaARetornar.Add(eventoDto);
+        }
+
+        return listaARetornar;
     }
 
     private void UpdateLastPushEvent(int relojId, DateTimeOffset eventTimeUtc)

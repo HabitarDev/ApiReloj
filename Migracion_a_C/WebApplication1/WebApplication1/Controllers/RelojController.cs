@@ -28,4 +28,11 @@ public class RelojController(IRelojService relojService) : ControllerBase
         _relojService.Crear(reloj);
         return _relojService.GetById(reloj._idReloj);
     }
+    
+    [HttpPut]
+    public ActionResult<RelojDto> Actualizar([FromBody] CrearRelojRequest reloj)
+    {
+        _relojService.Crear(reloj);
+        return _relojService.GetById(reloj._idReloj);
+    }
 }

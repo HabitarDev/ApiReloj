@@ -11,6 +11,7 @@ public interface IRelojService
     void Validar (RelojDto dto);
     void Crear(CrearRelojRequest reloj);
     void Modificar(Reloj reloj);
+    void ModificarDesdeDto(ActualizarRelojRequest relojDto);
     void Eliminar(int id);
     List<RelojDto> Listar();
     RelojDto GetById(int id);
