@@ -30,13 +30,24 @@ Decisiones de este plan:
 ## 3. Preparar Lightsail y red
 1. Abrir puertos inbound: `22` y `8080`.
 2. No abrir `5432` publico.
-3. Si usas UFW:
+3. Si ya abriste puertos por UI de Lightsail, este paso de firewall local puede dejarse como opcional.
+4. Si usas UFW:
 ```bash
 sudo ufw allow 22/tcp
 sudo ufw allow 8080/tcp
 sudo ufw enable
 sudo ufw status
 ```
+Explicacion de comandos:
+1. `sudo ufw allow 22/tcp`: habilita SSH al servidor.
+2. `sudo ufw allow 8080/tcp`: habilita acceso HTTP a la API.
+3. `sudo ufw enable`: activa UFW.
+4. `sudo ufw status`: muestra reglas activas.
+
+Nota Lightsail UI:
+1. Security groups (Networking) de Lightsail y UFW son capas distintas.
+2. Si en UI ya abriste `22/8080`, igual puedes usar UFW como capa adicional.
+3. Si no quieres doble capa de firewall en esta etapa, puedes omitir UFW.
 
 ## 4. Instalar dependencias en Ubuntu 22.04
 1. Base:
@@ -44,6 +55,19 @@ sudo ufw status
 sudo apt update
 sudo apt install -y git curl ca-certificates gnupg lsb-release jq
 ```
+Explicacion de comandos:
+1. `sudo apt update`: actualiza el indice de paquetes disponibles.
+2. `sudo apt install -y ...`: instala dependencias base:
+   - `git`: clonar y actualizar el repo.
+   - `curl`: descargar archivos y probar endpoints HTTP.
+   - `ca-certificates`: certificados raiz para conexiones HTTPS confiables.
+   - `gnupg`: gestionar llaves GPG de repositorios externos.
+   - `lsb-release`: detectar version/codename de Ubuntu (ej. jammy).
+   - `jq`: parsear/inspeccionar JSON desde consola.
+
+Nota Lightsail UI:
+1. Esta instalacion de paquetes no se hace por UI de Lightsail; se hace por SSH en la instancia.
+
 2. Docker + Compose:
 ```bash
 sudo install -m 0755 -d /etc/apt/keyrings
@@ -53,6 +77,24 @@ sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 sudo usermod -aG docker $USER
 ```
+Explicacion linea por linea:
+1. `sudo install -m 0755 -d /etc/apt/keyrings`:
+   - crea la carpeta donde se guardan llaves de repositorios APT.
+2. `curl -fsSL ... | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg`:
+   - descarga la llave oficial de Docker y la guarda en formato que APT puede usar para verificar firmas.
+3. `echo "deb ... docker.list"`:
+   - agrega el repositorio oficial de Docker para tu arquitectura y version de Ubuntu.
+4. `sudo apt update`:
+   - recarga indice de paquetes incluyendo el repo de Docker recien agregado.
+5. `sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`:
+   - instala motor Docker, cliente CLI, runtime `containerd`, buildx y plugin de `docker compose`.
+6. `sudo usermod -aG docker $USER`:
+   - agrega tu usuario al grupo `docker` para ejecutar Docker sin `sudo`.
+   - requiere cerrar y reabrir sesion para tomar efecto.
+
+Nota Lightsail UI:
+1. Docker tampoco se instala por UI de Lightsail; se instala por SSH.
+2. Lo que si haces por UI es abrir puertos y administrar DNS/IP estaticas/snapshots.
 3. Reingresar sesion SSH.
 4. Dotnet SDK:
 ```bash
@@ -62,6 +104,12 @@ sudo apt update
 sudo apt install -y dotnet-sdk-10.0
 dotnet --info
 ```
+Explicacion de comandos:
+1. `wget ...packages-microsoft-prod.deb`: descarga el paquete que agrega el repo oficial de Microsoft.
+2. `sudo dpkg -i ...`: instala ese repo en el sistema.
+3. `sudo apt update`: actualiza indice de paquetes incluyendo el repo de Microsoft.
+4. `sudo apt install -y dotnet-sdk-10.0`: instala SDK .NET 10 (compilar/publicar).
+5. `dotnet --info`: valida instalacion y muestra runtimes/SDKs disponibles.
 
 ## 5. Clonar repo y levantar Postgres en Docker
 1. Clonar:
