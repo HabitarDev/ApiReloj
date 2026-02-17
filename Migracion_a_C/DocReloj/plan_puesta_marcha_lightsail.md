@@ -9,7 +9,7 @@ Objetivo: dejar funcionando la prueba integrada actual en una instancia Lightsai
 5. Validacion end-to-end.
 
 Decisiones de este plan:
-1. API en host (dotnet) + Postgres en Docker.
+1. API en host (binario self-contained publicado desde tu PC) + Postgres en Docker.
 2. Exposicion HTTP directa en `:8080`.
 3. Reloj y PC heartbeat salen por la misma IP publica.
 4. Configuracion del reloj por UI, verificando por ISAPI.
@@ -96,20 +96,9 @@ Nota Lightsail UI:
 1. Docker tampoco se instala por UI de Lightsail; se instala por SSH.
 2. Lo que si haces por UI es abrir puertos y administrar DNS/IP estaticas/snapshots.
 3. Reingresar sesion SSH.
-4. Dotnet SDK:
-```bash
-wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-sudo dpkg -i packages-microsoft-prod.deb
-sudo apt update
-sudo apt install -y dotnet-sdk-10.0
-dotnet --info
-```
-Explicacion de comandos:
-1. `wget ...packages-microsoft-prod.deb`: descarga el paquete que agrega el repo oficial de Microsoft.
-2. `sudo dpkg -i ...`: instala ese repo en el sistema.
-3. `sudo apt update`: actualiza indice de paquetes incluyendo el repo de Microsoft.
-4. `sudo apt install -y dotnet-sdk-10.0`: instala SDK .NET 10 (compilar/publicar).
-5. `dotnet --info`: valida instalacion y muestra runtimes/SDKs disponibles.
+4. .NET SDK en Lightsail NO es obligatorio en este plan.
+5. Motivo: el `publish` se hace en tu PC y subes un binario self-contained a la instancia.
+6. Solo instala .NET en Lightsail si mas adelante quieres compilar/publicar directamente desde el servidor.
 
 ## 5. Clonar repo y levantar Postgres en Docker
 1. Clonar:
@@ -133,14 +122,40 @@ docker compose ps
 docker logs -f apireloj-postgres
 ```
 
-## 6. Publicar API y levantarla como servicio
-1. Build/publish:
+## 6. Publicar en tu PC y desplegar en Lightsail
+1. En Lightsail, validar arquitectura del servidor (para elegir RID correcto):
 ```bash
-cd /opt/apireloj/Migracion_a_C/WebApplication1
-dotnet restore WebApplication1.sln
-dotnet publish WebApplication1/WebApplication1.csproj -c Release -o /opt/apireloj/publish
+uname -m
 ```
-2. Crear servicio `systemd`:
+2. Equivalencias:
+   - `x86_64` -> usar RID `linux-x64`.
+   - `aarch64` -> usar RID `linux-arm64`.
+3. En tu PC (Rider o consola), hacer `publish` self-contained.
+4. Consola (ejemplo para `linux-x64`):
+```bash
+cd ~/RiderProjects/ApiReloj/Migracion_a_C/WebApplication1
+dotnet publish WebApplication1/WebApplication1.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o ./publish-lightsail
+```
+5. Rider UI (alternativa):
+   - Click derecho en proyecto `WebApplication1` -> `Publish...`
+   - Configuration: `Release`
+   - Deployment mode: `Self-contained`
+   - Runtime: `linux-x64` o `linux-arm64` segun `uname -m`
+   - Output folder: `publish-lightsail`
+6. En Lightsail, preparar carpeta destino:
+```bash
+sudo mkdir -p /opt/apireloj/publish
+sudo chown -R ubuntu:ubuntu /opt/apireloj
+```
+7. Desde tu PC, copiar artefactos:
+```bash
+scp -i C:/Users/<TU_USUARIO>/RiderProjects/LightsailDefaultKey-us-east-2.pem -r ./publish-lightsail/* ubuntu@<LIGHTSAIL_IP>:/opt/apireloj/publish/
+```
+8. En Lightsail, dar permisos de ejecucion al binario:
+```bash
+chmod +x /opt/apireloj/publish/WebApplication1
+```
+9. Crear servicio `systemd`:
 ```bash
 sudo tee /etc/systemd/system/apireloj.service > /dev/null << 'EOF'
 [Unit]
@@ -150,7 +165,7 @@ Wants=docker.service
 
 [Service]
 WorkingDirectory=/opt/apireloj/publish
-ExecStart=/usr/bin/dotnet /opt/apireloj/publish/WebApplication1.dll
+ExecStart=/opt/apireloj/publish/WebApplication1
 Environment=ASPNETCORE_URLS=http://0.0.0.0:8080
 Environment=ConnectionStrings__Default=Host=127.0.0.1;Port=5432;Database=apireloj;Username=apireloj;Password=apireloj
 Restart=always
@@ -161,7 +176,7 @@ User=ubuntu
 WantedBy=multi-user.target
 EOF
 ```
-3. Activar:
+10. Activar:
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable apireloj

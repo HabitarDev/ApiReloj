@@ -38,6 +38,7 @@ public class RelojEntityService(IRelojesRepository repo, IResidentialsRepository
         paraDevolver._idReloj = relojRecibido.IdReloj;
         paraDevolver._puerto = relojRecibido.Puerto;
         paraDevolver._residentialId = relojRecibido.ResidentialId;
+        paraDevolver._deviceSn = relojRecibido.DeviceSn;
         return paraDevolver;
     }
 }

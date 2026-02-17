@@ -1,0 +1,16 @@
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\bin\Release\net10.0\IDataAcces.deps.json
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\bin\Release\net10.0\IDataAcces.dll
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\bin\Release\net10.0\IDataAcces.pdb
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\bin\Release\net10.0\Dominio.dll
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\bin\Release\net10.0\Dominio.pdb
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\obj\Release\net10.0\IDataAcces.csproj.AssemblyReference.cache
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\obj\Release\net10.0\IDataAcces.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\obj\Release\net10.0\IDataAcces.AssemblyInfoInputs.cache
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\obj\Release\net10.0\IDataAcces.AssemblyInfo.cs
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\obj\Release\net10.0\IDataAcces.csproj.CoreCompileInputs.cache
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\obj\Release\net10.0\IDataAcces.sourcelink.json
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\obj\Release\net10.0\IDataAcces.csproj.Up2Date
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\obj\Release\net10.0\IDataAcces.dll
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\obj\Release\net10.0\refint\IDataAcces.dll
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\obj\Release\net10.0\IDataAcces.pdb
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\IDataAcces\obj\Release\net10.0\ref\IDataAcces.dll

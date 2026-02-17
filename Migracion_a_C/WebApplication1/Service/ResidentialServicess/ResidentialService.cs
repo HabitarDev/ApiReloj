@@ -89,6 +89,7 @@ public class ResidentialService(IResidentialsRepository repo, IResidentialEntity
             resiFinal.IpActual = ipNueva;
             Modificar(resiFinal);
             buscado._lastSeen = timeStampEnDateTime;
+            device.HeartbeatProcesado(buscado);
         }
     }
 

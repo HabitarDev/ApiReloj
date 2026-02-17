@@ -1,0 +1,14 @@
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\appsettings.Development.json
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\appsettings.json
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\WebApplication1.pdb
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\BuildHost-net472\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.exe.config
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.deps.json
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll.config
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.runtimeconfig.json
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\DataAcces.pdb
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\IServices.pdb
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\Service.pdb
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\Dominio.pdb
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\IDataAcces.pdb
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\Models.pdb
+C:\Users\marti\RiderProjects\ApiReloj\Migracion_a_C\WebApplication1\publish-lightsail\WebApplication1

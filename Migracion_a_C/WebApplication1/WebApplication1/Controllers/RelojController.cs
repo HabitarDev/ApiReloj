@@ -30,9 +30,9 @@ public class RelojController(IRelojService relojService) : ControllerBase
     }
     
     [HttpPut]
-    public ActionResult<RelojDto> Actualizar([FromBody] CrearRelojRequest reloj)
+    public ActionResult<RelojDto> Actualizar([FromBody] ActualizarRelojRequest reloj)
     {
-        _relojService.Crear(reloj);
+        _relojService.ModificarDesdeDto(reloj);
         return _relojService.GetById(reloj._idReloj);
     }
 }

@@ -30,6 +30,10 @@ public class DeviceEntityService(IDevicesRepository repo, IResidentialsRepositor
                 throw new ArgumentException("No se encuentra dispositivo ni residencial");
             }
         }
+        else
+        {
+            deviceParaRetornar.LastSeen = dto._lastSeen;
+        }
         return deviceParaRetornar;
     }
 

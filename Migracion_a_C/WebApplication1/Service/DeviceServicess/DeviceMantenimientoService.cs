@@ -25,7 +25,7 @@ public class DeviceMantenimientoService(IDeviceEntityService deviceEntityService
     {
         Device? deviceBuscado = _devicesRepository.GetById(device.DeviceId);
         if (deviceBuscado == null) throw new Exception("El Device no existe");
-        _devicesRepository.update(deviceBuscado);
+        _devicesRepository.update(device);
     }
 
     public void Eliminar(int id)

@@ -30,7 +30,7 @@ public class ResidentialsRepository (SqlContext repos) : IResidentialsRepository
 
     public void update(Residential residential)
     {
-        var exists = _context.Relojes.Any(x => x.IdReloj == residential.IdResidential);
+        var exists = _context.Residentials.Any(x => x.IdResidential == residential.IdResidential);
         if(!exists)
         {
             throw new InvalidOperationException("Atracción inexistente");
