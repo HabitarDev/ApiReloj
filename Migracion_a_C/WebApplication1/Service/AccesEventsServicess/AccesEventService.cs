@@ -37,6 +37,12 @@ public class AccesEventService(
         return _mantenimiento.ListarTodos();
     }
 
+    public List<AccesEventDto> Buscar(AccessEventsQueryDto query)
+    {
+        _validation.ValidarBusqueda(query);
+        return _mantenimiento.Buscar(query);
+    }
+
     public PushIngestResultDto ProcesarPush(HikvisionPushEnvelopeDto envelope, PushAuthContext authContext)
     {
         _validation.ValidarEnvelope(envelope);

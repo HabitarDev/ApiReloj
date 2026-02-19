@@ -1,12 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "By/frnanxjw=",
+  "dgSpecHash": "XUuf/EqWAmo=",
   "success": true,
   "projectFilePath": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\Dominio\\Dominio.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\marti\\.nuget\\packages\\microsoft.net.illink.tasks\\10.0.2\\microsoft.net.illink.tasks.10.0.2.nupkg.sha512",
-    "C:\\Users\\marti\\.nuget\\packages\\microsoft.netcore.app.runtime.linux-x64\\10.0.2\\microsoft.netcore.app.runtime.linux-x64.10.0.2.nupkg.sha512",
-    "C:\\Users\\marti\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.linux-x64\\10.0.2\\microsoft.aspnetcore.app.runtime.linux-x64.10.0.2.nupkg.sha512"
-  ],
+  "expectedPackageFiles": [],
   "logs": []
 }

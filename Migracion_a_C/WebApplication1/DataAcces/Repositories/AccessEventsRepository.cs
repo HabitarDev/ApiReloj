@@ -64,6 +64,41 @@ public class AccessEventsRepository(SqlContext repos) : IAccesEventsRepository
         return _context.AccessEvents.ToList();
     }
 
+    public List<AccessEvents> Search(
+        DateTimeOffset? fromUtc = null,
+        DateTimeOffset? toUtc = null,
+        string? deviceSn = null,
+        string? employeeNumber = null,
+        int limit = 100,
+        int offset = 0)
+    {
+        var query = _context.AccessEvents.AsQueryable();
+
+        if (fromUtc.HasValue && toUtc.HasValue)
+        {
+            query = query.Where(x =>
+                x.EventTimeUtc >= fromUtc.Value &&
+                x.EventTimeUtc <= toUtc.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(deviceSn))
+        {
+            query = query.Where(x => x.DeviceSn == deviceSn);
+        }
+
+        if (!string.IsNullOrWhiteSpace(employeeNumber))
+        {
+            query = query.Where(x => x.EmployeeNumber == employeeNumber);
+        }
+
+        return query
+            .OrderByDescending(x => x.EventTimeUtc)
+            .ThenByDescending(x => x.SerialNumber)
+            .Skip(offset)
+            .Take(limit)
+            .ToList();
+    }
+
     public List<AccessEvents> GetFromTime(string timeDevice)
     {
         if (!DateTimeOffset.TryParse(timeDevice, out var parsedTime))

@@ -8,4 +8,5 @@ public interface IAccesEventValidationService
     void Validar(AccesEventDto dto);
     void ValidarEnvelope(HikvisionPushEnvelopeDto envelope);
     void ValidarEventoPush(HikvisionEventNotificationAlertDto payload);
+    void ValidarBusqueda(AccessEventsQueryDto query);
 }

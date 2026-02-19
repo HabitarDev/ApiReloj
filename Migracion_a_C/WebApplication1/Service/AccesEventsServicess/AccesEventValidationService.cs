@@ -100,4 +100,32 @@ public class AccesEventValidationService : IAccesEventValidationService
             throw new ArgumentException("dateTime invalido en payload push");
         }
     }
+
+    public void ValidarBusqueda(AccessEventsQueryDto query)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+
+        var hasFrom = query.FromUtc.HasValue;
+        var hasTo = query.ToUtc.HasValue;
+
+        if (hasFrom != hasTo)
+        {
+            throw new ArgumentException("Para filtrar por fecha se requieren fromUtc y toUtc juntos");
+        }
+
+        if (hasFrom && query.FromUtc!.Value > query.ToUtc!.Value)
+        {
+            throw new ArgumentException("El rango de fechas es invalido");
+        }
+
+        if (query.Limit <= 0)
+        {
+            throw new ArgumentException("limit debe ser mayor a 0");
+        }
+
+        if (query.Offset < 0)
+        {
+            throw new ArgumentException("offset debe ser mayor o igual a 0");
+        }
+    }
 }

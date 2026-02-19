@@ -12,11 +12,13 @@ namespace Service.AccesEventsServicess;
 public class AccesEventMantentimientoService(
     IAccesEventsRepository accessEventsRepository,
     IRelojesRepository relojesRepository,
+    IResidentialsRepository residentialsRepository,
     IAccesEventEntityService entityService,
     IAccesEventValidationService validationService) : IAccesEventMantenimientoService
 {
     private readonly IAccesEventsRepository _accessEventsRepository = accessEventsRepository;
     private readonly IRelojesRepository _relojesRepository = relojesRepository;
+    private readonly IResidentialsRepository _residentialsRepository = residentialsRepository;
     private readonly IAccesEventEntityService _entityService = entityService;
     private readonly IAccesEventValidationService _validationService = validationService;
 
@@ -75,6 +77,73 @@ public class AccesEventMantentimientoService(
         }
 
         return listaARetornar;
+    }
+
+    public List<AccesEventDto> Buscar(AccessEventsQueryDto query)
+    {
+        if (!query.ResidentialId.HasValue)
+        {
+            var rows = _accessEventsRepository.Search(
+                fromUtc: query.FromUtc,
+                toUtc: query.ToUtc,
+                deviceSn: query.DeviceSn,
+                employeeNumber: query.EmployeeNumber,
+                limit: query.Limit,
+                offset: query.Offset);
+
+            return rows.Select(_entityService.FromEntity).ToList();
+        }
+
+        var residential = _residentialsRepository.GetById(query.ResidentialId.Value);
+        if (residential == null)
+        {
+            throw new ArgumentException("Residential inexistente");
+        }
+
+        var deviceSnList = residential.Relojes
+            .Select(r => r.DeviceSn)
+            .Where(sn => !string.IsNullOrWhiteSpace(sn))
+            .Select(sn => sn!)
+            .Distinct()
+            .ToList();
+
+        if (!string.IsNullOrWhiteSpace(query.DeviceSn))
+        {
+            if (!deviceSnList.Contains(query.DeviceSn))
+            {
+                return new List<AccesEventDto>();
+            }
+
+            deviceSnList = new List<string> { query.DeviceSn };
+        }
+
+        if (deviceSnList.Count == 0)
+        {
+            return new List<AccesEventDto>();
+        }
+
+        var merged = new List<AccessEvents>();
+        foreach (var sn in deviceSnList)
+        {
+            var rows = _accessEventsRepository.Search(
+                fromUtc: query.FromUtc,
+                toUtc: query.ToUtc,
+                deviceSn: sn,
+                employeeNumber: query.EmployeeNumber,
+                limit: int.MaxValue,
+                offset: 0);
+
+            merged.AddRange(rows);
+        }
+
+        var paged = merged
+            .OrderByDescending(x => x.EventTimeUtc)
+            .ThenByDescending(x => x.SerialNumber)
+            .Skip(query.Offset)
+            .Take(query.Limit)
+            .ToList();
+
+        return paged.Select(_entityService.FromEntity).ToList();
     }
 
     private void UpdateLastPushEvent(int relojId, DateTimeOffset eventTimeUtc)

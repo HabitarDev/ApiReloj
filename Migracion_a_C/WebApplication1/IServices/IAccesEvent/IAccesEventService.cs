@@ -10,5 +10,6 @@ public interface IAccesEventService
     AccesEventDto FromEntity(AccessEvents accessEvent);
     void Validar(AccesEventDto dto);
     List<AccesEventDto> ListarTodos();
+    List<AccesEventDto> Buscar(AccessEventsQueryDto query);
     PushIngestResultDto ProcesarPush(HikvisionPushEnvelopeDto envelope, PushAuthContext authContext);
 }

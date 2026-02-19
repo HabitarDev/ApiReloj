@@ -7,4 +7,5 @@ public interface IAccesEventMantenimientoService
 {
     PushIngestResultDto ProcesarPush(HikvisionPushEnvelopeDto envelope, PushAuthContext authContext);
     List<AccesEventDto> ListarTodos();
+    List<AccesEventDto> Buscar(AccessEventsQueryDto query);
 }

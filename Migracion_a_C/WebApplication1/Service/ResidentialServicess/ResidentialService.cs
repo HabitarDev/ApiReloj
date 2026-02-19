@@ -67,7 +67,7 @@ public class ResidentialService(IResidentialsRepository repo, IResidentialEntity
         }
         return listaADevolver;
     }
-    
+
     public ResidentialDto GetById(int id)
     {
         Residential? residential = db.GetById(id);

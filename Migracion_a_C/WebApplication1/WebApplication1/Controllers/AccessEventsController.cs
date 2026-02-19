@@ -46,9 +46,9 @@ public class AccessEventsController(
     }
 
     [HttpGet]
-    public ActionResult<List<AccesEventDto>> Get()
+    public ActionResult<List<AccesEventDto>> Get([FromQuery] AccessEventsQueryDto? query)
     {
-        return Ok(_accesEventService.ListarTodos());
+        return Ok(_accesEventService.Buscar(query ?? new AccessEventsQueryDto()));
     }
 
     private async Task<(string payload, bool hasPicture)> ReadEventPayloadAsync(string contentType)

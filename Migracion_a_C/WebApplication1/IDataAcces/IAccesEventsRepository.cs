@@ -10,14 +10,12 @@ public interface IAccesEventsRepository
 
     List<AccessEvents> GetBySerialNo(long id);
     List<AccessEvents> GetAll();
-    List<AccessEvents> GetFromTime(string timeDevice);
-    List<AccessEvents> GetByDeviceSnAndRange(
-        string deviceSn,
-        DateTimeOffset fromUtc,
-        DateTimeOffset toUtc,
-        string? employeeNo = null,
-        string? attendanceStatus = null,
-        int limit = 500,
+    List<AccessEvents> Search(
+        DateTimeOffset? fromUtc = null,
+        DateTimeOffset? toUtc = null,
+        string? deviceSn = null,
+        string? employeeNumber = null,
+        int limit = 100,
         int offset = 0);
 
     void Update(AccessEvents accessEvent);
