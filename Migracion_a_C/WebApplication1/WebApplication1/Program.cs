@@ -3,14 +3,18 @@ using DataAcces.Repositories;
 using IDataAcces;
 using IServices.IAccesEvent;
 using IServices.IDevice;
+using IServices.IJornada;
 using IServices.IReloj;
 using IServices.IResidentials;
 using Microsoft.EntityFrameworkCore;
+using Models.WebApi;
 using Service.AccesEventsServicess;
 using Service.DeviceServicess;
+using Service.JornadaServicess;
 using Service.RelojServicess;
 using Service.ResidentialServicess;
 using WebApplication1.Filters;
+using WebApplication1.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +37,7 @@ builder.Services.AddScoped<IRelojesRepository, RelojesRepository>();
 builder.Services.AddScoped<IResidentialsRepository, ResidentialsRepository>();
 builder.Services.AddScoped<IDevicesRepository, DevicesRepository>();
 builder.Services.AddScoped<IAccesEventsRepository, AccessEventsRepository>();
+builder.Services.AddScoped<IJornadasRepository, JornadasRepository>();
 builder.Services.AddScoped<AuthorizationPushFilter>();
 
 // Reloj
@@ -58,6 +63,16 @@ builder.Services.AddScoped<IAccesEventEntityService, AccesEventEntityService>();
 builder.Services.AddScoped<IAccesEventValidationService, AccesEventValidationService>();
 builder.Services.AddScoped<IAccesEventMantenimientoService, AccesEventMantentimientoService>();
 builder.Services.AddScoped<IAccesEventService, AccesEventService>();
+
+// Jornada
+builder.Services.AddScoped<IJornadaEntityService, JornadaEntityService>();
+builder.Services.AddScoped<IJornadaValidationService, JornadaValidationService>();
+builder.Services.AddScoped<IJornadaMantenimientoService, JornadaMantenimientoService>();
+builder.Services.AddScoped<IJornadaService, JornadaService>();
+
+builder.Services.Configure<JornadaProcessingOptions>(
+    builder.Configuration.GetSection(JornadaProcessingOptions.SectionName));
+builder.Services.AddHostedService<JornadaStatusWorker>();
 
 var app = builder.Build();
 

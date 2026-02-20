@@ -85,6 +85,58 @@ namespace DataAcces.Migrations
                     b.ToTable("Devices", (string)null);
                 });
 
+            modelBuilder.Entity("Dominio.Jornada", b =>
+                {
+                    b.Property<string>("JornadaId")
+                        .HasMaxLength(26)
+                        .HasColumnType("character varying(26)");
+
+                    b.Property<DateTimeOffset?>("BreakInAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("BreakOutAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ClockSn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EmployeeNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("EndAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("StartAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("StatusBreak")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("StatusCheck")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("JornadaId");
+
+                    b.HasIndex("ClockSn");
+
+                    b.HasIndex("StartAt");
+
+                    b.HasIndex("UpdatedAt");
+
+                    b.HasIndex("EmployeeNumber", "ClockSn", "StatusCheck");
+
+                    b.ToTable("Jornadas", (string)null);
+                });
+
             modelBuilder.Entity("Dominio.Reloj", b =>
                 {
                     b.Property<int>("IdReloj")

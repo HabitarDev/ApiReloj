@@ -1004,6 +1004,15 @@
           }
         }
       },
+      "NUlid/1.7.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/NUlid.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/NUlid.dll": {}
+        }
+      },
       "System.CodeDom/9.0.0": {
         "type": "package",
         "compile": {
@@ -1345,7 +1354,8 @@
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
           "IDataAcces": "1.0.0",
-          "IServices": "1.0.0"
+          "IServices": "1.0.0",
+          "NUlid": "1.7.3"
         },
         "compile": {
           "bin/placeholder/Service.dll": {}
@@ -2929,6 +2939,23 @@
         "npgsql.entityframeworkcore.postgresql.10.0.0.nupkg.sha512",
         "npgsql.entityframeworkcore.postgresql.nuspec",
         "postgresql.png"
+      ]
+    },
+    "NUlid/1.7.3": {
+      "sha512": "AXxv7eF+3REXlGLojlN4zXzvesgxiC0/Jq66Qn5L+hhw+NBCK60douGZBI+6ZTAZHRE2xg7AyCEj8cqCKp/U5w==",
+      "type": "package",
+      "path": "nulid/1.7.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net6.0/NUlid.dll",
+        "lib/net6.0/nulid.xml",
+        "lib/netstandard2.0/NUlid.dll",
+        "lib/netstandard2.0/nulid.xml",
+        "logo.png",
+        "nulid.1.7.3.nupkg.sha512",
+        "nulid.nuspec"
       ]
     },
     "System.CodeDom/9.0.0": {

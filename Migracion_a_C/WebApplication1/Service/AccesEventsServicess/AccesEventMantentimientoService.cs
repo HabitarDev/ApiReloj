@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using Dominio;
 using IDataAcces;
 using IServices.IAccesEvent;
+using IServices.IJornada;
 using Models.Dominio;
 using Models.WebApi;
 
@@ -14,13 +15,15 @@ public class AccesEventMantentimientoService(
     IRelojesRepository relojesRepository,
     IResidentialsRepository residentialsRepository,
     IAccesEventEntityService entityService,
-    IAccesEventValidationService validationService) : IAccesEventMantenimientoService
+    IAccesEventValidationService validationService,
+    IJornadaService jornadaService) : IAccesEventMantenimientoService
 {
     private readonly IAccesEventsRepository _accessEventsRepository = accessEventsRepository;
     private readonly IRelojesRepository _relojesRepository = relojesRepository;
     private readonly IResidentialsRepository _residentialsRepository = residentialsRepository;
     private readonly IAccesEventEntityService _entityService = entityService;
     private readonly IAccesEventValidationService _validationService = validationService;
+    private readonly IJornadaService _jornadaService = jornadaService;
 
     public PushIngestResultDto ProcesarPush(HikvisionPushEnvelopeDto envelope, PushAuthContext authContext)
     {
@@ -53,6 +56,11 @@ public class AccesEventMantentimientoService(
 
         AccessEvents accessEvent = _entityService.ToEntity(normalized);
         var inserted = _accessEventsRepository.AddIfNotExists(accessEvent);
+        if (inserted)
+        {
+            _jornadaService.ProcesarEventoInsertado(accessEvent);
+        }
+
         UpdateLastPushEvent(authContext.RelojId, normalized._eventTimeUtc);
 
         var status = inserted ? "inserted" : "duplicate";
