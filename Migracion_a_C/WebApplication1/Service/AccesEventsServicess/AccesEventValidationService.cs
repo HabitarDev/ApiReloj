@@ -127,5 +127,20 @@ public class AccesEventValidationService : IAccesEventValidationService
         {
             throw new ArgumentException("offset debe ser mayor o igual a 0");
         }
+
+        if (query.Major.HasValue && query.Major.Value < 0)
+        {
+            throw new ArgumentException("major debe ser mayor o igual a 0");
+        }
+
+        if (query.Minor.HasValue && query.Minor.Value < 0)
+        {
+            throw new ArgumentException("minor debe ser mayor o igual a 0");
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.AttendanceStatus))
+        {
+            query.AttendanceStatus = query.AttendanceStatus.Trim();
+        }
     }
 }

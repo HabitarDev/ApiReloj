@@ -21,6 +21,7 @@ public class ResidentialMantenimientoService(IResidentialsRepository residential
     {
         Residential? resiBuscado = _residentialRepo.GetById(resiAModificar.IdResidential);
         if (resiBuscado == null) throw  new Exception("El Residential no existe");
+        resiBuscado.IpActual = resiAModificar.IpActual;
         _residentialRepo.update(resiBuscado);
     }
 

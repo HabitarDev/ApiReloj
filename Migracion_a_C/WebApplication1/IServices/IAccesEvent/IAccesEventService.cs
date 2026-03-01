@@ -1,4 +1,4 @@
-﻿using Dominio;
+using Dominio;
 using Models.Dominio;
 using Models.WebApi;
 
@@ -12,4 +12,8 @@ public interface IAccesEventService
     List<AccesEventDto> ListarTodos();
     List<AccesEventDto> Buscar(AccessEventsQueryDto query);
     PushIngestResultDto ProcesarPush(HikvisionPushEnvelopeDto envelope, PushAuthContext authContext);
+    PollIngestResultDto ProcesarEventosDesdePoll(
+        int relojId,
+        string deviceSn,
+        IReadOnlyCollection<HikvisionAcsEventInfoDto> infoList);
 }

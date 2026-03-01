@@ -10,6 +10,7 @@ public sealed class SqlContext : DbContext
     public DbSet<Device> Devices => Set<Device>();
     public DbSet<AccessEvents> AccessEvents => Set<AccessEvents>();
     public DbSet<Jornada> Jornadas => Set<Jornada>();
+    public DbSet<BackfillPollRunLog> BackfillPollRuns => Set<BackfillPollRunLog>();
 
     public SqlContext(DbContextOptions<SqlContext> options)
         : base(options)

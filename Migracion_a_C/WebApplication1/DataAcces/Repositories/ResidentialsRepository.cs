@@ -51,9 +51,4 @@ public class ResidentialsRepository (SqlContext repos) : IResidentialsRepository
         _context.Residentials.Remove(res);
         _context.SaveChanges();
     }
-
-    public bool IsMine(int id)
-    {
-        throw new NotImplementedException();
-    }
 }

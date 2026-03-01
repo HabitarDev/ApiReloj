@@ -69,6 +69,9 @@ public class AccessEventsRepository(SqlContext repos) : IAccesEventsRepository
         DateTimeOffset? toUtc = null,
         string? deviceSn = null,
         string? employeeNumber = null,
+        int? major = null,
+        int? minor = null,
+        string? attendanceStatus = null,
         int limit = 100,
         int offset = 0)
     {
@@ -89,6 +92,24 @@ public class AccessEventsRepository(SqlContext repos) : IAccesEventsRepository
         if (!string.IsNullOrWhiteSpace(employeeNumber))
         {
             query = query.Where(x => x.EmployeeNumber == employeeNumber);
+        }
+
+        if (major.HasValue)
+        {
+            query = query.Where(x => x.Major == major.Value);
+        }
+
+        if (minor.HasValue)
+        {
+            query = query.Where(x => x.Minor == minor.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(attendanceStatus))
+        {
+            var normalized = attendanceStatus.Trim().ToLowerInvariant();
+            query = query.Where(x =>
+                x.AttendanceStatus != null &&
+                x.AttendanceStatus.ToLower() == normalized);
         }
 
         return query

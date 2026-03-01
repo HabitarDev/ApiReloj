@@ -9,5 +9,4 @@ public interface IResidentialsRepository
     List<Residential> GetAll();
     void update(Residential residential);
     void delete(int id);
-    bool IsMine(int id);
 }

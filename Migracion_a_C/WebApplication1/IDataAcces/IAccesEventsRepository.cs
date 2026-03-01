@@ -15,6 +15,9 @@ public interface IAccesEventsRepository
         DateTimeOffset? toUtc = null,
         string? deviceSn = null,
         string? employeeNumber = null,
+        int? major = null,
+        int? minor = null,
+        string? attendanceStatus = null,
         int limit = 100,
         int offset = 0);
 

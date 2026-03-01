@@ -27,6 +27,10 @@ public class ModifiUserDtoFromBack
 
     public int _residentialId { get; set; }
 
+    public ModifiUserDtoFromBack()
+    {
+    }
+
     public ModifiUserDtoFromBack(string employeeNo, string name, string userType, string beginTime, string endTime,
         bool? enable, string timeType, int residentialId)
     {

@@ -48,4 +48,12 @@ public class AccesEventService(
         _validation.ValidarEnvelope(envelope);
         return _mantenimiento.ProcesarPush(envelope, authContext);
     }
+
+    public PollIngestResultDto ProcesarEventosDesdePoll(
+        int relojId,
+        string deviceSn,
+        IReadOnlyCollection<HikvisionAcsEventInfoDto> infoList)
+    {
+        return _mantenimiento.ProcesarEventosDesdePoll(relojId, deviceSn, infoList);
+    }
 }

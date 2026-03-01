@@ -6,6 +6,11 @@ public class AccessEventsQueryDto
     public string? DeviceSn { get; set; }
     public string? EmployeeNumber { get; set; }
 
+    // Filtros opcionales por tipo de evento.
+    public int? Major { get; set; }
+    public int? Minor { get; set; }
+    public string? AttendanceStatus { get; set; }
+
     public DateTimeOffset? FromUtc { get; set; }
     public DateTimeOffset? ToUtc { get; set; }
 

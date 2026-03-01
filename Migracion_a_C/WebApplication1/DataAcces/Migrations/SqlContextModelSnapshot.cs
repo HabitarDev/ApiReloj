@@ -54,13 +54,75 @@ namespace DataAcces.Migrations
 
                     b.HasKey("DeviceSn", "SerialNumber");
 
+                    b.HasIndex("AttendanceStatus");
+
                     b.HasIndex("EmployeeNumber");
 
                     b.HasIndex("EventTimeUtc");
 
+                    b.HasIndex("Minor");
+
                     b.HasIndex("DeviceSn", "EventTimeUtc");
 
+                    b.HasIndex("Major", "Minor", "EventTimeUtc");
+
                     b.ToTable("AccessEvents", (string)null);
+                });
+
+            modelBuilder.Entity("Dominio.BackfillPollRunLog", b =>
+                {
+                    b.Property<string>("RunId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("ClocksJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("Duplicates")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("FinishedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Ignored")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Inserted")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("TotalClocks")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalPages")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalWindows")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Trigger")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("RunId");
+
+                    b.HasIndex("StartedAtUtc");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("BackfillPollRuns", (string)null);
                 });
 
             modelBuilder.Entity("Dominio.Device", b =>

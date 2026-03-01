@@ -26,6 +26,8 @@ public class RelojMantenimientoService(IRelojEntityService relojEntityService,IR
     {
         Reloj? relojBuscado = _relojesRepository.GetById(reloj.IdReloj);
         if (relojBuscado == null) throw  new Exception("El reloj no existe");
+            relojBuscado.Puerto = reloj.Puerto;
+            relojBuscado.DeviceSn = reloj.DeviceSn;
         _relojesRepository.update(relojBuscado);
     }
 

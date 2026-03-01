@@ -51,7 +51,12 @@ public class AccesEventMantentimientoService(
             };
         }
 
-        var normalized = _entityService.NormalizarDesdePush(payload, authContext.DeviceSn, envelope.EventPayloadRaw);
+        var normalized = _entityService.NormalizarDesdePush(
+            payload,
+            authContext.DeviceSn,
+            envelope.ContentType,
+            envelope.HasPicture,
+            envelope.EventPayloadRaw);
         _validationService.Validar(normalized);
 
         AccessEvents accessEvent = _entityService.ToEntity(normalized);
@@ -96,6 +101,9 @@ public class AccesEventMantentimientoService(
                 toUtc: query.ToUtc,
                 deviceSn: query.DeviceSn,
                 employeeNumber: query.EmployeeNumber,
+                major: query.Major,
+                minor: query.Minor,
+                attendanceStatus: query.AttendanceStatus,
                 limit: query.Limit,
                 offset: query.Offset);
 
@@ -138,6 +146,9 @@ public class AccesEventMantentimientoService(
                 toUtc: query.ToUtc,
                 deviceSn: sn,
                 employeeNumber: query.EmployeeNumber,
+                major: query.Major,
+                minor: query.Minor,
+                attendanceStatus: query.AttendanceStatus,
                 limit: int.MaxValue,
                 offset: 0);
 
@@ -152,6 +163,54 @@ public class AccesEventMantentimientoService(
             .ToList();
 
         return paged.Select(_entityService.FromEntity).ToList();
+    }
+
+    public PollIngestResultDto ProcesarEventosDesdePoll(
+        int relojId,
+        string deviceSn,
+        IReadOnlyCollection<HikvisionAcsEventInfoDto> infoList)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(deviceSn);
+        ArgumentNullException.ThrowIfNull(infoList);
+        if (relojId <= 0)
+        {
+            throw new ArgumentException("relojId invalido");
+        }
+
+        var result = new PollIngestResultDto();
+
+        foreach (var info in infoList)
+        {
+            try
+            {
+                var normalized = _entityService.NormalizarDesdePoll(info, deviceSn);
+                _validationService.Validar(normalized);
+
+                var accessEvent = _entityService.ToEntity(normalized);
+                var inserted = _accessEventsRepository.AddIfNotExists(accessEvent);
+                if (inserted)
+                {
+                    _jornadaService.ProcesarEventoInsertado(accessEvent);
+                    result.Inserted++;
+                }
+                else
+                {
+                    result.Duplicates++;
+                }
+
+                if (!result.MaxEventTimeUtc.HasValue || normalized._eventTimeUtc > result.MaxEventTimeUtc.Value)
+                {
+                    result.MaxEventTimeUtc = normalized._eventTimeUtc;
+                }
+            }
+            catch
+            {
+                // Un evento invalido no debe cortar la corrida completa de la pagina.
+                result.Ignored++;
+            }
+        }
+
+        return result;
     }
 
     private void UpdateLastPushEvent(int relojId, DateTimeOffset eventTimeUtc)

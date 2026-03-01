@@ -47,12 +47,19 @@ public class RelojService (IRelojMantenimientoService mantenimientoService,IRelo
     }
 
     public void ModificarDesdeDto(ActualizarRelojRequest relojDto)
-    {
-        RelojDto dtoNecesario = GetById(relojDto._idReloj);
-        Reloj entidad =  ToEntity(dtoNecesario);
-        entidad.DeviceSn = relojDto._deviceSn;
-        Modificar(entidad);
-    }
+{
+    if (relojDto._idReloj <= 0) throw new ArgumentException("Id de reloj invalido");
+    if (relojDto._puerto <= 0) throw new ArgumentException("Puerto de reloj invalido");
+    if (string.IsNullOrWhiteSpace(relojDto._deviceSn)) throw new ArgumentException("DeviceSn invalido");
+
+    RelojDto dtoNecesario = GetById(relojDto._idReloj);
+    Reloj entidad = ToEntity(dtoNecesario);
+
+    entidad.Puerto = relojDto._puerto;
+    entidad.DeviceSn = relojDto._deviceSn;
+
+    Modificar(entidad);
+}
 
     public void Eliminar(int id)
     {

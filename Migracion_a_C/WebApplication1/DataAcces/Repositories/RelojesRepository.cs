@@ -1,6 +1,7 @@
 using DataAcces.Context;
 using Dominio;
 using IDataAcces;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAcces.Repositories;
 
@@ -22,6 +23,25 @@ public class RelojesRepository (SqlContext repos) : IRelojesRepository
     public List<Reloj> GetAll()
     {
         return _context.Relojes.ToList();
+    }
+
+    public List<Reloj> GetPollCandidates(int? residentialId = null, int? relojId = null)
+    {
+        var query = _context.Relojes
+            .Include(x => x.Residential)
+            .AsQueryable();
+
+        if (residentialId.HasValue)
+        {
+            query = query.Where(x => x.ResidentialId == residentialId.Value);
+        }
+
+        if (relojId.HasValue)
+        {
+            query = query.Where(x => x.IdReloj == relojId.Value);
+        }
+
+        return query.ToList();
     }
 
     public void update(Reloj reloj)
