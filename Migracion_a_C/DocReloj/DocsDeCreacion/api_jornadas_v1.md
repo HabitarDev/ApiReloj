@@ -67,6 +67,6 @@ GET /Jornadas?residentialId=cm01abcdef1234567890xyz&clockSn=DS-K1T321MFWX...&lim
 - `500 Internal Server Error`: error inesperado.
 
 ## 8. Notas operativas
-1. `statusCheck` y `statusBreak` aceptan `OK`, `INCOMPLETE`, `ERROR`.
+1. `statusCheck` y `statusBreak` aceptan `OK`, `INCOMPLETE`, `ERROR` (el servidor **normaliza** a mayúsculas; en query pueden enviarse en cualquier mezcla de mayúsculas/minúsculas).
 2. La creación/actualización de jornadas no se expone por API; sucede al insertarse eventos de acceso.
 3. El worker periódico marca como `ERROR` jornadas abiertas vencidas por timeout.

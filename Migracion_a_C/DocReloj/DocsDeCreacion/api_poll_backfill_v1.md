@@ -11,13 +11,14 @@ Documentar el backfill automatico de eventos de acceso por poll ISAPI, su cursor
 ## 3. Reglas de cursor
 1. Cursor real: `Reloj.LastPollEvent`.
 2. `LastPushEvent` no decide cursor de poll.
-3. Si `LastPollEvent == null`:
+3. La ventana en minutos viene de configuracion `BackfillPolling:WindowMinutes` (por defecto suele ser **30** en `appsettings`; el codigo usa ese valor, no un literal fijo).
+4. Si `LastPollEvent == null`:
    - Se busca oldest disponible en reloj.
    - Si existe oldest: bootstrap desde oldest hasta `now`.
    - Si no existe oldest: `LastPollEvent = now`.
-4. Si `LastPollEvent != null`:
-   - `gap <= 30m`: seguridad `[now-30m, now]`.
-   - `gap > 30m`: catch-up por ventanas de 30 min.
+5. Si `LastPollEvent != null`:
+   - `gap <= WindowMinutes`: modo seguridad sobre una ventana reciente hacia `now`.
+   - `gap > WindowMinutes`: catch-up por ventanas consecutivas del mismo tamano.
 
 ## 4. Paginacion
 - Request:
@@ -38,13 +39,17 @@ Documentar el backfill automatico de eventos de acceso por poll ISAPI, su cursor
 - Metodo: `POST`
 - Ruta: `/admin/poll/run`
 
-Body opcional:
+Body opcional (todos los IDs son **string**, mismo formato que en BD / HABITAR):
+
 ```json
 {
   "residentialId": "cm01abcdef1234567890xyz",
-  "relojId": "cm03relojabc1234567890xyz"
+  "relojId": "cm03relojabc1234567890xyz",
+  "trigger": "manual"
 }
 ```
+
+Nota: el controller ApiReloj fuerza `trigger = "manual"` en este endpoint; si el cliente envia otro valor se sobrescribe.
 
 Comportamiento:
 1. Si no se envian filtros: corre para todos los relojes.
@@ -121,7 +126,7 @@ Respuesta ejemplo:
   "ignored": 1,
   "clocks": [
     {
-      "relojId": 10,
+      "relojId": "cm03relojabc1234567890xyz",
       "deviceSn": "DS-K1T...",
       "status": "ok",
       "note": null,
@@ -135,7 +140,7 @@ Respuesta ejemplo:
       "ignored": 1
     },
     {
-      "relojId": 11,
+      "relojId": "cm03relojdef4567890xyzab",
       "deviceSn": "DS-K1T-2...",
       "status": "error",
       "note": null,

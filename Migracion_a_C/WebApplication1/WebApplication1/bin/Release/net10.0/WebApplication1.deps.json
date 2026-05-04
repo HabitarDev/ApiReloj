@@ -501,6 +501,14 @@
           }
         }
       },
+      "NUlid/1.7.3": {
+        "runtime": {
+          "lib/net6.0/NUlid.dll": {
+            "assemblyVersion": "1.7.3.0",
+            "fileVersion": "1.7.3.0"
+          }
+        }
+      },
       "System.CodeDom/9.0.0": {
         "runtime": {
           "lib/net9.0/System.CodeDom.dll": {
@@ -699,7 +707,8 @@
       "Service/1.0.0": {
         "dependencies": {
           "IDataAcces": "1.0.0",
-          "IServices": "1.0.0"
+          "IServices": "1.0.0",
+          "NUlid": "1.7.3"
         },
         "runtime": {
           "Service.dll": {
@@ -876,6 +885,13 @@
       "sha512": "sha512-E2+uSWxSB8LdsUVwPaqRWOcGOP92biry2JEwc0KJMdLJF+aZdczeIdEXVwEyv4nSVMQJH0o8tLhyAMiR6VF0lw==",
       "path": "npgsql.entityframeworkcore.postgresql/10.0.0",
       "hashPath": "npgsql.entityframeworkcore.postgresql.10.0.0.nupkg.sha512"
+    },
+    "NUlid/1.7.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-AXxv7eF+3REXlGLojlN4zXzvesgxiC0/Jq66Qn5L+hhw+NBCK60douGZBI+6ZTAZHRE2xg7AyCEj8cqCKp/U5w==",
+      "path": "nulid/1.7.3",
+      "hashPath": "nulid.1.7.3.nupkg.sha512"
     },
     "System.CodeDom/9.0.0": {
       "type": "package",

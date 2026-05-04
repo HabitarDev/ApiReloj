@@ -25,7 +25,7 @@ Ejemplos:
 ### IDs de maestros (`Residential`, `Device`, `Reloj`)
 - PK y FK de estas entidades son **strings** (compatibles con `cuid()` / HABITAR).
 - Parametros de ruta (`/Residential/{id}`, `/Device/{id}`, `/Reloj/{id}`, `/AccessEvents/push/{relojId}`) y campos JSON equivalentes van como **texto entre comillas**.
-- Ver tambien `explicacion_ids_string_operativa.md`.
+- Ver tambien `../explicacion_ids_string_operativa.md`.
 
 ### Formato base
 - La mayoria de endpoints usan JSON.
@@ -943,10 +943,12 @@ Guarda un envelope JSON serializado con esta forma conceptual:
 - `GET /AccessEvents` y `GET /Jornadas` leen BD local, no consultan al reloj en linea.
 
 ## 13. Ver tambien
+Rutas relativas a `DocReloj/` (este archivo esta en `DocReloj/DocsDeCreacion/`).
+
 Para detalle especializado, ver:
-- `explicacion_ids_string_operativa.md` (migracion BD, heartbeat, push)
-- `infra_hibrida.md`
-- `api_access_events_v1.md`
+- `../explicacion_ids_string_operativa.md` (migracion BD, heartbeat, push)
+- `../infra_hibrida.md`
+- `api_access_events_v1.md` (este directorio)
 - `api_poll_backfill_v1.md`
 - `api_jornadas_v1.md`
-- `DocHeartBeat/README.md`
+- `../DocHeartBeat/README.md`

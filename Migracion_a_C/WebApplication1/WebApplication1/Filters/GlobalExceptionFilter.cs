@@ -61,6 +61,12 @@ public sealed class GlobalExceptionFilter : IExceptionFilter
         }
 
         var m = message.Trim().ToLowerInvariant();
+        // Evitar que "inexistente" dispare conflicto por contener la subcadena "existente".
+        if (m.Contains("inexistente"))
+        {
+            return false;
+        }
+
         return m.Contains("ya existe")
                || m.Contains("existente")
                || m.Contains("duplicado");

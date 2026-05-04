@@ -432,12 +432,15 @@ Estas son decisiones o limites vigentes del repo:
 - La app prioriza compatibilidad y cierre funcional de V1, no una version final de API publica "perfecta".
 
 ## 13. Referencias rapidas
+Rutas relativas a la carpeta `DocReloj/` salvo indicacion contraria.
+
 Para detalle especializado, ver tambien:
 - `explicacion_ids_string_operativa.md` (BD, heartbeat, push)
 - `infra_hibrida.md`
-- `api_access_events_v1.md`
-- `api_poll_backfill_v1.md`
-- `api_jornadas_v1.md`
+- `DocsDeCreacion/api_completa_repo_v1.md` (contrato HTTP unificado)
+- `DocsDeCreacion/api_access_events_v1.md`
+- `DocsDeCreacion/api_poll_backfill_v1.md`
+- `DocsDeCreacion/api_jornadas_v1.md`
 - `DocHeartBeat/README.md`
 
 ## 14. Resumen operativo rapido

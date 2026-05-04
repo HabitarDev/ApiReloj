@@ -85,6 +85,8 @@ Es decir: tres partes unidas por el carácter **`|`** (pipe), **sin espacios ext
 
 Luego se calcula `HMACSHA256(secretKey, utf8_bytes(cadena))` y se compara con `signature` en hex.
 
+**Detalle de implementación en ApiReloj:** al validar, el servidor arma la cadena con el **`timeStamp` del body** y los IDs **`DeviceId` / `ResidentialId` leídos de la base** para ese dispositivo (no re-serializa el JSON completo). Por tanto el cliente debe enviar IDs que **coincidan con la BD**; si coinciden, la cadena es la misma que si se hubiera usado el body literal.
+
 ### 2.2 Por qué importa que JSON use strings
 
 Si el emisor antiguo mandaba:
@@ -182,8 +184,9 @@ Los `cuid` suelen ser seguros para path segment sin encoding adicional. Si en el
 
 ## 5. Referencias en este repo
 
-- Contrato HTTP actualizado: `api_completa_repo_v1.md`
-- Flujo general: `guia_funcionamiento_general_repo_v1.md`
+- Contrato HTTP actualizado: `DocsDeCreacion/api_completa_repo_v1.md`
+- Lecturas y admin poll (detalle): `DocsDeCreacion/api_access_events_v1.md`, `DocsDeCreacion/api_jornadas_v1.md`, `DocsDeCreacion/api_poll_backfill_v1.md`
+- Flujo general: `guia_funcionamiento_general_repo_v1.md` (raíz de `DocReloj/`)
 - Infra híbrida (push/poll): `infra_hibrida.md`
 - Migración EF generada: `Migracion_a_C/WebApplication1/DataAcces/Migrations/20260429005313_MaestrosIdsString.cs`
 - Heartbeat (servicio Windows): `DocHeartBeat/README.md`, `DocHeartBeat/instalacion.md`

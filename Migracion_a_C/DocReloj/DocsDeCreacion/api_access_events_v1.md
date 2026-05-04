@@ -3,6 +3,9 @@
 ## 1. Objetivo
 Consultar eventos de acceso almacenados localmente en la tabla `AccessEvents`.
 
+### Nota sobre JSON de respuesta
+Las propiedades del DTO (`_deviceSn`, `_serialNumber`, etc.) se serializan en JSON **con el mismo nombre** (prefijo `_` incluido), coherente con la configuracion actual de ASP.NET Core en este repo. Los consumidores deben pedir y parsear esas claves exactamente como en los ejemplos.
+
 ## 2. Endpoint
 - Metodo: `GET`
 - Ruta: `/AccessEvents`
@@ -127,7 +130,7 @@ Casos tipicos:
 
 ### 404 No encontrado
 Caso tipico:
-1. `residentialId` inexistente.
+1. `residentialId` inexistente (mensaje de validacion contiene `inexistente`; la API devuelve `ProblemDetails`).
 
 ### 409 Conflicto
 No esperado para consulta normal de lectura en este endpoint.

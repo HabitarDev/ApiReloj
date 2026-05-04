@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "RciXuDxXlWM=",
+  "dgSpecHash": "peByNcY/oE0=",
   "success": true,
-  "projectFilePath": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\WebApplication1\\WebApplication1.csproj",
+  "projectFilePath": "c:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\WebApplication1\\WebApplication1.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\marti\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\marti\\.nuget\\packages\\microsoft.aspnetcore\\2.3.9\\microsoft.aspnetcore.2.3.9.nupkg.sha512",
@@ -59,9 +59,9 @@
       "code": "NU1510",
       "level": "Warning",
       "message": "PackageReference Microsoft.AspNetCore will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
-      "projectPath": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\WebApplication1\\WebApplication1.csproj",
+      "projectPath": "c:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\WebApplication1\\WebApplication1.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\WebApplication1\\WebApplication1.csproj",
+      "filePath": "c:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\WebApplication1\\WebApplication1.csproj",
       "libraryId": "Microsoft.AspNetCore",
       "targetGraphs": [
         "net10.0"
@@ -71,9 +71,9 @@
       "code": "NU1510",
       "level": "Warning",
       "message": "PackageReference Microsoft.AspNetCore.Mvc will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
-      "projectPath": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\WebApplication1\\WebApplication1.csproj",
+      "projectPath": "c:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\WebApplication1\\WebApplication1.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\WebApplication1\\WebApplication1.csproj",
+      "filePath": "c:\\Users\\marti\\RiderProjects\\ApiReloj\\Migracion_a_C\\WebApplication1\\WebApplication1\\WebApplication1.csproj",
       "libraryId": "Microsoft.AspNetCore.Mvc",
       "targetGraphs": [
         "net10.0"
