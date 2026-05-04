@@ -2,7 +2,7 @@
 
 public class Residential
 {
-    private int _idResidential;
+    private string _idResidential = null!;
     private string _ipActual = null!;
     private List<Reloj> _relojes = [];
     private List<Device> _devices = [];
@@ -12,7 +12,7 @@ public class Residential
     }
 
     public Residential(
-        int idResidential,
+        string idResidential,
         string ipActual,
         List<Reloj> relojes
     )
@@ -23,7 +23,7 @@ public class Residential
     }
 
     public Residential(
-        int idResidential,
+        string idResidential,
         string ipActual,
         List<Reloj> relojes,
         List<Device> devices
@@ -35,7 +35,7 @@ public class Residential
         _devices = devices;
     }
 
-    public int IdResidential
+    public string IdResidential
     {
         get => _idResidential;
         set => _idResidential = value;

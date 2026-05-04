@@ -31,7 +31,7 @@ public class RelojMantenimientoService(IRelojEntityService relojEntityService,IR
         _relojesRepository.update(relojBuscado);
     }
 
-    public void Eliminar(int id)
+    public void Eliminar(string id)
     {
         Reloj? relojBuscado = _relojesRepository.GetById(id);
         if (relojBuscado == null) throw  new Exception("El reloj no existe");

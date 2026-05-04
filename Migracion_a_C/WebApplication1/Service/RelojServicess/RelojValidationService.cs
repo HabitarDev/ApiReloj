@@ -8,11 +8,11 @@ public class RelojValidationService : IRelojValidacionService
     public void Validar(RelojDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        if (dto._residentialId <= 0)
+        if (string.IsNullOrWhiteSpace(dto._residentialId))
         {
             throw new ArgumentException("Id de residencial invalido");
         }
-        if (dto._idReloj <= 0)
+        if (string.IsNullOrWhiteSpace(dto._idReloj))
         {
             throw new ArgumentException("Id de reloj invalido");
         }

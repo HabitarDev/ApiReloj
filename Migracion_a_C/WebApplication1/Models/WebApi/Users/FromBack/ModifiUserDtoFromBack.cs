@@ -25,14 +25,14 @@ public class ModifiUserDtoFromBack
     [Required]
     public string _timeType { get; set; } = null!;
 
-    public int _residentialId { get; set; }
+    public string _residentialId { get; set; } = null!;
 
     public ModifiUserDtoFromBack()
     {
     }
 
     public ModifiUserDtoFromBack(string employeeNo, string name, string userType, string beginTime, string endTime,
-        bool? enable, string timeType, int residentialId)
+        bool? enable, string timeType, string residentialId)
     {
         _employeeNo = employeeNo;
         _name = name;

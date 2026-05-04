@@ -1,6 +1,8 @@
 # Infra hibrida: proxy + cache de eventos (v1)
 
 ## Objetivo
+Los maestros `Residential`, `Device` y `Reloj` usan identificadores **string** en PostgreSQL y en la API HTTP (alineacion con HABITAR / `cuid`). Ver `explicacion_ids_string_operativa.md` para migracion de esquema, heartbeat y URL de push.
+
 Convertir ApiReloj en un proxy hibrido:
 - Para eventos de acceso: suscribir, recibir y almacenar en BD local.
 - Para comandos (crear persona, etc.): pasamanos hacia el reloj o conjunto de relojes correspondiente.

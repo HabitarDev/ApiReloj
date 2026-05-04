@@ -10,7 +10,7 @@ Consultar eventos de acceso almacenados localmente en la tabla `AccessEvents`.
 ## 3. Query Params (opcionales)
 | Parametro | Tipo | Default | Descripcion |
 |---|---|---|---|
-| `residentialId` | `int` | `null` | Filtra eventos de un residencial (resuelto por relojes vinculados y `deviceSn`). |
+| `residentialId` | `string` | `null` | Filtra eventos de un residencial (resuelto por relojes vinculados y `deviceSn`). Mismo valor que PK del residential en BD/HABITAR. |
 | `deviceSn` | `string` | `null` | Filtra por serial del reloj. |
 | `employeeNumber` | `string` | `null` | Filtra por empleado. |
 | `major` | `int` | `null` | Filtra por major de evento. |
@@ -46,17 +46,17 @@ GET /AccessEvents?fromUtc=2026-02-15T00:00:00Z&toUtc=2026-02-15T23:59:59Z&limit=
 
 ### 5.3 Por residencial
 ```http
-GET /AccessEvents?residentialId=1&limit=100&offset=0
+GET /AccessEvents?residentialId=cm01abcdef1234567890xyz&limit=100&offset=0
 ```
 
 ### 5.4 Por residencial + empleado
 ```http
-GET /AccessEvents?residentialId=1&employeeNumber=123&limit=100&offset=0
+GET /AccessEvents?residentialId=cm01abcdef1234567890xyz&employeeNumber=123&limit=100&offset=0
 ```
 
 ### 5.5 Por residencial + deviceSn + rango
 ```http
-GET /AccessEvents?residentialId=1&deviceSn=DS-K1T...&fromUtc=2026-02-15T00:00:00Z&toUtc=2026-02-15T23:59:59Z&limit=100&offset=0
+GET /AccessEvents?residentialId=cm01abcdef1234567890xyz&deviceSn=DS-K1T...&fromUtc=2026-02-15T00:00:00Z&toUtc=2026-02-15T23:59:59Z&limit=100&offset=0
 ```
 
 ### 5.6 Por major + minor

@@ -28,10 +28,14 @@ El servicio utiliza HMAC-SHA256 para firmar cada heartbeat, garantizando que:
 ### Algoritmo de firma
 
 ```
-signature = HMAC_SHA256(secretKey, "{timestamp}|{deviceId}|{residentialId}")
+signature = HMAC_SHA256(secretKey, "{timeStamp}|{deviceId}|{residentialId}")
 ```
 
-La firma se genera combinando el timestamp, deviceId y residentialId con un pipe (`|`) como separador, y luego aplicando HMAC-SHA256 con la clave secreta configurada.
+Los valores `deviceId` y `residentialId` son **strings** (mismos que persisten ApiReloj / HABITAR). La cadena UTF-8 concatenada usa exactamente esos caracteres, sin conversion numerica intermedia.
+
+La firma se genera combinando el timestamp (como numero en texto decimal), deviceId y residentialId con un pipe (`|`) como separador, y luego aplicando HMAC-SHA256 con la clave secreta configurada.
+
+El endpoint en ApiReloj es **`POST /Residential/heartbeat`** (no `/heartbeat` solo).
 
 ## ⚙️ Configuración
 
@@ -41,9 +45,9 @@ Toda la configuración se realiza mediante el archivo `appsettings.json`:
 {
   "Device": {
     "SecretKey": "PONER_VALOR",
-    "DeviceId": 1,
-    "ResidentialId": 42,
-    "HeartbeatUrl": "http://localhost:5000/heartbeat",
+    "DeviceId": "cm02abcdef1234567890xyz",
+    "ResidentialId": "cm01abcdef1234567890xyz",
+    "HeartbeatUrl": "http://localhost:5000/Residential/heartbeat",
     "IntervalSeconds": 30
   }
 }
@@ -54,9 +58,9 @@ Toda la configuración se realiza mediante el archivo `appsettings.json`:
 | Parámetro         | Descripción                              | Ejemplo                             |
 | ----------------- | ---------------------------------------- | ----------------------------------- |
 | `SecretKey`       | Clave secreta para generar la firma HMAC | `"mi_clave_secreta_12345"`          |
-| `DeviceId`        | Identificador único del dispositivo      | `1`                                 |
-| `ResidentialId`   | Identificador del lugar/residencia       | `42`                                |
-| `HeartbeatUrl`    | URL completa del endpoint de heartbeat   | `"http://localhost:5000/heartbeat"` |
+| `DeviceId`        | Identificador único del dispositivo (string, mismo que BD) | `"cm02abcdef1234567890xyz"` |
+| `ResidentialId`   | Identificador del residencial (string, mismo que BD)       | `"cm01abcdef1234567890xyz"` |
+| `HeartbeatUrl`    | URL completa del endpoint de heartbeat                     | `"http://localhost:5000/Residential/heartbeat"` |
 | `IntervalSeconds` | Intervalo en segundos entre heartbeats   | `30`                                |
 
 **⚠️ IMPORTANTE**: Antes de instalar el servicio, asegúrate de actualizar el valor de `SecretKey` en `appsettings.json` con una clave secreta segura.
@@ -67,9 +71,9 @@ Cada heartbeat se envía como una petición POST con el siguiente formato JSON:
 
 ```json
 {
-  "deviceId": 1,
-  "residentialId": 42,
-  "timestamp": 1733791220,
+  "deviceId": "cm02abcdef1234567890xyz",
+  "residentialId": "cm01abcdef1234567890xyz",
+  "timeStamp": 1733791220,
   "signature": "a1b2c3d4e5f6..."
 }
 ```
@@ -78,7 +82,7 @@ Cada heartbeat se envía como una petición POST con el siguiente formato JSON:
 
 - **deviceId**: Identificador del dispositivo (desde configuración)
 - **residentialId**: Identificador de la residencia (desde configuración)
-- **timestamp**: Timestamp Unix (segundos desde epoch UTC)
+- **timeStamp**: Timestamp Unix (segundos desde epoch UTC)
 - **signature**: Firma HMAC-SHA256 en hexadecimal minúsculas
 
 ## 📝 Sistema de Logging
@@ -104,7 +108,7 @@ Esta ubicación en `ProgramData` es ideal para servicios de Windows porque:
 Cada entrada en el archivo de log sigue este formato:
 
 ```
-{timestamp} [{LEVEL}] {mensaje}
+{timeStampIsoUtc} [{LEVEL}] {mensaje}
 ```
 
 Donde:
@@ -118,7 +122,7 @@ Donde:
 #### Log de información (INFO)
 
 ```
-2025-01-10T03:15:22Z [INFO] Worker initialized. DeviceId: 1, ResidentialId: 42, Interval: 30s
+2025-01-10T03:15:22Z [INFO] Worker initialized. DeviceId: cm02abcdef1234567890xyz, ResidentialId: cm01abcdef1234567890xyz, Interval: 30s
 2025-01-10T03:15:22Z [INFO] Heartbeat sent successfully
 2025-01-10T03:15:52Z [INFO] Heartbeat sent successfully
 ```
@@ -342,7 +346,7 @@ Puedes verificar que el servicio está funcionando correctamente:
 **En el archivo de texto** (`service.log`):
 
 ```
-2025-01-10T03:15:22Z [INFO] Worker initialized. DeviceId: 1, ResidentialId: 42, Interval: 30s
+2025-01-10T03:15:22Z [INFO] Worker initialized. DeviceId: cm02abcdef1234567890xyz, ResidentialId: cm01abcdef1234567890xyz, Interval: 30s
 2025-01-10T03:15:22Z [INFO] Heartbeat sent successfully
 2025-01-10T03:15:52Z [INFO] Heartbeat sent successfully
 ```
@@ -350,8 +354,8 @@ Puedes verificar que el servicio está funcionando correctamente:
 **En el Visor de Eventos**:
 
 ```
-[Information] Worker initialized. DeviceId: 1, ResidentialId: 42, Interval: 30s
-[Information] Sending heartbeat. Timestamp: 1733791220, DeviceId: 1
+[Information] Worker initialized. DeviceId: cm02abcdef1234567890xyz, ResidentialId: cm01abcdef1234567890xyz, Interval: 30s
+[Information] Sending heartbeat. TimeStamp: 1733791220, DeviceId: cm02abcdef1234567890xyz
 [Information] Heartbeat sent successfully. Status: OK
 ```
 
@@ -387,7 +391,7 @@ Puedes verificar que el servicio está funcionando correctamente:
 
 1. Verificar que `SecretKey` coincide con la del backend
 2. Verificar formato de la firma (hexadecimal minúsculas)
-3. Verificar que el orden de los campos es: `{timestamp}|{deviceId}|{residentialId}`
+3. Verificar que el orden de los campos es: `{timeStamp}|{deviceId}|{residentialId}`
 4. Verificar encoding UTF-8 en ambos extremos
 
 ### El servicio se detiene inesperadamente
@@ -433,7 +437,7 @@ El servicio utiliza el patrón **Background Service** de .NET, implementado medi
 2. Inicia un bucle infinito que se ejecuta cada `IntervalSeconds`
 3. En cada iteración:
    - Genera timestamp Unix actual
-   - Construye string para firma: `{timestamp}|{deviceId}|{residentialId}`
+   - Construye string para firma: `{timeStamp}|{deviceId}|{residentialId}`
    - Genera firma HMAC-SHA256
    - Envía POST con el payload JSON
    - Registra resultado (éxito o error)

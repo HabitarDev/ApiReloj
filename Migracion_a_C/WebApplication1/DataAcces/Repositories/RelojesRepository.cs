@@ -15,7 +15,7 @@ public class RelojesRepository (SqlContext repos) : IRelojesRepository
         return reloj;
     }
 
-    public Reloj? GetById(int id)
+    public Reloj? GetById(string id)
     {
         return _context.Relojes.FirstOrDefault(x => x.IdReloj == id);
     }
@@ -25,20 +25,20 @@ public class RelojesRepository (SqlContext repos) : IRelojesRepository
         return _context.Relojes.ToList();
     }
 
-    public List<Reloj> GetPollCandidates(int? residentialId = null, int? relojId = null)
+    public List<Reloj> GetPollCandidates(string? residentialId = null, string? relojId = null)
     {
         var query = _context.Relojes
             .Include(x => x.Residential)
             .AsQueryable();
 
-        if (residentialId.HasValue)
+        if (!string.IsNullOrEmpty(residentialId))
         {
-            query = query.Where(x => x.ResidentialId == residentialId.Value);
+            query = query.Where(x => x.ResidentialId == residentialId);
         }
 
-        if (relojId.HasValue)
+        if (!string.IsNullOrEmpty(relojId))
         {
-            query = query.Where(x => x.IdReloj == relojId.Value);
+            query = query.Where(x => x.IdReloj == relojId);
         }
 
         return query.ToList();
@@ -56,7 +56,7 @@ public class RelojesRepository (SqlContext repos) : IRelojesRepository
         _context.SaveChanges();
     }
 
-    public void delete(int id)
+    public void delete(string id)
     {
         var reloj = GetById(id);
         if(reloj == null)

@@ -17,7 +17,7 @@ public class ResidentialController(IResidentialService service) : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public ActionResult<ResidentialDto> BuscarPorId([FromRoute] int id)
+    public ActionResult<ResidentialDto> BuscarPorId([FromRoute] string id)
     {
         return Ok(_service.GetById(id));
     }

@@ -41,7 +41,7 @@ public class DeviceService(IDeviceMantenimientoService mantenimientoService, IDe
         mantenimiento.Modificar(device);
     }
 
-    public void Eliminar(int id)
+    public void Eliminar(string id)
     {
         mantenimiento.Eliminar(id);
     }
@@ -56,7 +56,7 @@ public class DeviceService(IDeviceMantenimientoService mantenimientoService, IDe
         return listaADevolver;
     }
 
-    public DeviceDto GetById(int id)
+    public DeviceDto GetById(string id)
     {
         Device? device = db.GetById(id);
         if (device == null)

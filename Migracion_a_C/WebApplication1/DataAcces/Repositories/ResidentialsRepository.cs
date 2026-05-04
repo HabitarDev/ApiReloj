@@ -15,7 +15,7 @@ public class ResidentialsRepository (SqlContext repos) : IResidentialsRepository
         return residential;
     }
 
-    public Residential? GetById(int id)
+    public Residential? GetById(string id)
     {
         return _context.Residentials
             .Include(x => x.Relojes)
@@ -40,7 +40,7 @@ public class ResidentialsRepository (SqlContext repos) : IResidentialsRepository
         _context.SaveChanges();
     }
 
-    public void delete(int id)
+    public void delete(string id)
     {
         var res = GetById(id);
         if(res == null)

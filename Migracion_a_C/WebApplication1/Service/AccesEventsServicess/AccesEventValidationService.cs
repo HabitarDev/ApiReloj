@@ -44,7 +44,7 @@ public class AccesEventValidationService : IAccesEventValidationService
     public void ValidarEnvelope(HikvisionPushEnvelopeDto envelope)
     {
         ArgumentNullException.ThrowIfNull(envelope);
-        if (envelope.RelojId <= 0)
+        if (string.IsNullOrWhiteSpace(envelope.RelojId))
         {
             throw new ArgumentException("relojId invalido");
         }

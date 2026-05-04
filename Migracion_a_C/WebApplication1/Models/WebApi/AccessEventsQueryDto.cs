@@ -2,7 +2,7 @@ namespace Models.WebApi;
 
 public class AccessEventsQueryDto
 {
-    public int? ResidentialId { get; set; }
+    public string? ResidentialId { get; set; }
     public string? DeviceSn { get; set; }
     public string? EmployeeNumber { get; set; }
 

@@ -5,9 +5,9 @@ namespace IDataAcces;
 public interface IRelojesRepository
 {
     Reloj Add(Reloj reloj);
-    Reloj? GetById(int id);
+    Reloj? GetById(string id);
     List<Reloj> GetAll();
-    List<Reloj> GetPollCandidates(int? residentialId = null, int? relojId = null);
+    List<Reloj> GetPollCandidates(string? residentialId = null, string? relojId = null);
     void update(Reloj reloj);
-    void delete(int id);
+    void delete(string id);
 }

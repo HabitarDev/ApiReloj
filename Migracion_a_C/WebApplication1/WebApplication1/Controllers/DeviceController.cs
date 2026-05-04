@@ -16,7 +16,7 @@ public class DeviceController(IDeviceService deviceService) : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public ActionResult<DeviceDto> ListarPorId(int id)
+    public ActionResult<DeviceDto> ListarPorId(string id)
     {
         return _service.GetById(id);
     }

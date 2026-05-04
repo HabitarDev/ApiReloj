@@ -8,7 +8,7 @@ Consultar jornadas laborales derivadas automáticamente de `AccessEvents`.
 - Ruta: `/Jornadas`
 
 ## 3. Query params opcionales
-- `residentialId`: `int`
+- `residentialId`: `string` (PK del residential en ApiReloj / HABITAR)
 - `clockSn`: `string`
 - `employeeNumber`: `string`
 - `statusCheck`: `OK | INCOMPLETE | ERROR`
@@ -36,8 +36,8 @@ GET /Jornadas?employeeNumber=123&limit=50&offset=0
 GET /Jornadas?statusCheck=INCOMPLETE&limit=100&offset=0
 GET /Jornadas?fromUtc=2026-02-18T00:00:00Z&toUtc=2026-02-18T23:59:59Z&limit=100&offset=0
 GET /Jornadas?updatedSinceUtc=2026-02-18T12:00:00Z&limit=100&offset=0
-GET /Jornadas?residentialId=1&limit=100&offset=0
-GET /Jornadas?residentialId=1&clockSn=DS-K1T321MFWX...&limit=100&offset=0
+GET /Jornadas?residentialId=cm01abcdef1234567890xyz&limit=100&offset=0
+GET /Jornadas?residentialId=cm01abcdef1234567890xyz&clockSn=DS-K1T321MFWX...&limit=100&offset=0
 ```
 
 ## 6. Respuesta 200 (ejemplo)

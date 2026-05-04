@@ -2,7 +2,7 @@
 
 public class HikvisionPushEnvelopeDto
 {
-    public int RelojId { get; set; }
+    public string RelojId { get; set; } = null!;
     public string RemoteIp { get; set; } = null!;
     public string ContentType { get; set; } = null!;
     public string EventPayloadRaw { get; set; } = null!;

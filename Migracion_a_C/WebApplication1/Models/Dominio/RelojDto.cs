@@ -2,8 +2,8 @@
 
 public class RelojDto
 {
-    public int _idReloj { get; set; }
+    public string _idReloj { get; set; } = null!;
     public int _puerto { get; set; }
-    public int _residentialId { get; set; }
+    public string _residentialId { get; set; } = null!;
     public string? _deviceSn { get; set; }
 }

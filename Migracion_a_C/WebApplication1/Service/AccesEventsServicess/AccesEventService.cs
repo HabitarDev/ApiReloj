@@ -50,7 +50,7 @@ public class AccesEventService(
     }
 
     public PollIngestResultDto ProcesarEventosDesdePoll(
-        int relojId,
+        string relojId,
         string deviceSn,
         IReadOnlyCollection<HikvisionAcsEventInfoDto> infoList)
     {

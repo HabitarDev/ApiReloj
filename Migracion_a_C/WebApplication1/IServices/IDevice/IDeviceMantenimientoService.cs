@@ -7,5 +7,5 @@ public interface IDeviceMantenimientoService
 {
     void Crear(DeviceDto device);
     void Modificar(Device device);
-    void Eliminar(int id);
+    void Eliminar(string id);
 }

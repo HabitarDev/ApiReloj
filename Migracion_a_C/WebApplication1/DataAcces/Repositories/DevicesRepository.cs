@@ -15,7 +15,7 @@ public class DevicesRepository(SqlContext repos) : IDevicesRepository
         return device;
     }
 
-    public Device? GetById(int id)
+    public Device? GetById(string id)
     {
         return _context.Devices.FirstOrDefault(x => x.DeviceId == id);
     }
@@ -25,7 +25,7 @@ public class DevicesRepository(SqlContext repos) : IDevicesRepository
         return _context.Devices.ToList();
     }
 
-    public List<Device> GetByResidentialId(int residentialId)
+    public List<Device> GetByResidentialId(string residentialId)
     {
         return _context.Devices.Where(x => x.ResidentialId == residentialId).ToList();
     }
@@ -42,7 +42,7 @@ public class DevicesRepository(SqlContext repos) : IDevicesRepository
         _context.SaveChanges();
     }
 
-    public void delete(int id)
+    public void delete(string id)
     {
         var device = GetById(id);
         if (device == null)

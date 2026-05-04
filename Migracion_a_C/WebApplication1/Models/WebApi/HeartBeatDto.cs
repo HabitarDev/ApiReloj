@@ -2,8 +2,8 @@
 
 public class HeartBeatDto
 {
-    public int DeviceId { get; set; }
-    public int ResidentialId { get; set; }
+    public string DeviceId { get; set; } = null!;
+    public string ResidentialId { get; set; } = null!;
     public long TimeStamp { get; set; }
     public string Signature { get; set; }
 }

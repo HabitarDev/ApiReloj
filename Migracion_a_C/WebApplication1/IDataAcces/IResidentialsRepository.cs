@@ -5,8 +5,8 @@ namespace IDataAcces;
 public interface IResidentialsRepository
 {
     Residential Add(Residential residential);
-    Residential? GetById(int id);
+    Residential? GetById(string id);
     List<Residential> GetAll();
     void update(Residential residential);
-    void delete(int id);
+    void delete(string id);
 }

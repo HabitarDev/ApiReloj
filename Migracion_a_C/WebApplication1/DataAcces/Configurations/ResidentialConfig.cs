@@ -10,7 +10,7 @@ public class ResidentialConfig: IEntityTypeConfiguration<Residential>
     {
         builder.ToTable("Residentials");
         builder.HasKey(x => x.IdResidential);
-        builder.Property(x => x.IdResidential).ValueGeneratedNever();
+        builder.Property(x => x.IdResidential).HasMaxLength(128).ValueGeneratedNever();
 
         builder.HasMany(r => r.Relojes)
                .WithOne(r => r.Residential)

@@ -2,7 +2,7 @@ namespace Models.WebApi;
 
 public class JornadasQueryDto
 {
-    public int? ResidentialId { get; set; }
+    public string? ResidentialId { get; set; }
     public string? ClockSn { get; set; }
     public string? EmployeeNumber { get; set; }
     public string? StatusCheck { get; set; }

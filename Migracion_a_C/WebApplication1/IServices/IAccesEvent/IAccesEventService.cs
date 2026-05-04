@@ -13,7 +13,7 @@ public interface IAccesEventService
     List<AccesEventDto> Buscar(AccessEventsQueryDto query);
     PushIngestResultDto ProcesarPush(HikvisionPushEnvelopeDto envelope, PushAuthContext authContext);
     PollIngestResultDto ProcesarEventosDesdePoll(
-        int relojId,
+        string relojId,
         string deviceSn,
         IReadOnlyCollection<HikvisionAcsEventInfoDto> infoList);
 }

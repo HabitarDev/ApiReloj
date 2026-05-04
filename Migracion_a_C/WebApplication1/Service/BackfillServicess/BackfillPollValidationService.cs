@@ -9,12 +9,12 @@ public class BackfillPollValidationService : IBackfillPollValidationService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (request.ResidentialId.HasValue && request.ResidentialId.Value <= 0)
+        if (request.ResidentialId != null && string.IsNullOrWhiteSpace(request.ResidentialId))
         {
             throw new ArgumentException("residentialId invalido");
         }
 
-        if (request.RelojId.HasValue && request.RelojId.Value <= 0)
+        if (request.RelojId != null && string.IsNullOrWhiteSpace(request.RelojId))
         {
             throw new ArgumentException("relojId invalido");
         }

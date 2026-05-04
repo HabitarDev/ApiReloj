@@ -60,9 +60,9 @@ Abre el archivo `appsettings.json` y modifica los siguientes valores:
 {
   "Device": {
     "SecretKey": "TU_CLAVE_SECRETA_AQUI",
-    "DeviceId": 1,
-    "ResidentialId": 42,
-    "HeartbeatUrl": "http://localhost:5000/heartbeat",
+    "DeviceId": "cm02abcdef1234567890xyz",
+    "ResidentialId": "cm01abcdef1234567890xyz",
+    "HeartbeatUrl": "http://localhost:5000/Residential/heartbeat",
     "IntervalSeconds": 30
   }
 }
@@ -73,9 +73,9 @@ Abre el archivo `appsettings.json` y modifica los siguientes valores:
 | Parámetro           | Descripción                                                                                       | Ejemplo                                  |
 | ------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------- |
 | **SecretKey**       | ⚠️ **OBLIGATORIO** - Clave secreta para generar la firma HMAC. Debe coincidir con la del backend. | `"mi_clave_super_secreta_123456"`        |
-| **DeviceId**        | Identificador único del dispositivo. Debe ser único por dispositivo.                              | `1`                                      |
-| **ResidentialId**   | Identificador de la residencia/lugar donde está instalado.                                        | `42`                                     |
-| **HeartbeatUrl**    | URL completa del endpoint del backend que recibe los heartbeats.                                  | `"https://api.miservidor.com/heartbeat"` |
+| **DeviceId**        | Identificador único del dispositivo (**string**, mismo valor que en ApiReloj/HABITAR).           | `"cm02abcdef1234567890xyz"`             |
+| **ResidentialId**   | Identificador del residencial (**string**, mismo valor que en ApiReloj/HABITAR).                  | `"cm01abcdef1234567890xyz"`             |
+| **HeartbeatUrl**    | URL completa del endpoint que recibe los heartbeats (ApiReloj: **`POST /Residential/heartbeat`**). | `"https://api.miservidor.com/Residential/heartbeat"` |
 | **IntervalSeconds** | Intervalo en segundos entre cada heartbeat (opcional, por defecto 30).                            | `30`                                     |
 
 #### Ejemplo de configuración real:
@@ -84,9 +84,9 @@ Abre el archivo `appsettings.json` y modifica los siguientes valores:
 {
   "Device": {
     "SecretKey": "a8f5f167f44f4964e6c998dee827110c",
-    "DeviceId": 101,
-    "ResidentialId": 25,
-    "HeartbeatUrl": "https://backend.midominio.com/api/heartbeat",
+    "DeviceId": "cm02abcdef1234567890xyz",
+    "ResidentialId": "cm01abcdef1234567890xyz",
+    "HeartbeatUrl": "https://backend.midominio.com/Residential/heartbeat",
     "IntervalSeconds": 30
   }
 }
@@ -279,7 +279,7 @@ Get-Content C:\ProgramData\DeviceHeartbeatService\logs\service.log -Tail 20
 Deberías ver entradas como:
 
 ```
-2025-01-10T10:30:00Z [INFO] Worker initialized. DeviceId: 101, ResidentialId: 25, Interval: 30s
+2025-01-10T10:30:00Z [INFO] Worker initialized. DeviceId: cm02abcdef1234567890xyz, ResidentialId: cm01abcdef1234567890xyz, Interval: 30s
 2025-01-10T10:30:00Z [INFO] Heartbeat sent successfully
 2025-01-10T10:30:30Z [INFO] Heartbeat sent successfully
 ```
@@ -481,7 +481,7 @@ rmdir /S /Q "C:\ProgramData\DeviceHeartbeatService"
 2. **Probar la URL manualmente**:
 
    ```powershell
-   Invoke-WebRequest -Uri "https://api.tuservidor.com/heartbeat" -Method POST
+   Invoke-WebRequest -Uri "https://api.tuservidor.com/Residential/heartbeat" -Method POST
    ```
 
 3. **Verificar firewall**:
@@ -500,6 +500,8 @@ rmdir /S /Q "C:\ProgramData\DeviceHeartbeatService"
 1. **Verificar SecretKey**: Asegúrate de que `SecretKey` en `appsettings.json` coincide **exactamente** con la del backend
 2. **Verificar formato**: No debe tener espacios extra al inicio o final
 3. **Verificar encoding**: Asegúrate de que el archivo está guardado en UTF-8
+4. **Verificar string firmado exacto**: debe ser `{timeStamp}|{deviceId}|{residentialId}`
+5. **Verificar tipos JSON**: `deviceId` y `residentialId` como string, `timeStamp` como number
 
 ### El servicio no escribe logs
 
@@ -595,4 +597,4 @@ Si después de seguir esta guía sigues teniendo problemas:
 
 ---
 
-**Última actualización**: Enero 2025
+**Última actualización**: Mayo 2026

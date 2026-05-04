@@ -5,9 +5,9 @@ namespace IDataAcces;
 public interface IDevicesRepository
 {
     Device Add(Device device);
-    Device? GetById(int id);
+    Device? GetById(string id);
     List<Device> GetAll();
-    List<Device> GetByResidentialId(int residentialId);
+    List<Device> GetByResidentialId(string residentialId);
     void update(Device device);
-    void delete(int id);
+    void delete(string id);
 }

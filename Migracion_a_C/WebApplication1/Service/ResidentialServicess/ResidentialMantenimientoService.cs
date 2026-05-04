@@ -25,7 +25,7 @@ public class ResidentialMantenimientoService(IResidentialsRepository residential
         _residentialRepo.update(resiBuscado);
     }
 
-    public void Eliminar(int idAEliinar)
+    public void Eliminar(string idAEliinar)
     {
         Residential? resiBuscado = _residentialRepo.GetById(idAEliinar);
         if (resiBuscado == null) throw  new Exception("El Residential no existe");

@@ -9,5 +9,5 @@ public class CreateUserDtoFromBack
     public string _endTime { get; set; } = "2037-12-31T23:59:59";
     public bool _enable { get; set; } = true;
     public string _timeType { get; set; } = "local";
-    public int _residentialId { get; set; }
+    public string _residentialId { get; set; } = null!;
 }

@@ -53,7 +53,7 @@ public class ResidentialService(IResidentialsRepository repo, IResidentialEntity
         mantenimiento.Modificar(res);
     }
 
-    public void Eliminar(int id)
+    public void Eliminar(string id)
     {
         mantenimiento.Eliminar(id);
     }
@@ -68,7 +68,7 @@ public class ResidentialService(IResidentialsRepository repo, IResidentialEntity
         return listaADevolver;
     }
 
-    public ResidentialDto GetById(int id)
+    public ResidentialDto GetById(string id)
     {
         Residential? residential = db.GetById(id);
         if (residential == null)
@@ -93,7 +93,7 @@ public class ResidentialService(IResidentialsRepository repo, IResidentialEntity
         }
     }
 
-    private DeviceDto EsMio(int deviceId, ResidentialDto residential)
+    private DeviceDto EsMio(string deviceId, ResidentialDto residential)
     {
         DeviceDto buscado = device.GetById(deviceId);
         if (buscado._residentialId != residential._idResidential)

@@ -10,10 +10,10 @@ public class RelojConfig: IEntityTypeConfiguration<Reloj>
     {
         builder.ToTable("Relojes");
         builder.HasKey(x => x.IdReloj);
-        builder.Property(x => x.IdReloj).ValueGeneratedNever();
+        builder.Property(x => x.IdReloj).HasMaxLength(128).ValueGeneratedNever();
 
         builder.Property(x => x.Puerto).IsRequired();
-        builder.Property(x => x.ResidentialId).IsRequired();
+        builder.Property(x => x.ResidentialId).HasMaxLength(128).IsRequired();
         builder.Property(x => x.DeviceSn);
         builder.Property(x => x.LastPushEvent);
         builder.Property(x => x.LastPollEvent);

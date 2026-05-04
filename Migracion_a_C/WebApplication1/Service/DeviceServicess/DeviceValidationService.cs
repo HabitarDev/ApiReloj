@@ -8,11 +8,11 @@ public class DeviceValidationService : IDeviceValidationService
     public void Validar(DeviceDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        if (dto._deviceId <= 0)
+        if (string.IsNullOrWhiteSpace(dto._deviceId))
         {
             throw new ArgumentException("Id de dispositivo invalido");
         }
-        if (dto._residentialId <= 0)
+        if (string.IsNullOrWhiteSpace(dto._residentialId))
         {
             throw new ArgumentException("Id de residencial invalido");
         }

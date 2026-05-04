@@ -41,8 +41,8 @@ Documentar el backfill automatico de eventos de acceso por poll ISAPI, su cursor
 Body opcional:
 ```json
 {
-  "residentialId": 1,
-  "relojId": 10
+  "residentialId": "cm01abcdef1234567890xyz",
+  "relojId": "cm03relojabc1234567890xyz"
 }
 ```
 

@@ -7,5 +7,5 @@ public interface IResidentialMantenimientoService
 {
     void Crear(ResidentialDto reloj);
     void Modificar(Residential reloj);
-    void Eliminar(int id);
+    void Eliminar(string id);
 }

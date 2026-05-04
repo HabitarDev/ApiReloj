@@ -62,15 +62,22 @@ public class AuthorizationPushFilter(
         };
     }
 
-    private static bool TryGetRelojId(AuthorizationFilterContext context, out int relojId)
+    private static bool TryGetRelojId(AuthorizationFilterContext context, out string relojId)
     {
-        relojId = 0;
+        relojId = string.Empty;
         if (!context.RouteData.Values.TryGetValue("relojId", out var raw))
         {
             return false;
         }
 
-        return int.TryParse(raw?.ToString(), out relojId) && relojId > 0;
+        var s = raw?.ToString()?.Trim();
+        if (string.IsNullOrEmpty(s))
+        {
+            return false;
+        }
+
+        relojId = s;
+        return true;
     }
 
     private static BadRequestObjectResult BadRequest(string detail)

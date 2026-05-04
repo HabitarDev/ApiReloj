@@ -7,5 +7,5 @@ public interface IRelojMantenimientoService
 {
     void Crear(RelojDto reloj);
     void Modificar(Reloj reloj);
-    void Eliminar(int id);
+    void Eliminar(string id);
 }

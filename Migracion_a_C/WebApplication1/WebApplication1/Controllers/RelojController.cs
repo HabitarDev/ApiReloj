@@ -17,7 +17,7 @@ public class RelojController(IRelojService relojService) : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public ActionResult<RelojDto> ListarPorId([FromRoute] int id)
+    public ActionResult<RelojDto> ListarPorId([FromRoute] string id)
     {
         return _relojService.GetById(id);
     }

@@ -9,7 +9,7 @@ public interface IAccesEventMantenimientoService
     List<AccesEventDto> ListarTodos();
     List<AccesEventDto> Buscar(AccessEventsQueryDto query);
     PollIngestResultDto ProcesarEventosDesdePoll(
-        int relojId,
+        string relojId,
         string deviceSn,
         IReadOnlyCollection<HikvisionAcsEventInfoDto> infoList);
 }

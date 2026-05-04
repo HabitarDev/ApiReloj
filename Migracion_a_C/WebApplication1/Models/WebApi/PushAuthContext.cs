@@ -4,8 +4,8 @@ public class PushAuthContext
 {
     public const string HttpContextItemKey = "__PushAuthContext";
 
-    public int RelojId { get; set; }
-    public int ResidentialId { get; set; }
+    public string RelojId { get; set; } = null!;
+    public string ResidentialId { get; set; } = null!;
     public string DeviceSn { get; set; } = null!;
     public string RemoteIp { get; set; } = null!;
 }

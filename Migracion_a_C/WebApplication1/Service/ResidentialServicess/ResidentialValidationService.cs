@@ -8,7 +8,7 @@ public class ResidentialValidationService : IResidentialValidationService
     public void Validar(ResidentialDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        if (dto._idResidential <= 0)
+        if (string.IsNullOrWhiteSpace(dto._idResidential))
         {
             throw new ArgumentException("Id de residencial invalido");
         }

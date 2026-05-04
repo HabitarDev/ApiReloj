@@ -2,31 +2,30 @@
 
 public class Reloj
 {
-    private int _idReloj;
+    private string _idReloj = null!;
     private int _puerto;
     private string? _deviceSn = null;
     private DateTimeOffset? _lastPushEvent = null;
     private DateTimeOffset? _lastPollEvent = null;
-    private int _residentialId { get; set; }     // FK explícita
-    private Residential _residential { get; set; } = null!;
+    private string _residentialId = null!;
+    private Residential _residential = null!;
 
     public Reloj()
     {
     }
 
     public Reloj(
-        int idReloj,
+        string idReloj,
         int puerto,
-        int residentialId
+        string residentialId
     )
     {
-
-        this._idReloj = idReloj;
-        this._puerto = puerto;
-        this._residentialId = residentialId;
+        _idReloj = idReloj;
+        _puerto = puerto;
+        _residentialId = residentialId;
     }
 
-    public int IdReloj
+    public string IdReloj
     {
         get => _idReloj;
         set => _idReloj = value;
@@ -38,7 +37,7 @@ public class Reloj
         set => _puerto = value;
     }
 
-    public int ResidentialId
+    public string ResidentialId
     {
         get => _residentialId;
         set => _residentialId = value;
@@ -61,7 +60,7 @@ public class Reloj
         get => _lastPollEvent;
         set => _lastPollEvent = value;
     }
-    
+
     public string? DeviceSn
     {
         get => _deviceSn;

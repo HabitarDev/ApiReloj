@@ -48,7 +48,7 @@ public class RelojService (IRelojMantenimientoService mantenimientoService,IRelo
 
     public void ModificarDesdeDto(ActualizarRelojRequest relojDto)
 {
-    if (relojDto._idReloj <= 0) throw new ArgumentException("Id de reloj invalido");
+    if (string.IsNullOrWhiteSpace(relojDto._idReloj)) throw new ArgumentException("Id de reloj invalido");
     if (relojDto._puerto <= 0) throw new ArgumentException("Puerto de reloj invalido");
     if (string.IsNullOrWhiteSpace(relojDto._deviceSn)) throw new ArgumentException("DeviceSn invalido");
 
@@ -61,7 +61,7 @@ public class RelojService (IRelojMantenimientoService mantenimientoService,IRelo
     Modificar(entidad);
 }
 
-    public void Eliminar(int id)
+    public void Eliminar(string id)
     {
         mantenimiento.Eliminar(id);
     }
@@ -76,7 +76,7 @@ public class RelojService (IRelojMantenimientoService mantenimientoService,IRelo
         return listaADevolver;
     }
 
-    public RelojDto GetById(int id)
+    public RelojDto GetById(string id)
     {
         Reloj? reloj = db.GetById(id);
         if (reloj == null)

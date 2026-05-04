@@ -22,6 +22,11 @@ Ejemplos:
 - `http://localhost:5000`
 - `https://mi-servidor:puerto`
 
+### IDs de maestros (`Residential`, `Device`, `Reloj`)
+- PK y FK de estas entidades son **strings** (compatibles con `cuid()` / HABITAR).
+- Parametros de ruta (`/Residential/{id}`, `/Device/{id}`, `/Reloj/{id}`, `/AccessEvents/push/{relojId}`) y campos JSON equivalentes van como **texto entre comillas**.
+- Ver tambien `explicacion_ids_string_operativa.md`.
+
 ### Formato base
 - La mayoria de endpoints usan JSON.
 - El push de reloj puede recibir:
@@ -119,18 +124,18 @@ Recibir un heartbeat firmado para actualizar:
 ### Body request
 ```json
 {
-  "deviceId": 100,
-  "residentialId": 10,
+  "deviceId": "cm02abcdef1234567890xyz",
+  "residentialId": "cm01abcdef1234567890xyz",
   "timeStamp": 1740830400,
   "signature": "A1B2C3..."
 }
 ```
 
 Campos:
-- `deviceId` (`int`)
-- `residentialId` (`int`)
+- `deviceId` (`string`, mismo valor que en BD / HABITAR)
+- `residentialId` (`string`, mismo valor que en BD / HABITAR)
 - `timeStamp` (`long`, epoch seconds)
-- `signature` (`string`, HMAC SHA256 en hex)
+- `signature` (`string`, HMAC SHA256 en hex sobre `{timeStamp}|{deviceId}|{residentialId}` en UTF-8)
 
 ### Response esperada
 - Sin body.
@@ -148,6 +153,14 @@ Campos:
 - Si la firma es valida, se persiste la nueva IP.
 - Si la firma no es valida, no hace cambios.
 - El detalle del emisor esta en `DocHeartBeat/README.md`.
+
+### Checklist minimo para clientes heartbeat (incluye agentes IA)
+- URL exacta: `POST /Residential/heartbeat` (no `/heartbeat` ni `/api/heartbeat`).
+- `deviceId` y `residentialId` viajan como `string` en JSON.
+- `timeStamp` viaja como `number` (epoch seconds, UTC).
+- Cadena a firmar: `{timeStamp}|{deviceId}|{residentialId}` en UTF-8.
+- `signature` es HMAC SHA256 en hexadecimal (recomendado: lowercase).
+- Respuesta esperable: `204` tanto en exito como en no-op por firma invalida.
 
 ## 5.2 POST /AccessEvents/push/{relojId}
 ### Objetivo
@@ -167,7 +180,7 @@ Segun formato de envio del reloj:
 - `Content-Type: multipart/form-data`
 
 ### Path params
-- `relojId` (`int`)
+- `relojId` (`string`, debe coincidir con `Reloj.IdReloj` en BD)
 
 ### Body request
 El body no es un DTO del backend sino el payload enviado por el reloj.
@@ -224,7 +237,7 @@ Consultar eventos almacenados en PostgreSQL local.
 - `Accept: application/json`
 
 ### Query params
-- `residentialId` (`int?`)
+- `residentialId` (`string?`)
 - `deviceSn` (`string?`)
 - `employeeNumber` (`string?`)
 - `major` (`int?`)
@@ -286,7 +299,7 @@ Consultar jornadas derivadas desde `AccessEvents`.
 - `Accept: application/json`
 
 ### Query params
-- `residentialId` (`int?`)
+- `residentialId` (`string?`)
 - `clockSn` (`string?`)
 - `employeeNumber` (`string?`)
 - `statusCheck` (`string?`)
@@ -353,8 +366,8 @@ Body opcional.
 Si se envia, usa `BackfillPollRunRequestDto`:
 ```json
 {
-  "residentialId": 1,
-  "relojId": 10,
+  "residentialId": "cm01abcdef1234567890xyz",
+  "relojId": "cm03relojabc1234567890xyz",
   "trigger": "manual"
 }
 ```
@@ -519,7 +532,7 @@ Crear un usuario en todos los relojes del residencial indicado.
   "_endTime": "2037-12-31T23:59:59",
   "_enable": true,
   "_timeType": "local",
-  "_residentialId": 1
+  "_residentialId": "cm01abcdef1234567890xyz"
 }
 ```
 
@@ -558,7 +571,7 @@ Modificar un usuario en todos los relojes del residencial indicado.
   "_endTime": "2037-12-31T23:59:59",
   "_enable": true,
   "_timeType": "local",
-  "_residentialId": 1
+  "_residentialId": "cm01abcdef1234567890xyz"
 }
 ```
 
@@ -590,7 +603,7 @@ Borrar un usuario en todos los relojes del residencial indicado.
 ```json
 {
   "_employeeNo": "123",
-  "_residentialId": 1
+  "_residentialId": "cm01abcdef1234567890xyz"
 }
 ```
 
@@ -627,7 +640,7 @@ Lista de `ResidentialDto`
 ```json
 [
   {
-    "_idResidential": 1,
+    "_idResidential": "cm01abcdef1234567890xyz",
     "_ipActual": "192.168.1.10",
     "_relojes": [],
     "_devices": []
@@ -650,7 +663,7 @@ Consultar un residential por id.
 `/Residential/{id}`
 
 ### Path params
-- `id` (`int`)
+- `id` (`string`)
 
 ### Response esperada
 `ResidentialDto`
@@ -676,7 +689,7 @@ Crear un residential.
 `CrearResidentialRequest`
 ```json
 {
-  "idResidential": 1,
+  "idResidential": "cm01abcdef1234567890xyz",
   "ipActual": "192.168.1.10"
 }
 ```
@@ -717,7 +730,7 @@ Consultar un device por id.
 `/Device/{id}`
 
 ### Path params
-- `id` (`int`)
+- `id` (`string`)
 
 ### Response esperada
 `DeviceDto`
@@ -743,10 +756,10 @@ Crear un device.
 `DeviceDto`
 ```json
 {
-  "_deviceId": 100,
+  "_deviceId": "cm02abcdef1234567890xyz",
   "_secretKey": "mi-clave",
   "_lastSeen": null,
-  "_residentialId": 1
+  "_residentialId": "cm01abcdef1234567890xyz"
 }
 ```
 
@@ -786,7 +799,7 @@ Consultar un reloj por id.
 `/Reloj/{id}`
 
 ### Path params
-- `id` (`int`)
+- `id` (`string`)
 
 ### Response esperada
 `RelojDto`
@@ -812,9 +825,9 @@ Crear un reloj.
 `CrearRelojRequest`
 ```json
 {
-  "_idReloj": 10,
+  "_idReloj": "cm03relojabc1234567890xyz",
   "_puerto": 80,
-  "_residentialId": 1
+  "_residentialId": "cm01abcdef1234567890xyz"
 }
 ```
 
@@ -843,7 +856,7 @@ Actualizar puerto y `DeviceSn` de un reloj existente.
 `ActualizarRelojRequest`
 ```json
 {
-  "_idReloj": 10,
+  "_idReloj": "cm03relojabc1234567890xyz",
   "_puerto": 80,
   "_deviceSn": "ABC123"
 }
@@ -931,6 +944,7 @@ Guarda un envelope JSON serializado con esta forma conceptual:
 
 ## 13. Ver tambien
 Para detalle especializado, ver:
+- `explicacion_ids_string_operativa.md` (migracion BD, heartbeat, push)
 - `infra_hibrida.md`
 - `api_access_events_v1.md`
 - `api_poll_backfill_v1.md`

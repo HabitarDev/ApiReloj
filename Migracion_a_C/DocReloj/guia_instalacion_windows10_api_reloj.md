@@ -275,7 +275,7 @@ POST /Residential
 Content-Type: application/json
 
 {
-  "idResidential": 1,
+  "idResidential": "cm01abcdef1234567890xyz",
   "ipActual": "0.0.0.0"
 }
 ```
@@ -286,10 +286,10 @@ POST /Device
 Content-Type: application/json
 
 {
-  "_deviceId": 1001,
+  "_deviceId": "cm02abcdef1234567890xyz",
   "_secretKey": "MI_SECRETO_HEARTBEAT",
   "_lastSeen": null,
-  "_residentialId": 1
+  "_residentialId": "cm01abcdef1234567890xyz"
 }
 ```
 
@@ -299,9 +299,9 @@ POST /Reloj
 Content-Type: application/json
 
 {
-  "_idReloj": 1,
+  "_idReloj": "cm03relojabc1234567890xyz",
   "_puerto": 80,
-  "_residentialId": 1
+  "_residentialId": "cm01abcdef1234567890xyz"
 }
 ```
 
@@ -314,7 +314,7 @@ PUT /Reloj
 Content-Type: application/json
 
 {
-  "_idReloj": 1,
+  "_idReloj": "cm03relojabc1234567890xyz",
   "_puerto": 80,
   "_deviceSn": "DS-K1T321MFWX20221217V030900ENAA7937545"
 }
@@ -331,8 +331,8 @@ Content-Type: application/json
 ## 12.2 Heartbeat válido (firma HMAC correcta)
 Ejemplo PowerShell para generar firma y enviar heartbeat:
 ```powershell
-$deviceId = 1001
-$residentialId = 1
+$deviceId = "cm02abcdef1234567890xyz"
+$residentialId = "cm01abcdef1234567890xyz"
 $secret = "MI_SECRETO_HEARTBEAT"
 $timestamp = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
 $message = "$timestamp|$deviceId|$residentialId"
@@ -343,18 +343,18 @@ $hash = $hmac.ComputeHash($msgBytes)
 $signature = ($hash | ForEach-Object { $_.ToString("x2") }) -join ""
 
 $body = @{
-  DeviceId = $deviceId
-  ResidentialId = $residentialId
-  TimeStamp = $timestamp
-  Signature = $signature
+  deviceId = $deviceId
+  residentialId = $residentialId
+  timeStamp = $timestamp
+  signature = $signature
 } | ConvertTo-Json
 
 Invoke-RestMethod -Method Post -Uri "http://localhost:8080/Residential/heartbeat" -ContentType "application/json" -Body $body
 ```
 
 Validar:
-1. `GET /Residential/1` actualiza `ipActual` con IP origen del heartbeat.
-2. `GET /Device/1001` actualiza `_lastSeen`.
+1. `GET /Residential/cm01abcdef1234567890xyz` actualiza `ipActual` con IP origen del heartbeat.
+2. `GET /Device/cm02abcdef1234567890xyz` actualiza `_lastSeen`.
 
 Comportamiento adicional relevante:
 1. Si la firma es invalida, el endpoint mantiene respuesta `204` y no actualiza estado (no-op silencioso).
@@ -379,8 +379,8 @@ POST /admin/poll/run
 Content-Type: application/json
 
 {
-  "residentialId": 1,
-  "relojId": 1
+  "residentialId": "cm01abcdef1234567890xyz",
+  "relojId": "cm03relojabc1234567890xyz"
 }
 ```
 
@@ -401,13 +401,13 @@ Alcance de observabilidad actual:
 ### AccessEvents
 ```http
 GET /AccessEvents?limit=100&offset=0
-GET /AccessEvents?residentialId=1&fromUtc=2026-02-15T00:00:00Z&toUtc=2026-02-15T23:59:59Z&limit=100&offset=0
+GET /AccessEvents?residentialId=cm01abcdef1234567890xyz&fromUtc=2026-02-15T00:00:00Z&toUtc=2026-02-15T23:59:59Z&limit=100&offset=0
 ```
 
 ### Jornadas
 ```http
 GET /Jornadas?limit=100&offset=0
-GET /Jornadas?residentialId=1&statusCheck=INCOMPLETE&limit=100&offset=0
+GET /Jornadas?residentialId=cm01abcdef1234567890xyz&statusCheck=INCOMPLETE&limit=100&offset=0
 ```
 
 ---

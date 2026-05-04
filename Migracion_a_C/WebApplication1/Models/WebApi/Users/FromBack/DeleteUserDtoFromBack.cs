@@ -3,5 +3,5 @@
 public class DeleteUserDtoFromBack
 {
     public string _employeeNo { get; set; } = null!;
-    public int _residentialId { get; set; }
+    public string _residentialId { get; set; } = null!;
 }

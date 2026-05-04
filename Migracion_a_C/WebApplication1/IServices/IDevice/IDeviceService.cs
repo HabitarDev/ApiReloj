@@ -10,8 +10,8 @@ public interface IDeviceService
     void Validar(DeviceDto dto);
     void Crear(DeviceDto device);
     void Modificar(Device device);
-    void Eliminar(int id);
+    void Eliminar(string id);
     List<DeviceDto> Listar();
-    DeviceDto GetById(int id);
+    DeviceDto GetById(string id);
     void HeartbeatProcesado(DeviceDto dto);
 }

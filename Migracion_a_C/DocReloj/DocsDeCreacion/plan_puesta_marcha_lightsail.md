@@ -192,7 +192,7 @@ POST http://<LIGHTSAIL_IP>:8080/Residential
 Content-Type: application/json
 
 {
-  "idResidential": 1,
+  "idResidential": "cm01abcdef1234567890xyz",
   "ipActual": "<IP_PUBLICA_DE_SALIDA_DEL_SITIO>"
 }
 ```
@@ -202,10 +202,10 @@ POST http://<LIGHTSAIL_IP>:8080/Device
 Content-Type: application/json
 
 {
-  "_deviceId": 1001,
+  "_deviceId": "cm02abcdef1234567890xyz",
   "_secretKey": "MI_SECRETO_HEARTBEAT",
   "_lastSeen": null,
-  "_residentialId": 1
+  "_residentialId": "cm01abcdef1234567890xyz"
 }
 ```
 3. Crear Reloj:
@@ -214,9 +214,9 @@ POST http://<LIGHTSAIL_IP>:8080/Reloj
 Content-Type: application/json
 
 {
-  "_idReloj": 1,
+  "_idReloj": "cm03relojabc1234567890xyz",
   "_puerto": 80,
-  "_residentialId": 1
+  "_residentialId": "cm01abcdef1234567890xyz"
 }
 ```
 
@@ -231,31 +231,30 @@ Authorization: Digest (admin/password)
 ## 9. Setear DeviceSn en API por update de reloj
 1. Llamar endpoint update:
 ```http
-PUT http://<LIGHTSAIL_IP>:8080/Reloj/1
+PUT http://<LIGHTSAIL_IP>:8080/Reloj
 Content-Type: application/json
 
 {
-  "_idReloj": 1,
+  "_idReloj": "cm03relojabc1234567890xyz",
   "_puerto": 80,
-  "_residentialId": 1,
   "_deviceSn": "VALOR_OBTENIDO_EN_DEVICEINFO"
 }
 ```
-2. Validar con `GET /Reloj/1`.
+2. Validar con `GET /Reloj/cm03relojabc1234567890xyz`.
 
 ## 10. Configurar servicio de heartbeat en Windows
 1. URL destino: `http://<LIGHTSAIL_IP>:8080/Residential/heartbeat`.
-2. Payload:
+2. Payload (propiedades en camelCase como serializa ApiReloj):
 ```json
 {
-  "DeviceId": 1001,
-  "ResidentialId": 1,
-  "TimeStamp": 1730000000,
-  "Signature": "HEX_HMAC_SHA256"
+  "deviceId": "cm02abcdef1234567890xyz",
+  "residentialId": "cm01abcdef1234567890xyz",
+  "timeStamp": 1730000000,
+  "signature": "HEX_HMAC_SHA256"
 }
 ```
 3. Firma exacta:
-   - String base: `"<TimeStamp>|<DeviceId>|<ResidentialId>"`
+   - String base: `"<timeStamp>|<deviceId>|<residentialId>"` (valores como texto UTF-8)
    - HMAC SHA-256 con `secretKey` del Device
    - Salida en HEX
 4. Frecuencia sugerida: cada 10-30 segundos.

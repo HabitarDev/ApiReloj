@@ -2,8 +2,8 @@ namespace Models.WebApi;
 
 public class BackfillPollRunRequestDto
 {
-    public int? ResidentialId { get; set; }
-    public int? RelojId { get; set; }
+    public string? ResidentialId { get; set; }
+    public string? RelojId { get; set; }
     public string Trigger { get; set; } = "manual";
 }
 
@@ -24,7 +24,7 @@ public class PollIngestResultDto
 
 public class BackfillPollClockResultDto
 {
-    public int RelojId { get; set; }
+    public string RelojId { get; set; } = null!;
     public string? DeviceSn { get; set; }
 
     public string Status { get; set; } = null!;

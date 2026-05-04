@@ -84,7 +84,7 @@ public class JornadaMantenimientoService(
 
     public List<JornadaDto> Buscar(JornadasQueryDto query)
     {
-        if (!query.ResidentialId.HasValue)
+        if (string.IsNullOrEmpty(query.ResidentialId))
         {
             var rows = _jornadasRepository.Search(
                 query.FromUtc,
@@ -100,7 +100,7 @@ public class JornadaMantenimientoService(
             return rows.Select(_entity.FromEntity).ToList();
         }
 
-        var residential = _residentialsRepository.GetById(query.ResidentialId.Value);
+        var residential = _residentialsRepository.GetById(query.ResidentialId!);
         if (residential == null)
         {
             throw new ArgumentException("Residential inexistente");

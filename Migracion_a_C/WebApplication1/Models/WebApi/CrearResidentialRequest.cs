@@ -2,6 +2,6 @@
 
 public class CrearResidentialRequest
 {
-    public int IdResidential { get; set; }
+    public string IdResidential { get; set; } = null!;
     public string IpActual { get; set; } = null!;
 }

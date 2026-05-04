@@ -9,6 +9,11 @@ httpRequests/
 dataSources/
 dataSources.local.xml
 
+# Ignorar carpeta de comunicación con otro agente
+**/ComunicacionConOtroAgente/
+Migracion_a_C/DocReloj/ComunicacionConOtroAgente/*.md
+
+
 # ─────────────────────────────
 # Node / NPM
 # ─────────────────────────────

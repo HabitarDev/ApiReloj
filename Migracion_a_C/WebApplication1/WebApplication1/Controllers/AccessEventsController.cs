@@ -15,9 +15,9 @@ public class AccessEventsController(
     private readonly IAccesEventService _accesEventService = accesEventService;
     private readonly ILogger<AccessEventsController> _logger = logger;
 
-    [HttpPost("push/{relojId:int}")]
+    [HttpPost("push/{relojId}")]
     [ServiceFilter(typeof(AuthorizationPushFilter))]
-    public async Task<ActionResult<PushIngestResultDto>> Push([FromRoute] int relojId)
+    public async Task<ActionResult<PushIngestResultDto>> Push([FromRoute] string relojId)
     {
         var remoteIp = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? string.Empty;
         var contentType = Request.ContentType ?? string.Empty;

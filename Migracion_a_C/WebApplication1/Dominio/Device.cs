@@ -2,10 +2,10 @@
 
 public class Device
 {
-    private int _deviceId;
+    private string _deviceId = null!;
     private string _secretKey = null!;
     private DateTime? _lastSeen;
-    private int _residentialId;
+    private string _residentialId = null!;
     private Residential _residential = null!;
 
     public Device()
@@ -13,10 +13,10 @@ public class Device
     }
 
     public Device(
-        int deviceId,
+        string deviceId,
         string secretKey,
         DateTime? lastSeen,
-        int residentialId
+        string residentialId
     )
     {
         _deviceId = deviceId;
@@ -25,7 +25,7 @@ public class Device
         _residentialId = residentialId;
     }
 
-    public int DeviceId
+    public string DeviceId
     {
         get => _deviceId;
         set => _deviceId = value;
@@ -43,7 +43,7 @@ public class Device
         set => _lastSeen = value;
     }
 
-    public int ResidentialId
+    public string ResidentialId
     {
         get => _residentialId;
         set => _residentialId = value;

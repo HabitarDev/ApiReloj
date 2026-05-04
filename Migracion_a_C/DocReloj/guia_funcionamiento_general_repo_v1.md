@@ -18,6 +18,12 @@ La idea principal es desacoplar al backend del reloj para que:
 - exista un mecanismo de recuperacion ante huecos,
 - y el backend use esta API como punto unico de integracion.
 
+### Convencion de IDs de maestros (`Residential`, `Device`, `Reloj`)
+
+Los identificadores primarios y las referencias cruzadas entre esas entidades son **strings** (longitud persistida hasta **128** caracteres en PostgreSQL), alineados con el uso de **`cuid()`** en el backend HABITAR (Prisma). No deben interpretarse como numeros: son **opacos**. Las rutas HTTP (`/Residential/{id}`, `/Reloj/{id}`, `/AccessEvents/push/{relojId}`, etc.) y los JSON de request/response usan esos valores entre comillas.
+
+Para el detalle operativo (migracion EF, heartbeat HMAC y URLs de push en relojes), ver `explicacion_ids_string_operativa.md`.
+
 ## 2. Arquitectura general
 ### Componentes
 - Backend consumidor.
@@ -179,6 +185,14 @@ Payload funcional:
 - El comportamiento actual es no-op.
 - El endpoint responde sin body.
 - En el runtime real, la accion es `void`, por lo que el exito/no-op se observa como `204 No Content`.
+
+### Minimo obligatorio para implementar un emisor heartbeat
+- Apuntar al endpoint real `POST /Residential/heartbeat`.
+- Enviar `deviceId` y `residentialId` como `string` JSON (opacos, no numericos).
+- Enviar `timeStamp` como epoch seconds (`number` JSON).
+- Firmar exactamente `{timeStamp}|{deviceId}|{residentialId}` en UTF-8 con HMAC SHA256.
+- Enviar `signature` en hex (recomendado lowercase por interoperabilidad).
+- No asumir body de error para decidir exito: el caso no-op por firma invalida puede devolver `204`.
 
 ### Dependencias con el resto del sistema
 El heartbeat es clave porque:
@@ -419,6 +433,7 @@ Estas son decisiones o limites vigentes del repo:
 
 ## 13. Referencias rapidas
 Para detalle especializado, ver tambien:
+- `explicacion_ids_string_operativa.md` (BD, heartbeat, push)
 - `infra_hibrida.md`
 - `api_access_events_v1.md`
 - `api_poll_backfill_v1.md`

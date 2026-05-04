@@ -94,7 +94,7 @@ public class AccesEventMantentimientoService(
 
     public List<AccesEventDto> Buscar(AccessEventsQueryDto query)
     {
-        if (!query.ResidentialId.HasValue)
+        if (string.IsNullOrEmpty(query.ResidentialId))
         {
             var rows = _accessEventsRepository.Search(
                 fromUtc: query.FromUtc,
@@ -110,7 +110,7 @@ public class AccesEventMantentimientoService(
             return rows.Select(_entityService.FromEntity).ToList();
         }
 
-        var residential = _residentialsRepository.GetById(query.ResidentialId.Value);
+        var residential = _residentialsRepository.GetById(query.ResidentialId!);
         if (residential == null)
         {
             throw new ArgumentException("Residential inexistente");
@@ -166,16 +166,13 @@ public class AccesEventMantentimientoService(
     }
 
     public PollIngestResultDto ProcesarEventosDesdePoll(
-        int relojId,
+        string relojId,
         string deviceSn,
         IReadOnlyCollection<HikvisionAcsEventInfoDto> infoList)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(deviceSn);
         ArgumentNullException.ThrowIfNull(infoList);
-        if (relojId <= 0)
-        {
-            throw new ArgumentException("relojId invalido");
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(relojId);
 
         var result = new PollIngestResultDto();
 
@@ -213,7 +210,7 @@ public class AccesEventMantentimientoService(
         return result;
     }
 
-    private void UpdateLastPushEvent(int relojId, DateTimeOffset eventTimeUtc)
+    private void UpdateLastPushEvent(string relojId, DateTimeOffset eventTimeUtc)
     {
         var reloj = _relojesRepository.GetById(relojId);
         if (reloj == null)
