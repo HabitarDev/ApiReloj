@@ -10,6 +10,14 @@ namespace DataAcces.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Devices_Residentials_ResidentialId",
+                table: "Devices");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Relojes_Residentials_ResidentialId",
+                table: "Relojes");
+
             migrationBuilder.AlterColumn<string>(
                 name: "IdResidential",
                 table: "Residentials",
@@ -54,11 +62,35 @@ namespace DataAcces.Migrations
                 nullable: false,
                 oldClrType: typeof(int),
                 oldType: "integer");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Devices_Residentials_ResidentialId",
+                table: "Devices",
+                column: "ResidentialId",
+                principalTable: "Residentials",
+                principalColumn: "IdResidential",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Relojes_Residentials_ResidentialId",
+                table: "Relojes",
+                column: "ResidentialId",
+                principalTable: "Residentials",
+                principalColumn: "IdResidential",
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Devices_Residentials_ResidentialId",
+                table: "Devices");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Relojes_Residentials_ResidentialId",
+                table: "Relojes");
+
             migrationBuilder.AlterColumn<int>(
                 name: "IdResidential",
                 table: "Residentials",
@@ -103,6 +135,22 @@ namespace DataAcces.Migrations
                 oldClrType: typeof(string),
                 oldType: "character varying(128)",
                 oldMaxLength: 128);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Devices_Residentials_ResidentialId",
+                table: "Devices",
+                column: "ResidentialId",
+                principalTable: "Residentials",
+                principalColumn: "IdResidential",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Relojes_Residentials_ResidentialId",
+                table: "Relojes",
+                column: "ResidentialId",
+                principalTable: "Residentials",
+                principalColumn: "IdResidential",
+                onDelete: ReferentialAction.Restrict);
         }
     }
 }

@@ -11,8 +11,12 @@ public interface IAccesEventEntityService
     AccesEventDto NormalizarDesdePush(
         HikvisionEventNotificationAlertDto source,
         string deviceSn,
+        string residentialId,
         string contentType,
         bool hasPicture,
         string rawPayload);
-    AccesEventDto NormalizarDesdePoll(HikvisionAcsEventInfoDto source, string deviceSn);
+    AccesEventDto NormalizarDesdePoll(
+        HikvisionAcsEventInfoDto source,
+        string deviceSn,
+        string residentialId);
 }

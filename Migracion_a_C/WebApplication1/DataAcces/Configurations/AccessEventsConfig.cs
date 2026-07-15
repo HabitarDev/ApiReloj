@@ -13,6 +13,7 @@ public class AccessEventsConfig : IEntityTypeConfiguration<AccessEvents>
         builder.HasKey(x => new { x.DeviceSn, x.SerialNumber });
 
         builder.Property(x => x.DeviceSn).IsRequired();
+        builder.Property(x => x.ResidentialId).HasMaxLength(128).IsRequired();
 
         builder.Property(x => x.SerialNumber).IsRequired();
 
@@ -35,6 +36,8 @@ public class AccessEventsConfig : IEntityTypeConfiguration<AccessEvents>
         builder.HasIndex(x => x.EventTimeUtc);
 
         builder.HasIndex(x => x.EmployeeNumber);
+
+        builder.HasIndex(x => new { x.EmployeeNumber, x.ResidentialId, x.EventTimeUtc });
 
         builder.HasIndex(x => new { x.DeviceSn, x.EventTimeUtc });
 

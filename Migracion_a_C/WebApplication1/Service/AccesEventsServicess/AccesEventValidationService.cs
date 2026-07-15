@@ -15,6 +15,11 @@ public class AccesEventValidationService : IAccesEventValidationService
             throw new ArgumentException("DeviceSn invalido");
         }
 
+        if (string.IsNullOrWhiteSpace(dto._residentialId))
+        {
+            throw new ArgumentException("ResidentialId invalido");
+        }
+
         if (dto._serialNumber <= 0)
         {
             throw new ArgumentException("SerialNumber invalido");
@@ -75,9 +80,10 @@ public class AccesEventValidationService : IAccesEventValidationService
         }
     }
 
-    public void ValidarEventoPush(HikvisionEventNotificationAlertDto payload)
+    public void ValidarEventoPush(HikvisionEventNotificationAlertDto payload, string expectedDeviceSn)
     {
         ArgumentNullException.ThrowIfNull(payload);
+        ArgumentException.ThrowIfNullOrWhiteSpace(expectedDeviceSn);
 
         if (string.IsNullOrWhiteSpace(payload.EventType))
         {
@@ -92,6 +98,14 @@ public class AccesEventValidationService : IAccesEventValidationService
         if (payload.AccessControllerEvent == null)
         {
             throw new ArgumentException("AccessControllerEvent invalido en payload push");
+        }
+
+        // Hikvision documenta deviceID como opcional en algunos transportes. Cuando
+        // viene informado, no se permite atribuir el evento a otro reloj configurado.
+        if (!string.IsNullOrWhiteSpace(payload.DeviceID)
+            && !string.Equals(payload.DeviceID.Trim(), expectedDeviceSn.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnauthorizedAccessException("deviceID del push no coincide con el DeviceSn del reloj configurado");
         }
 
         if (string.IsNullOrWhiteSpace(payload.DateTime)

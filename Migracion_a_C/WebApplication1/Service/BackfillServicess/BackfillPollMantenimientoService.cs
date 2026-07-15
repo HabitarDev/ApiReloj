@@ -279,7 +279,11 @@ public class BackfillPollMantenimientoService(
             var infoList = response.InfoList ?? [];
             if (infoList.Count > 0)
             {
-                var ingest = _accesEventService.ProcesarEventosDesdePoll(reloj.IdReloj, reloj.DeviceSn!, infoList);
+                var ingest = _accesEventService.ProcesarEventosDesdePoll(
+                    reloj.IdReloj,
+                    reloj.ResidentialId,
+                    reloj.DeviceSn!,
+                    infoList);
                 inserted += ingest.Inserted;
                 duplicates += ingest.Duplicates;
                 ignored += ingest.Ignored;

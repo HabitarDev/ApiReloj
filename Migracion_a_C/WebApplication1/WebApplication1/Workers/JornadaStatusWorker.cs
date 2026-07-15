@@ -27,7 +27,9 @@ public class JornadaStatusWorker(
 
                 if (updated > 0)
                 {
-                    _logger.LogInformation("JornadaStatusWorker marco {Count} jornadas como ERROR", updated);
+                    _logger.LogInformation(
+                        "JornadaStatusWorker encolo {Count} jornadas vencidas para reconstruccion",
+                        updated);
                 }
             }
             catch (Exception ex)

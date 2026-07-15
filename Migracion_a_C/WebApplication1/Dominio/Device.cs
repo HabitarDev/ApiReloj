@@ -5,6 +5,7 @@ public class Device
     private string _deviceId = null!;
     private string _secretKey = null!;
     private DateTime? _lastSeen;
+    private long? _lastAcceptedHeartbeatTimestamp;
     private string _residentialId = null!;
     private Residential _residential = null!;
 
@@ -41,6 +42,12 @@ public class Device
     {
         get => _lastSeen;
         set => _lastSeen = value;
+    }
+
+    public long? LastAcceptedHeartbeatTimestamp
+    {
+        get => _lastAcceptedHeartbeatTimestamp;
+        set => _lastAcceptedHeartbeatTimestamp = value;
     }
 
     public string ResidentialId

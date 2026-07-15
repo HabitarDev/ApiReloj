@@ -1,493 +1,388 @@
-# Guía de Instalación y Puesta en Marcha
-## API Reloj en Windows 10 + PostgreSQL en Docker Desktop
+# Instalación y puesta en marcha de ApiReloj en Windows
 
-## 0) Estado del sistema (actualizado)
-Los 2 bloqueantes que estaban documentados al inicio de esta guía ya fueron resueltos en código:
+**Revisada contra código y Compose:** 15 de julio de 2026.
 
-1. `PUT /Reloj` ya persiste cambios (`Puerto` y `DeviceSn`).
-- Referencia: `Migracion_a_C/WebApplication1/Service/RelojServicess/RelojMantenimientoService.cs`.
+## 1. Alcance
 
-2. `UsersControllers` ya tiene servicios registrados en DI.
-- Referencias:
-  - `Migracion_a_C/WebApplication1/WebApplication1/Controllers/UsersControllers.cs`
-  - `Migracion_a_C/WebApplication1/WebApplication1/Program.cs`
-  - `Migracion_a_C/WebApplication1/Models/WebApi/Users/FromBack/ModifiUserDtoFromBack.cs`
+Esta guía cubre dos formas de ejecutar ApiReloj:
 
-Regla de esta guía:
-1. La guía ahora es ejecutable end-to-end con el estado actual del repo.
-2. Igualmente se mantienen checks explícitos para detectar regresiones en estos puntos.
+1. API desde .NET en Windows, con PostgreSQL accesible externamente.
+2. API mediante el Compose incluido, con PostgreSQL accesible desde el contenedor.
 
----
+El `docker-compose.yml` actual contiene solamente el servicio `api`; no crea PostgreSQL.
 
-## 1) Objetivo y alcance
-Objetivo: dejar el sistema operativo en una máquina nueva de Windows 10 con:
-1. API corriendo en Windows.
-2. PostgreSQL corriendo en Docker Desktop.
-3. Esquema de BD creado por migraciones EF.
-4. Flujo real de alta de maestros (`Residential`, `Device`, `Reloj`) y pruebas de heartbeat/push/poll.
-5. Validaciones de lectura por `AccessEvents` y `Jornadas`.
+## 2. Requisitos
 
-Fuera de alcance:
-1. Hardening productivo avanzado (reverse proxy, certificados, monitoreo centralizado).
-2. Deploy como servicio Windows de la API (en esta guía se ejecuta por consola para pruebas).
+- .NET 10 SDK para ejecución local.
+- PostgreSQL compatible con Npgsql/EF Core 10.
+- Docker Desktop sólo si se usará Compose.
+- Credenciales ISAPI del reloj si exige Digest.
+- API key del backend e IP fija desde la que se harán llamadas administrativas.
 
----
+Proyectos:
 
-## 2) Tecnologías del repo
-1. API: ASP.NET Core Web API (.NET 10).
-2. Persistencia: Entity Framework Core 10 + Npgsql.
-3. Base de datos: PostgreSQL 16 (contenedor Docker).
-4. Integración reloj: ISAPI Hikvision (Digest opcional por `ISAPI_USER`/`ISAPI_PASSWORD`).
-5. Workers:
-   - `JornadaStatusWorker`
-   - `BackfillPollWorker`
+- solución: `Migracion_a_C/WebApplication1/WebApplication1.sln`;
+- startup: `WebApplication1/WebApplication1.csproj`;
+- migraciones: `DataAcces/DataAcces.csproj`;
+- pruebas: `Service.Tests/Service.Tests.csproj`.
 
-Rutas clave:
-1. Solución: `Migracion_a_C/WebApplication1/WebApplication1.sln`
-2. Proyecto startup API: `Migracion_a_C/WebApplication1/WebApplication1/WebApplication1.csproj`
-3. Proyecto migraciones: `Migracion_a_C/WebApplication1/DataAcces/DataAcces.csproj`
-4. Compose DB: `Migracion_a_C/docker-compose.yml`
-5. Variables compose: `Migracion_a_C/.env`
+## 3. PostgreSQL
 
----
+Crear una base y usuario, por ejemplo:
 
-## 3) Arquitectura de ejecución elegida
-Ejecución local definida para esta guía:
-1. API en Windows host.
-2. PostgreSQL en contenedor Docker Desktop.
-3. Relojes/dispositivos de la LAN consumen la API en `http://<IP_WINDOWS>:8080`.
-
-Flujo funcional esperado:
-1. Heartbeat actualiza `Residential.IpActual`.
-2. Push del reloj ingesta eventos con idempotencia.
-3. Poll/backfill completa históricos usando `LastPollEvent`.
-4. `GET /AccessEvents` y `GET /Jornadas` consultan BD local.
-
----
-
-## 4) Prerrequisitos externos
-### 4.1 Requisitos de máquina base (ya disponibles según contexto)
-1. Windows 10.
-2. Docker Desktop.
-3. Git.
-4. WSL + Ubuntu (no obligatorio para esta guía, pero instalado).
-
-### 4.2 Requisitos adicionales a instalar
-1. .NET SDK 10 en Windows (obligatorio para `dotnet run` y `dotnet ef`).
-2. Herramienta `dotnet-ef` (global o local).
-
-### 4.3 Requisitos de red y entorno real
-1. El reloj Hikvision debe ser accesible desde la máquina Windows por IP/puerto.
-2. El emisor real de heartbeat debe poder llegar a `http://<IP_WINDOWS>:8080/Residential/heartbeat`.
-3. Firewall de Windows debe permitir entrada por puerto `8080` desde la LAN.
-
-### 4.4 Requisitos funcionales externos
-1. Debe existir un emisor real de heartbeat (servicio/dispositivo externo).
-2. Debes conocer credenciales ISAPI del reloj si requiere Digest.
-
----
-
-## 5) Configuración requerida
-## 5.1 Configuración de base de datos (Docker compose)
-Archivo: `Migracion_a_C/.env`
-
-Valores base sugeridos:
-```env
-POSTGRES_USER=apireloj
-POSTGRES_PASSWORD=apireloj
-POSTGRES_DB=apireloj
-POSTGRES_PORT=5432
+```text
+database: apireloj
+username: apireloj
+password: <secreto>
+port: 5432
 ```
 
-## 5.2 Connection string de la API
-Archivo: `Migracion_a_C/WebApplication1/WebApplication1/appsettings.json`
+La connection string se configura como:
 
-Valor por defecto actual:
-```json
-"ConnectionStrings": {
-  "Default": "Host=localhost;Port=5432;Database=apireloj;Username=apireloj;Password=apireloj"
-}
+```text
+ConnectionStrings__Default=Host=localhost;Port=5432;Database=apireloj;Username=apireloj;Password=<secreto>
 ```
 
-Si cambias usuario/password/puerto en `.env`, debes alinear este valor.
+Al arrancar, la API ejecuta `Database.Migrate()`. No hace falta ejecutar `dotnet ef database update` en el flujo normal. Si la base no está disponible o una migración falla, la API no inicia.
 
-## 5.3 Variables de entorno ISAPI (opcional según reloj)
-Usadas por:
-1. `UserService`
-2. `HikvisionAcsEventClient`
+Para diagnóstico manual:
 
-Variables:
-1. `ISAPI_USER`
-2. `ISAPI_PASSWORD`
+```powershell
+cd C:\ruta\ApiReloj\Migracion_a_C\WebApplication1
+dotnet tool restore
+dotnet tool run dotnet-ef database update --project .\DataAcces\DataAcces.csproj --startup-project .\WebApplication1\WebApplication1.csproj
+```
 
-Ejemplo PowerShell (sesión actual):
+Tablas funcionales principales:
+
+- `Residentials`
+- `Devices`
+- `Relojes`
+- `AccessEvents`
+- `Jornadas`
+- `JornadaProjectionStates`
+- `BackfillPollRuns`
+- `__EFMigrationsHistory`
+
+## 4. Configuración de seguridad
+
+Variables obligatorias fuera de Development:
+
+```powershell
+$env:Security__Backend__ApiKey = "un-secreto-largo"
+$env:Security__Backend__AllowedIp = "203.0.113.20"
+```
+
+`AllowedIp` debe ser la IP que ApiReloj observa como origen del backend. La API no inicia si la clave está vacía o la IP es inválida.
+
+Valores heartbeat por defecto:
+
+```text
+AllowedClockSkewSeconds=300
+MaximumBodySizeBytes=8192
+PermitLimitPerIp=600
+RateWindowSeconds=60
+GlobalConcurrencyLimit=200
+```
+
+Para producción usar HTTPS. Si se agrega un reverse proxy, configurar forwarded headers y proxies conocidos antes de utilizar la IP reenviada.
+
+## 5. Credenciales ISAPI
+
+Opcionales si el reloj no exige Digest:
+
 ```powershell
 $env:ISAPI_USER = "admin"
-$env:ISAPI_PASSWORD = "tu_password"
+$env:ISAPI_PASSWORD = "<password-reloj>"
 ```
 
-Persistente (nueva sesión):
-```powershell
-setx ISAPI_USER "admin"
-setx ISAPI_PASSWORD "tu_password"
+Las usan polling y los endpoints de usuarios.
+
+## 6. Ejecutar localmente
+
+Development incluye una credencial local:
+
+```text
+X-Api-Key: development-backend-key
+AllowedIp: 127.0.0.1
 ```
 
-## 5.4 Puertos
-1. API: `8080` (recomendado para pruebas LAN).
-2. PostgreSQL host: `5432` (mapeado desde Docker).
+Arranque:
 
----
-
-## 6) Preparación de entorno en Windows 10
-## 6.1 Instalar .NET SDK 10
-Opciones:
-1. Instalador oficial de .NET 10 SDK (recomendado si `winget` falla).
-2. `winget` (si disponible en tu equipo).
-
-Verificación:
 ```powershell
-dotnet --info
-dotnet --version
-```
-
-## 6.2 Instalar dotnet-ef
-```powershell
-dotnet tool install --global dotnet-ef --version 10.*
-```
-
-Si ya estaba:
-```powershell
-dotnet tool update --global dotnet-ef --version 10.*
-```
-
-Verificación:
-```powershell
-dotnet ef --version
-```
-
-## 6.3 Verificar Docker Desktop
-```powershell
-docker --version
-docker compose version
-docker info
-```
-
----
-
-## 7) Levantar PostgreSQL con Docker
-Desde PowerShell:
-```powershell
-cd C:\ruta\al\repo\ApiReloj\Migracion_a_C
-docker compose up -d postgres
-docker compose ps
-docker logs apireloj-postgres --tail 100
-```
-
-Criterio OK:
-1. Contenedor `apireloj-postgres` en estado `running`.
-2. Sin errores de inicialización en logs.
-
----
-
-## 8) Migración de base de datos (EF Core)
-Regla oficial: usar migraciones de `DataAcces/Migrations` (no `migration.sql`).
-
-Desde PowerShell:
-```powershell
-cd C:\ruta\al\repo\ApiReloj\Migracion_a_C\WebApplication1
-dotnet ef database update --project .\DataAcces\DataAcces.csproj --startup-project .\WebApplication1\WebApplication1.csproj
-```
-
-Verificación de tablas:
-```powershell
-docker exec -it apireloj-postgres psql -U apireloj -d apireloj -c "\dt"
-```
-
-Debe incluir al menos:
-1. `Residentials`
-2. `Devices`
-3. `Relojes`
-4. `AccessEvents`
-5. `Jornadas`
-
----
-
-## 9) Arranque de la API
-Desde PowerShell:
-```powershell
-cd C:\ruta\al\repo\ApiReloj\Migracion_a_C\WebApplication1\WebApplication1
-$env:ASPNETCORE_URLS = "http://0.0.0.0:8080"
+cd C:\ruta\ApiReloj\Migracion_a_C\WebApplication1\WebApplication1
+$env:ASPNETCORE_ENVIRONMENT = "Development"
+$env:ASPNETCORE_URLS = "http://127.0.0.1:8080"
 dotnet run
 ```
 
-Verificaciones:
-1. API responde en `http://localhost:8080`.
-2. Desde otra PC en LAN: `http://<IP_WINDOWS>:8080/Residential` (si firewall habilitado correctamente).
+OpenAPI se publica sólo en Development y también requiere autenticación backend.
 
-Firewall Windows (si aplica):
+Smoke test:
+
 ```powershell
-netsh advfirewall firewall add rule name="ApiReloj 8080" dir=in action=allow protocol=TCP localport=8080
+curl.exe -H "X-Api-Key: development-backend-key" http://127.0.0.1:8080/Residential
 ```
 
----
+Una llamada sin header debe devolver `401`.
 
-## 10) Matriz de endpoints operativos actuales
-### 10.1 Maestros y heartbeat
-1. `GET /Residential`
-2. `GET /Residential/{id}`
-3. `POST /Residential`
-4. `POST /Residential/heartbeat`
-5. `GET /Device`
-6. `GET /Device/{id}`
-7. `POST /Device`
-8. `GET /Reloj`
-9. `GET /Reloj/{id}`
-10. `POST /Reloj`
-11. `PUT /Reloj` (actualiza `Puerto` y `DeviceSn`)
+## 7. Ejecutar con Compose
 
-### 10.2 Eventos y jornadas
-1. `POST /AccessEvents/push/{relojId}`
-2. `GET /AccessEvents`
-3. `GET /Jornadas`
+Copiar la plantilla:
 
-### 10.3 Backfill admin
-1. `POST /admin/poll/run`
-2. `GET /admin/poll/status`
+```powershell
+cd C:\ruta\ApiReloj\Migracion_a_C
+Copy-Item .env.example .env
+```
 
-### 10.4 Usuarios (estado actual)
-1. `POST /UsersControllers`
-2. `PUT /UsersControllers`
-3. `DELETE /UsersControllers`
+Variables:
 
-Nota: operativos con DI registrado en `Program.cs`.
+```env
+API_PORT=8080
+DB_NAME=apireloj
+DB_USER=apireloj
+DB_PASSWORD=change-me
+BACKEND_API_KEY=replace-with-a-long-random-secret
+BACKEND_ALLOWED_IP=203.0.113.20
+```
 
----
+Compose conecta a PostgreSQL mediante `host.docker.internal:5432`. PostgreSQL debe aceptar conexiones desde Docker y tener firewall/configuración apropiados.
 
-## 11) Carga de datos maestros iniciales
-Orden obligatorio:
-1. `Residential`
-2. `Device`
-3. `Reloj`
+```powershell
+docker compose up -d --build api
+docker compose ps
+docker compose logs api
+```
 
-## 11.1 Crear Residential
+Criterios de arranque:
+
+- las opciones de seguridad validan;
+- PostgreSQL responde;
+- migraciones se aplican;
+- el contenedor queda healthy a nivel de proceso, sin excepciones de startup.
+
+## 8. Aprovisionamiento inicial
+
+Todas estas llamadas deben llevar `X-Api-Key` y salir desde la IP autorizada.
+
+### Residential
+
 ```http
 POST /Residential
 Content-Type: application/json
+X-Api-Key: <secreto>
 
 {
-  "idResidential": "cm01abcdef1234567890xyz",
+  "idResidential": "RES-001",
   "ipActual": "0.0.0.0"
 }
 ```
 
-## 11.2 Crear Device
+### Device
+
 ```http
 POST /Device
 Content-Type: application/json
+X-Api-Key: <secreto>
 
 {
-  "_deviceId": "cm02abcdef1234567890xyz",
-  "_secretKey": "MI_SECRETO_HEARTBEAT",
+  "_deviceId": "DEVICE-001",
+  "_secretKey": "SECRETO_HEARTBEAT",
   "_lastSeen": null,
-  "_residentialId": "cm01abcdef1234567890xyz"
+  "_residentialId": "RES-001"
 }
 ```
 
-## 11.3 Crear Reloj
+La respuesta no devuelve el secreto.
+
+### Reloj
+
 ```http
 POST /Reloj
 Content-Type: application/json
+X-Api-Key: <secreto>
 
 {
-  "_idReloj": "cm03relojabc1234567890xyz",
+  "_idReloj": "CLOCK-001",
   "_puerto": 80,
-  "_residentialId": "cm01abcdef1234567890xyz"
+  "_residentialId": "RES-001"
 }
 ```
 
-## 11.4 Carga de `DeviceSn` del reloj
-Se realiza por API con `PUT /Reloj`.
+Configurar DeviceSn:
 
-Ejemplo:
 ```http
 PUT /Reloj
 Content-Type: application/json
+X-Api-Key: <secreto>
 
 {
-  "_idReloj": "cm03relojabc1234567890xyz",
+  "_idReloj": "CLOCK-001",
   "_puerto": 80,
-  "_deviceSn": "DS-K1T321MFWX20221217V030900ENAA7937545"
+  "_deviceSn": "CLOCK-SN-01"
 }
 ```
 
----
+## 9. Probar heartbeat
 
-## 12) Pruebas funcionales end-to-end
-## 12.1 Smoke test de infraestructura
-1. Docker postgres activo.
-2. Migraciones aplicadas.
-3. API levantada sin error al iniciar.
+El body permanece compatible con DeviceHeartbeatService:
 
-## 12.2 Heartbeat válido (firma HMAC correcta)
-Ejemplo PowerShell para generar firma y enviar heartbeat:
 ```powershell
-$deviceId = "cm02abcdef1234567890xyz"
-$residentialId = "cm01abcdef1234567890xyz"
-$secret = "MI_SECRETO_HEARTBEAT"
+$deviceId = "DEVICE-001"
+$residentialId = "RES-001"
+$secret = "SECRETO_HEARTBEAT"
 $timestamp = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-$message = "$timestamp|$deviceId|$residentialId"
-$keyBytes = [Text.Encoding]::UTF8.GetBytes($secret)
-$msgBytes = [Text.Encoding]::UTF8.GetBytes($message)
-$hmac = New-Object System.Security.Cryptography.HMACSHA256($keyBytes)
-$hash = $hmac.ComputeHash($msgBytes)
-$signature = ($hash | ForEach-Object { $_.ToString("x2") }) -join ""
-
-$body = @{
-  deviceId = $deviceId
-  residentialId = $residentialId
-  timeStamp = $timestamp
-  signature = $signature
-} | ConvertTo-Json
-
-Invoke-RestMethod -Method Post -Uri "http://localhost:8080/Residential/heartbeat" -ContentType "application/json" -Body $body
+$canonical = "$timestamp|$deviceId|$residentialId"
+$hmac = [System.Security.Cryptography.HMACSHA256]::new([Text.Encoding]::UTF8.GetBytes($secret))
+$signature = ($hmac.ComputeHash([Text.Encoding]::UTF8.GetBytes($canonical)) | ForEach-Object { $_.ToString("x2") }) -join ""
+$body = @{ deviceId=$deviceId; residentialId=$residentialId; timeStamp=$timestamp; signature=$signature } | ConvertTo-Json
+curl.exe -i -X POST -H "Content-Type: application/json" --data $body http://127.0.0.1:8080/Residential/heartbeat
 ```
 
-Validar:
-1. `GET /Residential/cm01abcdef1234567890xyz` actualiza `ipActual` con IP origen del heartbeat.
-2. `GET /Device/cm02abcdef1234567890xyz` actualiza `_lastSeen`.
+Esperado:
 
-Comportamiento adicional relevante:
-1. Si la firma es invalida, el endpoint mantiene respuesta `204` y no actualiza estado (no-op silencioso).
-2. Si hay inconsistencia de datos (`Residential`/`Device` inexistente o no relacionados), hoy puede devolver error (no se procesa como no-op).
+- firma válida nueva: `204` y actualiza estado;
+- mismo heartbeat repetido: `204` sin segunda mutación;
+- firma o timestamp inválidos: `401`;
+- exceso de tasa: `429`.
 
-## 12.3 Push desde reloj (autorizado por IP)
+## 10. Probar backend
+
+```powershell
+$headers = @("X-Api-Key: development-backend-key")
+curl.exe -H $headers[0] "http://127.0.0.1:8080/AccessEvents?limit=10&offset=0"
+curl.exe -H $headers[0] "http://127.0.0.1:8080/Jornadas?includeDeleted=true&limit=10&offset=0"
+curl.exe -H $headers[0] "http://127.0.0.1:8080/admin/jornadas/projection-states"
+curl.exe -H $headers[0] "http://127.0.0.1:8080/admin/poll/status"
+```
+
+## 11. Push real
+
 Precondiciones:
-1. `Reloj` existe.
-2. `Reloj.DeviceSn` cargado.
-3. `Residential.IpActual` coincide con IP origen del push.
 
-Endpoint:
-1. `POST /AccessEvents/push/{relojId}`
+1. Reloj existente con DeviceSn.
+2. `Residential.IpActual` actualizado por heartbeat.
+3. URL del reloj: `http(s)://<api>/AccessEvents/push/CLOCK-001`.
+4. IP origen del reloj igual a la IP registrada.
 
-Resultado esperado:
-1. `inserted` o `duplicate` o `ignored` según payload.
+Resultados funcionales: `inserted`, `duplicate` o `ignored`. Una IP incorrecta produce `401`.
 
-## 12.4 Poll manual admin
-Ejecución:
-```http
-POST /admin/poll/run
-Content-Type: application/json
+## 12. Poll manual
 
-{
-  "residentialId": "cm01abcdef1234567890xyz",
-  "relojId": "cm03relojabc1234567890xyz"
-}
+```powershell
+$body = '{"residentialId":"RES-001","relojId":"CLOCK-001"}'
+curl.exe -X POST -H "X-Api-Key: development-backend-key" -H "Content-Type: application/json" --data $body http://127.0.0.1:8080/admin/poll/run
 ```
 
-Estado:
-```http
-GET /admin/poll/status
+Revisar luego historial, métricas y estados de jornadas.
+
+## 13. Pruebas del repositorio
+
+Las tres integraciones PostgreSQL eliminan datos de `AccessEvents`, `Jornadas` y
+`JornadaProjectionStates`. Nunca deben apuntar a `habitar-postgres`, una base de
+desarrollo compartida ni producción. El código exige dos protecciones:
+
+1. el nombre de la base debe terminar en `_tests`;
+2. `APIRELOJ_ALLOW_DESTRUCTIVE_TESTS` debe valer `true`.
+
+Ejemplo reproducible desde la raíz del repositorio:
+
+```powershell
+cd C:\ruta\ApiReloj
+
+docker run --name apireloj-postgres-tests --rm -d -p 55432:5432 `
+  -e POSTGRES_DB=apireloj_tests `
+  -e POSTGRES_USER=apireloj_tests `
+  -e POSTGRES_PASSWORD=test-only-password `
+  postgres:16-alpine
+
+$env:APIRELOJ_TEST_CONNECTION = "Host=127.0.0.1;Port=55432;Database=apireloj_tests;Username=apireloj_tests;Password=test-only-password"
+$env:APIRELOJ_ALLOW_DESTRUCTIVE_TESTS = "true"
+
+dotnet tool restore
+dotnet restore Migracion_a_C/WebApplication1/WebApplication1.sln `
+  -p:NuGetAudit=true -p:NuGetAuditMode=all `
+  -p:WarningsAsErrors=NU1901%3BNU1902%3BNU1903%3BNU1904
+dotnet build Migracion_a_C/WebApplication1/WebApplication1.sln -c Release --no-restore
+
+dotnet tool run dotnet-ef database update `
+  --project Migracion_a_C/WebApplication1/DataAcces/DataAcces.csproj `
+  --startup-project Migracion_a_C/WebApplication1/WebApplication1/WebApplication1.csproj `
+  --connection "$env:APIRELOJ_TEST_CONNECTION" `
+  --configuration Release --no-build
+
+dotnet test --project Migracion_a_C/WebApplication1/Service.Tests/Service.Tests.csproj --configuration Release --no-build --no-restore
 ```
 
-Validar:
-1. Métricas (`Inserted`, `Duplicates`, `Ignored`).
-2. Estado corrida (`ok`, `partial_error`, `error`).
+El último comando es exactamente el utilizado por CI. Debe informar `22` pruebas,
+`0` fallidas y `0` omitidas. `global.json` selecciona Microsoft Testing Platform,
+que es el runner de xUnit v3 usado por este repositorio.
 
-Alcance de observabilidad actual:
-1. Estas metricas corresponden a la corrida de poll (status/run), no a metricas globales de toda la API.
-2. Para push hoy la observabilidad es por logs crudos (sin indexado/categorizacion propia de errores y sin contadores globales persistentes).
+Validaciones adicionales equivalentes a CI:
 
-## 12.5 Consultas de lectura
-### AccessEvents
-```http
-GET /AccessEvents?limit=100&offset=0
-GET /AccessEvents?residentialId=cm01abcdef1234567890xyz&fromUtc=2026-02-15T00:00:00Z&toUtc=2026-02-15T23:59:59Z&limit=100&offset=0
+```powershell
+dotnet list Migracion_a_C/WebApplication1/WebApplication1.sln package --vulnerable --include-transitive --no-restore
+docker compose --env-file Migracion_a_C/.env.example -f Migracion_a_C/docker-compose.yml config --quiet
+docker build --tag apireloj-local-check .
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke-test.ps1 `
+  -ConnectionString $env:APIRELOJ_TEST_CONNECTION -BackendApiKey "local-smoke-key"
+docker stop apireloj-postgres-tests
 ```
 
-### Jornadas
-```http
-GET /Jornadas?limit=100&offset=0
-GET /Jornadas?residentialId=cm01abcdef1234567890xyz&statusCheck=INCOMPLETE&limit=100&offset=0
-```
+El smoke automatizado verifica seguridad backend, heartbeat con el body vigente,
+reutilización idempotente, firma inválida, push por IP residencial, deduplicación,
+cola persistente y una jornada entre dos relojes del mismo residencial.
 
----
+GitHub ejecuta la misma secuencia en `.github/workflows/ci.yml` para cada pull
+request y para pushes a `main`, `develop` y ramas `codex/**`.
 
-## 13) Troubleshooting y diagnóstico
-## 13.1 Error de conexión a DB
-Síntoma:
-1. API no inicia o falla al consultar.
+Las interacciones de red con un reloj Hikvision físico no se pueden simular con
+fidelidad en CI. Antes de producción se debe completar
+`DocReloj/aceptacion_manual_isapi.md` y conservar sus evidencias.
 
-Checks:
-1. `docker compose ps`
-2. Puerto `5432` libre/visible.
-3. `ConnectionStrings:Default` alineada con `.env`.
+## 14. Troubleshooting
 
-## 13.2 `dotnet ef` falla
-Checks:
-1. `dotnet --version` y `dotnet ef --version`.
-2. Ejecutar comando desde `Migracion_a_C/WebApplication1`.
-3. Confirmar `--project` y `--startup-project` correctos.
+### La API no inicia
 
-## 13.3 Heartbeat rechazado o sin efecto
-Checks:
-1. `DeviceId` existente.
-2. `ResidentialId` correcto.
-3. Firma HMAC calculada como `"{timestamp}|{deviceId}|{residentialId}"`.
-4. `secretKey` exacta del `Device`.
+- validar connection string;
+- verificar PostgreSQL y migraciones;
+- revisar API key e IP permitida;
+- confirmar valores numéricos de heartbeat.
 
-Resultados esperables segun causa:
-1. Firma invalida: `204` no-op (sin cambios en `ipActual`/`LastSeen`).
-2. Datos inexistentes o relacion invalida (`Device` no pertenece a `Residential`): puede responder con error segun manejo global de excepciones.
+### Backend recibe `401`
 
-## 13.4 Push rechazado (401/422/404)
-Checks:
-1. `Reloj` existe.
-2. `Residential` existe.
-3. IP origen del push coincide con `Residential.IpActual`.
-4. `Reloj.DeviceSn` no vacío.
+- falta `X-Api-Key`, hay múltiples valores o no coincide.
 
-## 13.5 Poll con errores
-Checks:
-1. `Residential.IpActual` reachable desde Windows.
-2. `Reloj.Puerto` correcto.
-3. `ISAPI_USER` / `ISAPI_PASSWORD` correctos si el reloj exige Digest.
-4. Endpoint ISAPI habilitado en reloj.
+### Backend recibe `403`
 
-## 13.6 Histórico de bloqueantes (resueltos)
-1. Persistencia de update en `PUT /Reloj`: resuelto.
-2. Registro DI de `UsersControllers`: resuelto.
-3. Riesgo de binding de `ModifiUserDtoFromBack` por ctor parametrizado: resuelto con ctor vacío.
+- la API key es válida, pero `RemoteIpAddress` no coincide con `AllowedIp`.
 
-Si alguno de estos comportamientos falla en pruebas, tratarlo como regresión.
+### Push recibe `401`
 
----
+- reloj/residencial inexistente;
+- falta DeviceSn;
+- IP actual vacía o inválida;
+- IP origen distinta.
 
-## 14) Checklist de Go-Live local
-Marca cada punto como `OK` antes de declarar entorno listo:
+### Jornadas demoran o fallan
 
-1. `[ ]` Docker Desktop operativo.
-2. `[ ]` Postgres levantado (`apireloj-postgres` running).
-3. `[ ]` Migraciones EF aplicadas sin error.
-4. `[ ]` Tablas clave creadas (`Residentials`, `Devices`, `Relojes`, `AccessEvents`, `Jornadas`).
-5. `[ ]` API levantada en `http://0.0.0.0:8080`.
-6. `[ ]` Firewall Windows permite inbound TCP 8080.
-7. `[ ]` `Residential`, `Device` y `Reloj` creados por API.
-8. `[ ]` Heartbeat real actualiza IP y `LastSeen`.
-9. `[ ]` Push llega y persiste eventos (`inserted/duplicate`).
-10. `[ ]` Poll manual ejecuta y devuelve métricas coherentes.
-11. `[ ]` `GET /AccessEvents` devuelve resultados esperados.
-12. `[ ]` `GET /Jornadas` devuelve resultados esperados.
-13. `[ ]` `PUT /Reloj` persiste cambios de `_puerto` y `_deviceSn`.
-14. `[ ]` Endpoints `UsersControllers` responden sin error de DI.
+- consultar `/admin/jornadas/projection-states`;
+- revisar `Attempts`, `LastError` y `NextAttemptAtUtc`;
+- encolar `/admin/jornadas/rebuild` si se requiere intervención.
 
-Regla final:
-1. Si 13 o 14 están en `NO`, tratar como regresión y no cerrar la puesta en marcha.
+## 15. Go-live
 
----
-
-## 15) Apéndice de referencias
-1. `Migracion_a_C/DocReloj/infra_hibrida.md`
-2. `Migracion_a_C/DocReloj/api_poll_backfill_v1.md`
-3. `Migracion_a_C/DocReloj/api_access_events_v1.md`
-4. `Migracion_a_C/DocReloj/api_jornadas_v1.md`
-5. `Migracion_a_C/DocReloj/plan_puesta_marcha_lightsail.md`
+- [ ] PostgreSQL respaldado y accesible.
+- [ ] Migraciones aplicadas por un arranque exitoso.
+- [ ] API key productiva rotada y no versionada.
+- [ ] IP fija del backend correcta.
+- [ ] HTTPS activo.
+- [ ] Residential, Device y Reloj aprovisionados.
+- [ ] Secreto heartbeat custodiado.
+- [ ] Heartbeat actualiza IP y LastSeen.
+- [ ] Push real autorizado e idempotente.
+- [ ] Poll ejecuta contra ISAPI.
+- [ ] Proyecciones llegan a READY.
+- [ ] Backend procesa revisiones y tombstones.
+- [ ] CI ejecuta las 22 pruebas sin fallos ni omisiones.
+- [ ] Aceptación manual ISAPI completada con un reloj real.

@@ -3,6 +3,7 @@
 public class AccesEventDto
 {
     public string _deviceSn { get; set; } = null!;
+    public string _residentialId { get; set; } = null!;
     public long _serialNumber { get; set; }
     public DateTimeOffset _eventTimeUtc { get; set; }
     public string? _timeDevice { get; set; }

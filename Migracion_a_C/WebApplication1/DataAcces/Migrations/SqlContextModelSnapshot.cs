@@ -17,7 +17,7 @@ namespace DataAcces.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -49,6 +49,11 @@ namespace DataAcces.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
+                    b.Property<string>("ResidentialId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
                     b.Property<string>("TimeDevice")
                         .HasColumnType("text");
 
@@ -63,6 +68,8 @@ namespace DataAcces.Migrations
                     b.HasIndex("Minor");
 
                     b.HasIndex("DeviceSn", "EventTimeUtc");
+
+                    b.HasIndex("EmployeeNumber", "ResidentialId", "EventTimeUtc");
 
                     b.HasIndex("Major", "Minor", "EventTimeUtc");
 
@@ -131,6 +138,9 @@ namespace DataAcces.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
+                    b.Property<long?>("LastAcceptedHeartbeatTimestamp")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime?>("LastSeen")
                         .HasColumnType("timestamp with time zone");
 
@@ -159,12 +169,27 @@ namespace DataAcces.Migrations
                     b.Property<DateTimeOffset?>("BreakInAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("BreakInDeviceSn")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("BreakInSerialNumber")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTimeOffset?>("BreakOutAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("BreakOutDeviceSn")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("BreakOutSerialNumber")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("ClockSn")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("EmployeeNumber")
                         .IsRequired()
@@ -173,8 +198,46 @@ namespace DataAcces.Migrations
                     b.Property<DateTimeOffset?>("EndAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("EndDeviceSn")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("EndSerialNumber")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ErrorsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("IdentityDeviceSn")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("IdentitySerialNumber")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ProjectionStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("ResidentialId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<long>("Revision")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTimeOffset?>("StartAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("StartDeviceSn")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("StartSerialNumber")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("StatusBreak")
                         .IsRequired()
@@ -189,6 +252,10 @@ namespace DataAcces.Migrations
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("WarningsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
                     b.HasKey("JornadaId");
 
                     b.HasIndex("ClockSn");
@@ -197,9 +264,63 @@ namespace DataAcces.Migrations
 
                     b.HasIndex("UpdatedAt");
 
-                    b.HasIndex("EmployeeNumber", "ClockSn", "StatusCheck");
+                    b.HasIndex("EmployeeNumber", "ResidentialId", "StatusCheck");
+
+                    b.HasIndex("EmployeeNumber", "ResidentialId", "IdentityDeviceSn", "IdentitySerialNumber")
+                        .IsUnique();
 
                     b.ToTable("Jornadas", (string)null);
+                });
+
+            modelBuilder.Entity("Dominio.JornadaProjectionState", b =>
+                {
+                    b.Property<string>("EmployeeNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ResidentialId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<long>("AppliedRevision")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("DirtyFromUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("FinishedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<DateTimeOffset?>("NextAttemptAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("RequestedRevision")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset?>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("EmployeeNumber", "ResidentialId");
+
+                    b.HasIndex("DirtyFromUtc");
+
+                    b.HasIndex("Status", "NextAttemptAtUtc", "UpdatedAtUtc");
+
+                    b.ToTable("JornadaProjectionStates", (string)null);
                 });
 
             modelBuilder.Entity("Dominio.Reloj", b =>

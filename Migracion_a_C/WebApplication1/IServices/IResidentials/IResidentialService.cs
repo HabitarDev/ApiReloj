@@ -14,5 +14,5 @@ public interface IResidentialService
     void Eliminar(string id);
     List<ResidentialDto> Listar();
     ResidentialDto GetById(string id);
-    void ProcesarHeartBeat(HeartBeatDto dto, string ipNueva);
+    bool ProcesarHeartBeat(HeartbeatAuthContext authContext, string ipNueva);
 }

@@ -1,5 +1,7 @@
 # Infra hibrida: proxy + cache de eventos (v1)
 
+> **DISEÑO HISTORICO.** Conserva decisiones y propuestas de la implementación inicial, incluidas referencias eliminadas como `AuthorizationPushFilter` y el antiguo `204` ante firma inválida. El comportamiento vigente está en `../DocParaImplementadores/guia_funcionamiento_general_repo_v1.md` y `../seguridad_endpoints.md`.
+
 ## Objetivo
 Los maestros `Residential`, `Device` y `Reloj` usan identificadores **string** en PostgreSQL y en la API HTTP (alineacion con HABITAR / `cuid`). Ver `explicacion_ids_string_operativa.md` para migracion de esquema, heartbeat y URL de push.
 
