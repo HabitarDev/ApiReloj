@@ -3,6 +3,7 @@
 # ─────────────────────────────
 .idea/
 .vscode/
+.vs/
 
 # HTTP client y datasources de WebStorm
 httpRequests/
@@ -38,6 +39,19 @@ coverage/
 .nyc_output/
 *.tsbuildinfo
 tsconfig.tsbuildinfo
+
+# .NET: nunca versionar artefactos generados
+[Bb]in/
+[Oo]bj/
+artifacts/
+TestResults/
+publish/
+*.trx
+*.coverage
+*.coveragexml
+coverage.cobertura.xml
+*.nupkg
+*.snupkg
 
 # ─────────────────────────────
 # Variables y secretos
