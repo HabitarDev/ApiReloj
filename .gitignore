@@ -32,6 +32,12 @@ logs/
 # ─────────────────────────────
 # Build / Cobertura / TS cache
 # ─────────────────────────────
+# .NET / Visual Studio
+**/bin/
+**/obj/
+*.user
+*.suo
+
 dist/
 build/
 coverage/
