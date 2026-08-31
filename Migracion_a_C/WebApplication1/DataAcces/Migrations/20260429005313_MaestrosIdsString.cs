@@ -10,99 +10,103 @@ namespace DataAcces.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "IdResidential",
-                table: "Residentials",
-                type: "character varying(128)",
-                maxLength: 128,
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
+            migrationBuilder.DropForeignKey(
+                name: "FK_Devices_Residentials_ResidentialId",
+                table: "Devices");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "ResidentialId",
-                table: "Relojes",
-                type: "character varying(128)",
-                maxLength: 128,
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
+            migrationBuilder.DropForeignKey(
+                name: "FK_Relojes_Residentials_ResidentialId",
+                table: "Relojes");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "IdReloj",
-                table: "Relojes",
-                type: "character varying(128)",
-                maxLength: 128,
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
+            migrationBuilder.Sql(
+                """
+                ALTER TABLE "Residentials"
+                    ALTER COLUMN "IdResidential" TYPE character varying(128)
+                    USING "IdResidential"::text;
 
-            migrationBuilder.AlterColumn<string>(
-                name: "ResidentialId",
+                ALTER TABLE "Devices"
+                    ALTER COLUMN "ResidentialId" TYPE character varying(128)
+                    USING "ResidentialId"::text;
+
+                ALTER TABLE "Relojes"
+                    ALTER COLUMN "ResidentialId" TYPE character varying(128)
+                    USING "ResidentialId"::text;
+
+                ALTER TABLE "Devices"
+                    ALTER COLUMN "DeviceId" TYPE character varying(128)
+                    USING "DeviceId"::text;
+
+                ALTER TABLE "Relojes"
+                    ALTER COLUMN "IdReloj" TYPE character varying(128)
+                    USING "IdReloj"::text;
+                """);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Devices_Residentials_ResidentialId",
                 table: "Devices",
-                type: "character varying(128)",
-                maxLength: 128,
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
+                column: "ResidentialId",
+                principalTable: "Residentials",
+                principalColumn: "IdResidential",
+                onDelete: ReferentialAction.Restrict);
 
-            migrationBuilder.AlterColumn<string>(
-                name: "DeviceId",
-                table: "Devices",
-                type: "character varying(128)",
-                maxLength: 128,
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
+            migrationBuilder.AddForeignKey(
+                name: "FK_Relojes_Residentials_ResidentialId",
+                table: "Relojes",
+                column: "ResidentialId",
+                principalTable: "Residentials",
+                principalColumn: "IdResidential",
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
-                name: "IdResidential",
-                table: "Residentials",
-                type: "integer",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "character varying(128)",
-                oldMaxLength: 128);
+            migrationBuilder.DropForeignKey(
+                name: "FK_Devices_Residentials_ResidentialId",
+                table: "Devices");
 
-            migrationBuilder.AlterColumn<int>(
-                name: "ResidentialId",
-                table: "Relojes",
-                type: "integer",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "character varying(128)",
-                oldMaxLength: 128);
+            migrationBuilder.DropForeignKey(
+                name: "FK_Relojes_Residentials_ResidentialId",
+                table: "Relojes");
 
-            migrationBuilder.AlterColumn<int>(
-                name: "IdReloj",
-                table: "Relojes",
-                type: "integer",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "character varying(128)",
-                oldMaxLength: 128);
+            migrationBuilder.Sql(
+                """
+                ALTER TABLE "Residentials"
+                    ALTER COLUMN "IdResidential" TYPE integer
+                    USING "IdResidential"::integer;
 
-            migrationBuilder.AlterColumn<int>(
-                name: "ResidentialId",
+                ALTER TABLE "Devices"
+                    ALTER COLUMN "ResidentialId" TYPE integer
+                    USING "ResidentialId"::integer;
+
+                ALTER TABLE "Relojes"
+                    ALTER COLUMN "ResidentialId" TYPE integer
+                    USING "ResidentialId"::integer;
+
+                ALTER TABLE "Devices"
+                    ALTER COLUMN "DeviceId" TYPE integer
+                    USING "DeviceId"::integer;
+
+                ALTER TABLE "Relojes"
+                    ALTER COLUMN "IdReloj" TYPE integer
+                    USING "IdReloj"::integer;
+                """);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Devices_Residentials_ResidentialId",
                 table: "Devices",
-                type: "integer",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "character varying(128)",
-                oldMaxLength: 128);
+                column: "ResidentialId",
+                principalTable: "Residentials",
+                principalColumn: "IdResidential",
+                onDelete: ReferentialAction.Restrict);
 
-            migrationBuilder.AlterColumn<int>(
-                name: "DeviceId",
-                table: "Devices",
-                type: "integer",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "character varying(128)",
-                oldMaxLength: 128);
+            migrationBuilder.AddForeignKey(
+                name: "FK_Relojes_Residentials_ResidentialId",
+                table: "Relojes",
+                column: "ResidentialId",
+                principalTable: "Residentials",
+                principalColumn: "IdResidential",
+                onDelete: ReferentialAction.Restrict);
         }
     }
 }
