@@ -15,7 +15,7 @@ using Service.BackfillServicess;
 using Service.DeviceServicess;
 using Service.JornadaServicess;
 using Service.RelojServicess;
-using Service.ResidentialsServicess;
+using Service.ResidentialServicess;
 using Service.UserServicess;
 using WebApplication1.Filters;
 using WebApplication1.Workers;
@@ -71,7 +71,7 @@ builder.Services.AddScoped<IDeviceService, DeviceService>();
 
 // Access Events
 builder.Services.AddScoped<IAccesEventEntityService, AccesEventEntityService>();
-builder.Services.AddScoped<IAccesEventValidacionService, AccesEventValidationService>();
+builder.Services.AddScoped<IAccesEventValidationService, AccesEventValidationService>();
 builder.Services.AddScoped<IAccesEventMantenimientoService, AccesEventMantentimientoService>();
 builder.Services.AddScoped<IAccesEventService, AccesEventService>();
 
