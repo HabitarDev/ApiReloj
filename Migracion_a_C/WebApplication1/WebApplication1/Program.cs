@@ -15,7 +15,7 @@ using Service.BackfillServicess;
 using Service.DeviceServicess;
 using Service.JornadaServicess;
 using Service.RelojServicess;
-using Service.ResidentialServicess;
+using Service.ResidentialsServicess;
 using Service.UserServicess;
 using WebApplication1.Filters;
 using WebApplication1.Workers;
@@ -32,8 +32,10 @@ builder.Services.AddControllers(opts =>
 builder.Services.AddDbContext<SqlContext>(opt =>
 {
     var cn = builder.Configuration.GetConnectionString("Default")
-             ?? throw new InvalidOperationException("Falta ConnectionStrings:Default en appsettings.json");
-    opt.UseNpgsql(cn); // Postgres
+             ?? throw new InvalidOperationException(
+                 "Falta ConnectionStrings:Default en appsettings.json");
+
+    opt.UseNpgsql(cn);
 });
 
 // Repos
@@ -69,7 +71,7 @@ builder.Services.AddScoped<IDeviceService, DeviceService>();
 
 // Access Events
 builder.Services.AddScoped<IAccesEventEntityService, AccesEventEntityService>();
-builder.Services.AddScoped<IAccesEventValidationService, AccesEventValidationService>();
+builder.Services.AddScoped<IAccesEventValidacionService, AccesEventValidationService>();
 builder.Services.AddScoped<IAccesEventMantenimientoService, AccesEventMantentimientoService>();
 builder.Services.AddScoped<IAccesEventService, AccesEventService>();
 
@@ -87,12 +89,21 @@ builder.Services.AddScoped<IHikvisionAcsEventClient, HikvisionAcsEventClient>();
 
 builder.Services.Configure<JornadaProcessingOptions>(
     builder.Configuration.GetSection(JornadaProcessingOptions.SectionName));
+
 builder.Services.Configure<BackfillPollingOptions>(
     builder.Configuration.GetSection(BackfillPollingOptions.SectionName));
+
 builder.Services.AddHostedService<JornadaStatusWorker>();
 builder.Services.AddHostedService<BackfillPollWorker>();
 
 var app = builder.Build();
+
+// Aplica automáticamente todas las migraciones pendientes antes de iniciar la API.
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<SqlContext>();
+    await dbContext.Database.MigrateAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {
