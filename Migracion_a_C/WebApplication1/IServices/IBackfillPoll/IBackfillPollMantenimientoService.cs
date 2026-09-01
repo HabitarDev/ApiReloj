@@ -8,4 +8,5 @@ public interface IBackfillPollMantenimientoService
     BackfillPollStatusDto ObtenerEstado();
     List<BackfillPollRunSummaryDto> ListarRuns(BackfillPollRunsQueryDto query);
     BackfillPollRunResultDto ObtenerRun(string runId);
+    int RecuperarRunsHuerfanos(DateTimeOffset recoveredAtUtc);
 }

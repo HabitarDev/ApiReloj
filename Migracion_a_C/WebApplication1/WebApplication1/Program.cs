@@ -208,6 +208,14 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<SqlContext>();
     await dbContext.Database.MigrateAsync();
+
+    var pollMaintenance = scope.ServiceProvider.GetRequiredService<IBackfillPollMantenimientoService>();
+    var timeProvider = scope.ServiceProvider.GetRequiredService<TimeProvider>();
+    var recovered = pollMaintenance.RecuperarRunsHuerfanos(timeProvider.GetUtcNow());
+    if (recovered > 0)
+    {
+        app.Logger.LogWarning("Se recuperaron {RecoveredRuns} runs de poll interrumpidos", recovered);
+    }
 }
 
 if (app.Environment.IsDevelopment())

@@ -21,7 +21,12 @@ public class BackfillPollValidationService : IBackfillPollValidationService
 
         if (string.IsNullOrWhiteSpace(request.Trigger))
         {
-            request.Trigger = "manual";
+            request.Trigger = BackfillPollTriggers.Manual;
+        }
+
+        if (!BackfillPollTriggers.IsValid(request.Trigger))
+        {
+            throw new ArgumentException("trigger invalido");
         }
     }
 
@@ -41,7 +46,13 @@ public class BackfillPollValidationService : IBackfillPollValidationService
 
         if (!string.IsNullOrWhiteSpace(query.Status))
         {
-            string[] valid = ["running", "ok", "partial_error", "error"];
+            string[] valid =
+            [
+                BackfillPollRunStatuses.Running,
+                BackfillPollRunStatuses.Ok,
+                BackfillPollRunStatuses.PartialError,
+                BackfillPollRunStatuses.Error
+            ];
             if (!valid.Contains(query.Status))
             {
                 throw new ArgumentException("status invalido");

@@ -16,7 +16,7 @@ public class AdminPollController(IBackfillPollService service) : ControllerBase
         CancellationToken ct)
     {
         var safe = request ?? new BackfillPollRunRequestDto();
-        safe.Trigger = "manual";
+        safe.Trigger = BackfillPollTriggers.Manual;
         var result = await _service.EjecutarAsync(safe, ct);
         return Ok(result);
     }
