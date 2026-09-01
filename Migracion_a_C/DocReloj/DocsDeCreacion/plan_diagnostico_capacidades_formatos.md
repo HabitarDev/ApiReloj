@@ -1,5 +1,7 @@
 # Plan de diagnostico de capacidades y formatos ISAPI (Reloj Hikvision)
 
+> **PLAN HISTORICO.** Útil para repetir diagnósticos de hardware/firmware, pero no define el contrato actual de ApiReloj. Consultar `../isapi_summary.md` y `../DocParaImplementadores/api_completa_repo_v1.md` para rutas vigentes.
+
 ## 1. Objetivo
 Este documento define un flujo unico para:
 1. Diagnosticar capacidades reales del reloj (segun firmware actual).

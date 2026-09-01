@@ -1,8 +1,9 @@
 ﻿using IServices.IAccesEvent;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Models.Dominio;
 using Models.WebApi;
-using WebApplication1.Filters;
+using WebApplication1.Security;
 
 namespace WebApplication1.Controllers;
 
@@ -16,7 +17,7 @@ public class AccessEventsController(
     private readonly ILogger<AccessEventsController> _logger = logger;
 
     [HttpPost("push/{relojId}")]
-    [ServiceFilter(typeof(AuthorizationPushFilter))]
+    [Authorize(Policy = SecurityPolicies.ResidentialPush)]
     public async Task<ActionResult<PushIngestResultDto>> Push([FromRoute] string relojId)
     {
         var remoteIp = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? string.Empty;

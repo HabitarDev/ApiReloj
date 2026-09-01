@@ -14,6 +14,7 @@ public interface IAccesEventService
     PushIngestResultDto ProcesarPush(HikvisionPushEnvelopeDto envelope, PushAuthContext authContext);
     PollIngestResultDto ProcesarEventosDesdePoll(
         string relojId,
+        string residentialId,
         string deviceSn,
         IReadOnlyCollection<HikvisionAcsEventInfoDto> infoList);
 }

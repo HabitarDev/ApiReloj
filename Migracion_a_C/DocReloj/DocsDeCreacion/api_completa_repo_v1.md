@@ -1,5 +1,7 @@
 # API Completa del Repo (V1)
 
+> **ARCHIVO HISTORICO.** Esta copia contiene contratos anteriores a las políticas de seguridad y a la reconstrucción concurrente de jornadas. Usar `../DocParaImplementadores/api_completa_repo_v1.md`.
+
 ## 1. Objetivo de esta guia
 Esta guia documenta el contrato HTTP real vigente del repo.
 

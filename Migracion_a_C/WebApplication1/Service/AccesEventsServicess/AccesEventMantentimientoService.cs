@@ -4,7 +4,6 @@ using System.Xml.Linq;
 using Dominio;
 using IDataAcces;
 using IServices.IAccesEvent;
-using IServices.IJornada;
 using Models.Dominio;
 using Models.WebApi;
 
@@ -14,21 +13,23 @@ public class AccesEventMantentimientoService(
     IAccesEventsRepository accessEventsRepository,
     IRelojesRepository relojesRepository,
     IResidentialsRepository residentialsRepository,
+    IJornadaProjectionStateRepository projectionStateRepository,
+    IDataTransactionManager transactionManager,
     IAccesEventEntityService entityService,
-    IAccesEventValidationService validationService,
-    IJornadaService jornadaService) : IAccesEventMantenimientoService
+    IAccesEventValidationService validationService) : IAccesEventMantenimientoService
 {
     private readonly IAccesEventsRepository _accessEventsRepository = accessEventsRepository;
     private readonly IRelojesRepository _relojesRepository = relojesRepository;
     private readonly IResidentialsRepository _residentialsRepository = residentialsRepository;
+    private readonly IJornadaProjectionStateRepository _projectionStateRepository = projectionStateRepository;
+    private readonly IDataTransactionManager _transactionManager = transactionManager;
     private readonly IAccesEventEntityService _entityService = entityService;
     private readonly IAccesEventValidationService _validationService = validationService;
-    private readonly IJornadaService _jornadaService = jornadaService;
 
     public PushIngestResultDto ProcesarPush(HikvisionPushEnvelopeDto envelope, PushAuthContext authContext)
     {
         var payload = ParsePushPayload(envelope.ContentType, envelope.EventPayloadRaw);
-        _validationService.ValidarEventoPush(payload);
+        _validationService.ValidarEventoPush(payload, authContext.DeviceSn);
 
         var eventType = payload.EventType;
         if (!eventType!.Equals("AccessControllerEvent", StringComparison.OrdinalIgnoreCase))
@@ -54,29 +55,43 @@ public class AccesEventMantentimientoService(
         var normalized = _entityService.NormalizarDesdePush(
             payload,
             authContext.DeviceSn,
+            authContext.ResidentialId,
             envelope.ContentType,
             envelope.HasPicture,
             envelope.EventPayloadRaw);
         _validationService.Validar(normalized);
 
-        AccessEvents accessEvent = _entityService.ToEntity(normalized);
-        var inserted = _accessEventsRepository.AddIfNotExists(accessEvent);
-        if (inserted)
+        using var transaction = _transactionManager.BeginTransaction();
+        try
         {
-            _jornadaService.ProcesarEventoInsertado(accessEvent);
+            AccessEvents accessEvent = _entityService.ToEntity(normalized);
+            var inserted = _accessEventsRepository.AddIfNotExists(accessEvent);
+            if (inserted && !string.IsNullOrWhiteSpace(accessEvent.EmployeeNumber))
+            {
+                _projectionStateRepository.Enqueue(
+                    accessEvent.EmployeeNumber,
+                    accessEvent.ResidentialId,
+                    accessEvent.EventTimeUtc);
+            }
+
+            UpdateLastPushEvent(authContext.RelojId, normalized._eventTimeUtc);
+            transaction.Commit();
+
+            var status = inserted ? "inserted" : "duplicate";
+            return new PushIngestResultDto
+            {
+                Status = status,
+                EventType = eventType,
+                SerialNo = normalized._serialNumber,
+                DeviceSn = normalized._deviceSn,
+                EventTimeUtc = normalized._eventTimeUtc
+            };
         }
-
-        UpdateLastPushEvent(authContext.RelojId, normalized._eventTimeUtc);
-
-        var status = inserted ? "inserted" : "duplicate";
-        return new PushIngestResultDto
+        catch
         {
-            Status = status,
-            EventType = eventType,
-            SerialNo = normalized._serialNumber,
-            DeviceSn = normalized._deviceSn,
-            EventTimeUtc = normalized._eventTimeUtc
-        };
+            transaction.Rollback();
+            throw;
+        }
     }
 
     public List<AccesEventDto> ListarTodos()
@@ -167,47 +182,66 @@ public class AccesEventMantentimientoService(
 
     public PollIngestResultDto ProcesarEventosDesdePoll(
         string relojId,
+        string residentialId,
         string deviceSn,
         IReadOnlyCollection<HikvisionAcsEventInfoDto> infoList)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(deviceSn);
         ArgumentNullException.ThrowIfNull(infoList);
         ArgumentException.ThrowIfNullOrWhiteSpace(relojId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(residentialId);
 
         var result = new PollIngestResultDto();
+        using var transaction = _transactionManager.BeginTransaction();
 
-        foreach (var info in infoList)
+        try
         {
-            try
+            foreach (var info in infoList)
             {
-                var normalized = _entityService.NormalizarDesdePoll(info, deviceSn);
-                _validationService.Validar(normalized);
+                try
+                {
+                    var normalized = _entityService.NormalizarDesdePoll(info, deviceSn, residentialId);
+                    _validationService.Validar(normalized);
 
-                var accessEvent = _entityService.ToEntity(normalized);
-                var inserted = _accessEventsRepository.AddIfNotExists(accessEvent);
-                if (inserted)
-                {
-                    _jornadaService.ProcesarEventoInsertado(accessEvent);
-                    result.Inserted++;
-                }
-                else
-                {
-                    result.Duplicates++;
-                }
+                    var accessEvent = _entityService.ToEntity(normalized);
+                    var inserted = _accessEventsRepository.AddIfNotExists(accessEvent);
+                    if (inserted)
+                    {
+                        if (!string.IsNullOrWhiteSpace(accessEvent.EmployeeNumber))
+                        {
+                            _projectionStateRepository.Enqueue(
+                                accessEvent.EmployeeNumber,
+                                accessEvent.ResidentialId,
+                                accessEvent.EventTimeUtc);
+                        }
 
-                if (!result.MaxEventTimeUtc.HasValue || normalized._eventTimeUtc > result.MaxEventTimeUtc.Value)
+                        result.Inserted++;
+                    }
+                    else
+                    {
+                        result.Duplicates++;
+                    }
+
+                    if (!result.MaxEventTimeUtc.HasValue || normalized._eventTimeUtc > result.MaxEventTimeUtc.Value)
+                    {
+                        result.MaxEventTimeUtc = normalized._eventTimeUtc;
+                    }
+                }
+                catch (ArgumentException)
                 {
-                    result.MaxEventTimeUtc = normalized._eventTimeUtc;
+                    // Un evento semanticamente invalido no corta la pagina completa.
+                    result.Ignored++;
                 }
             }
-            catch
-            {
-                // Un evento invalido no debe cortar la corrida completa de la pagina.
-                result.Ignored++;
-            }
+
+            transaction.Commit();
+            return result;
         }
-
-        return result;
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 
     private void UpdateLastPushEvent(string relojId, DateTimeOffset eventTimeUtc)

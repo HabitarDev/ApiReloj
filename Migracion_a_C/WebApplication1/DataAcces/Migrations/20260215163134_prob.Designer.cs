@@ -13,7 +13,7 @@ namespace DataAcces.Migrations
 {
     [DbContext(typeof(SqlContext))]
     [Migration("20260215163134_prob")]
-    partial class prob
+    partial class Prob
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

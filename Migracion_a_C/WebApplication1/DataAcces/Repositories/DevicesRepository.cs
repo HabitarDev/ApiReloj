@@ -1,6 +1,7 @@
 ﻿using DataAcces.Context;
 using Dominio;
 using IDataAcces;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAcces.Repositories;
 
@@ -28,6 +29,24 @@ public class DevicesRepository(SqlContext repos) : IDevicesRepository
     public List<Device> GetByResidentialId(string residentialId)
     {
         return _context.Devices.Where(x => x.ResidentialId == residentialId).ToList();
+    }
+
+    public bool TryAcceptHeartbeat(
+        string deviceId,
+        string residentialId,
+        long timestamp,
+        DateTime lastSeenUtc)
+    {
+        var affected = _context.Devices
+            .Where(x => x.DeviceId == deviceId
+                        && x.ResidentialId == residentialId
+                        && (!x.LastAcceptedHeartbeatTimestamp.HasValue
+                            || x.LastAcceptedHeartbeatTimestamp.Value < timestamp))
+            .ExecuteUpdate(setters => setters
+                .SetProperty(x => x.LastAcceptedHeartbeatTimestamp, timestamp)
+                .SetProperty(x => x.LastSeen, lastSeenUtc));
+
+        return affected == 1;
     }
 
     public void update(Device device)

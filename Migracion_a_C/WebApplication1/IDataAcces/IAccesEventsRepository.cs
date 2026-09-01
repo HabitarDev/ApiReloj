@@ -10,6 +10,7 @@ public interface IAccesEventsRepository
 
     List<AccessEvents> GetBySerialNo(long id);
     List<AccessEvents> GetAll();
+    List<AccessEvents> GetForProjection(string employeeNumber, string residentialId);
     List<AccessEvents> Search(
         DateTimeOffset? fromUtc = null,
         DateTimeOffset? toUtc = null,

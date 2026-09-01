@@ -1,35 +1,26 @@
 ﻿using System.Text.Json;
 using Dominio;
-using IDataAcces;
 using IServices.IAccesEvent;
 using Models.Dominio;
 using Models.WebApi;
 
 namespace Service.AccesEventsServicess;
 
-public class AccesEventEntityService(IAccesEventsRepository repo) : IAccesEventEntityService
+public class AccesEventEntityService : IAccesEventEntityService
 {
-    private readonly IAccesEventsRepository _repo = repo;
-
     public AccessEvents ToEntity(AccesEventDto dto)
     {
-        var existing = _repo.GetBySerialNo(dto._serialNumber)
-            .FirstOrDefault(x => x.DeviceSn == dto._deviceSn);
-
-        if (existing == null)
-        {
-            return new AccessEvents(
-                dto._deviceSn,
-                dto._serialNumber,
-                dto._eventTimeUtc,
-                dto._timeDevice,
-                dto._employeeNumber,
-                dto._major,
-                dto._minor,
-                dto._attendanceStatus,
-                dto._raw);
-        }
-        return existing;
+        return new AccessEvents(
+            dto._deviceSn,
+            dto._residentialId,
+            dto._serialNumber,
+            dto._eventTimeUtc,
+            dto._timeDevice,
+            dto._employeeNumber,
+            dto._major,
+            dto._minor,
+            dto._attendanceStatus,
+            dto._raw);
     }
 
     public AccesEventDto FromEntity(AccessEvents accessEvent)
@@ -37,6 +28,7 @@ public class AccesEventEntityService(IAccesEventsRepository repo) : IAccesEventE
         return new AccesEventDto
         {
             _deviceSn = accessEvent.DeviceSn,
+            _residentialId = accessEvent.ResidentialId,
             _serialNumber = accessEvent.SerialNumber,
             _eventTimeUtc = accessEvent.EventTimeUtc,
             _timeDevice = accessEvent.TimeDevice,
@@ -51,6 +43,7 @@ public class AccesEventEntityService(IAccesEventsRepository repo) : IAccesEventE
     public AccesEventDto NormalizarDesdePush(
         HikvisionEventNotificationAlertDto source,
         string deviceSn,
+        string residentialId,
         string contentType,
         bool hasPicture,
         string rawPayload)
@@ -81,6 +74,7 @@ public class AccesEventEntityService(IAccesEventsRepository repo) : IAccesEventE
         return new AccesEventDto
         {
             _deviceSn = deviceSn,
+            _residentialId = residentialId,
             _serialNumber = source.AccessControllerEvent.SerialNo ?? 0,
             _eventTimeUtc = eventTime.ToUniversalTime(),
             _timeDevice = source.DateTime,
@@ -92,7 +86,10 @@ public class AccesEventEntityService(IAccesEventsRepository repo) : IAccesEventE
         };
     }
 
-    public AccesEventDto NormalizarDesdePoll(HikvisionAcsEventInfoDto source, string deviceSn)
+    public AccesEventDto NormalizarDesdePoll(
+        HikvisionAcsEventInfoDto source,
+        string deviceSn,
+        string residentialId)
     {
         if (source.SerialNo is null || source.SerialNo <= 0)
         {
@@ -116,6 +113,7 @@ public class AccesEventEntityService(IAccesEventsRepository repo) : IAccesEventE
         return new AccesEventDto
         {
             _deviceSn = deviceSn,
+            _residentialId = residentialId,
             _serialNumber = source.SerialNo.Value,
             _eventTimeUtc = eventTime.ToUniversalTime(),
             _timeDevice = source.Time,

@@ -1,5 +1,7 @@
 # Plan de Puesta en Marcha End-to-End (Lightsail + Heartbeats + Push Hikvision)
 
+> **PLAN HISTORICO, NO EJECUTAR SIN ADAPTAR.** Fue escrito para un Compose y una seguridad anteriores. El Compose actual sólo levanta la API y los endpoints de backend requieren API key + IP fija. Usar `../guia_instalacion_windows10_api_reloj.md` y `../seguridad_endpoints.md` como base vigente.
+
 ## 1. Resumen
 Objetivo: dejar funcionando la prueba integrada actual en una instancia Lightsail Ubuntu 22.04:
 1. API corriendo.

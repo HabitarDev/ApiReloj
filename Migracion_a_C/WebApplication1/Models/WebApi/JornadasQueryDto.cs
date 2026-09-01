@@ -7,6 +7,8 @@ public class JornadasQueryDto
     public string? EmployeeNumber { get; set; }
     public string? StatusCheck { get; set; }
     public string? StatusBreak { get; set; }
+    public string? ProjectionStatus { get; set; }
+    public bool IncludeDeleted { get; set; }
 
     public DateTimeOffset? FromUtc { get; set; }
     public DateTimeOffset? ToUtc { get; set; }

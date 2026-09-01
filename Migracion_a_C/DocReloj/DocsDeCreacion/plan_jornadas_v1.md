@@ -1,5 +1,9 @@
 # Plan V1 (mezcla: explicación completa + clases ejemplo) — `Jornada` derivada de `AccessEvents`
 
+> **PLAN HISTORICO.** La implementación final evolucionó a reconstrucción persistente por empleado + residencial, revisiones y tombstones. Usar `../DocParaImplementadores/api_jornadas_v1.md` y `../DocParaImplementadores/procesamiento_jornadas_concurrente.md`.
+
+> Documento histórico: la implementación vigente reemplaza esta derivación incremental por una cola persistente y reconstrucción determinista con ámbito empleado + residencial. Ver `DocReloj/DocParaImplementadores/procesamiento_jornadas_concurrente.md`.
+
 ## Resumen
 Se agrega la feature `Jornada` para transformar eventos de acceso en jornadas laborales listas para consumo del backend.
 

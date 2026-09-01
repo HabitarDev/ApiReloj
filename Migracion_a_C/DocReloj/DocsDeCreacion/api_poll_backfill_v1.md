@@ -1,5 +1,7 @@
 # API Poll Backfill V1
 
+> **ARCHIVO HISTORICO.** Esta copia no incluye la política Backend vigente. Usar `../DocParaImplementadores/api_poll_backfill_v1.md`.
+
 ## 1. Objetivo
 Documentar el backfill automatico de eventos de acceso por poll ISAPI, su cursor y endpoints de administracion.
 

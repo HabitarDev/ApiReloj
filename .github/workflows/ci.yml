@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - "codex/**"
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Build, test and package
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: apireloj_tests
+          POSTGRES_USER: apireloj_tests
+          POSTGRES_PASSWORD: test-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U apireloj_tests -d apireloj_tests"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      APIRELOJ_TEST_CONNECTION: Host=127.0.0.1;Port=5432;Database=apireloj_tests;Username=apireloj_tests;Password=test-only-password
+      APIRELOJ_ALLOW_DESTRUCTIVE_TESTS: "true"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Verify repository hygiene
+        shell: bash
+        run: |
+          if git ls-files | grep -E '(^|/)(bin|obj|TestResults)/'; then
+            echo "Generated .NET artifacts are tracked by Git."
+            exit 1
+          fi
+          if find . -type f -name '.env' -not -path './.git/*' | grep -q .; then
+            echo "A real .env file is present in the repository."
+            exit 1
+          fi
+
+      - name: Restore local tools
+        run: dotnet tool restore
+
+      - name: Restore with NuGet audit
+        run: >-
+          dotnet restore Migracion_a_C/WebApplication1/WebApplication1.sln
+          -p:NuGetAudit=true
+          -p:NuGetAuditMode=all
+          -p:WarningsAsErrors=NU1901%3BNU1902%3BNU1903%3BNU1904
+
+      - name: Build Release
+        run: dotnet build Migracion_a_C/WebApplication1/WebApplication1.sln -c Release --no-restore
+
+      - name: Apply migrations to isolated test database
+        run: >-
+          dotnet tool run dotnet-ef database update
+          --project Migracion_a_C/WebApplication1/DataAcces/DataAcces.csproj
+          --startup-project Migracion_a_C/WebApplication1/WebApplication1/WebApplication1.csproj
+          --connection "$APIRELOJ_TEST_CONNECTION"
+          --configuration Release
+          --no-build
+
+      - name: Run all 22 tests
+        run: dotnet test --project Migracion_a_C/WebApplication1/Service.Tests/Service.Tests.csproj --configuration Release --no-build --no-restore
+
+      - name: Confirm dependency vulnerability report
+        run: dotnet list Migracion_a_C/WebApplication1/WebApplication1.sln package --vulnerable --include-transitive --no-restore
+
+      - name: Validate Compose
+        run: docker compose --env-file Migracion_a_C/.env.example -f Migracion_a_C/docker-compose.yml config --quiet
+
+      - name: Build production Docker image
+        run: docker build --tag apireloj-ci:${{ github.sha }} .
+
+      - name: HTTP smoke test
+        shell: pwsh
+        run: >-
+          ./scripts/smoke-test.ps1
+          -ConnectionString $env:APIRELOJ_TEST_CONNECTION
+          -BackendApiKey 'ci-smoke-backend-key'
