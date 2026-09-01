@@ -6,9 +6,11 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Dominio;
 using IDataAcces;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Models.Dominio;
@@ -147,6 +149,43 @@ public class SecurityHandlerTests
 
         Assert.DoesNotContain("must-not-leak", json);
         Assert.DoesNotContain("secret", json, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void ProxyConfiguration_TrustsOnlyConfiguredNetworks()
+    {
+        var source = new ProxySecurityOptions
+        {
+            Enabled = true,
+            ForwardLimit = 1,
+            KnownNetworks = ["10.0.1.0/24"]
+        };
+        var target = new ForwardedHeadersOptions();
+
+        Assert.True(source.IsValid());
+        source.ApplyTo(target);
+
+        Assert.Equal(ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto, target.ForwardedHeaders);
+        Assert.Equal(1, target.ForwardLimit);
+        Assert.Empty(target.KnownProxies);
+        var network = Assert.Single(target.KnownIPNetworks);
+        Assert.True(network.Contains(IPAddress.Parse("10.0.1.20")));
+        Assert.False(network.Contains(IPAddress.Parse("10.0.2.20")));
+    }
+
+    [Theory]
+    [InlineData("not-an-ip", "10.0.1.0/24")]
+    [InlineData("10.0.1.10", "not-a-network")]
+    public void ProxyConfiguration_RejectsInvalidTrustedSources(string proxy, string network)
+    {
+        var options = new ProxySecurityOptions
+        {
+            Enabled = true,
+            KnownProxies = [proxy],
+            KnownNetworks = [network]
+        };
+
+        Assert.False(options.IsValid());
     }
 
     private static HeartbeatAuthenticationHandler HeartbeatHandler(string secret)

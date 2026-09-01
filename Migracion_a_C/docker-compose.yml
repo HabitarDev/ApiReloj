@@ -15,6 +15,11 @@ services:
       ConnectionStrings__Default: "Host=host.docker.internal;Port=5432;Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}"
       Security__Backend__ApiKey: "${BACKEND_API_KEY}"
       Security__Backend__AllowedIp: "${BACKEND_ALLOWED_IP}"
+      Security__Proxy__Enabled: "${PROXY_ENABLED:-false}"
+      Security__Proxy__ForwardLimit: "${PROXY_FORWARD_LIMIT:-1}"
+      Security__Proxy__KnownNetworks__0: "${PROXY_KNOWN_NETWORK:-10.0.1.0/24}"
+      ISAPI_USER: "${ISAPI_USER}"
+      ISAPI_PASSWORD: "${ISAPI_PASSWORD}"
 
     extra_hosts:
       - "host.docker.internal:host-gateway"

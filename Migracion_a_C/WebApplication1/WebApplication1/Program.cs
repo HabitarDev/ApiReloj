@@ -12,6 +12,7 @@ using IServices.IUser;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Models.WebApi;
 using Service.AccesEventsServicess;
@@ -50,6 +51,18 @@ builder.Services.AddOptions<HeartbeatSecurityOptions>()
     .Validate(x => x.PermitLimitPerIp > 0 && x.RateWindowSeconds > 0, "Rate limit de heartbeat invalido")
     .Validate(x => x.GlobalConcurrencyLimit > 0, "GlobalConcurrencyLimit invalido")
     .ValidateOnStart();
+
+var proxySecurity = builder.Configuration
+    .GetSection(ProxySecurityOptions.SectionName)
+    .Get<ProxySecurityOptions>() ?? new ProxySecurityOptions();
+builder.Services.AddOptions<ProxySecurityOptions>()
+    .Bind(builder.Configuration.GetSection(ProxySecurityOptions.SectionName))
+    .Validate(x => x.IsValid(), "Security:Proxy contiene IPs, redes o ForwardLimit invalidos")
+    .ValidateOnStart();
+if (proxySecurity.Enabled)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(proxySecurity.ApplyTo);
+}
 
 builder.Services
     .AddAuthentication()
@@ -200,6 +213,11 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi().RequireAuthorization(SecurityPolicies.Backend);
+}
+
+if (proxySecurity.Enabled)
+{
+    app.UseForwardedHeaders();
 }
 
 app.UseHttpsRedirection();
