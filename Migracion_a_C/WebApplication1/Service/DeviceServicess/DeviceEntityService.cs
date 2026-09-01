@@ -27,7 +27,7 @@ public class DeviceEntityService(IDevicesRepository repo, IResidentialsRepositor
             }
             else
             {
-                throw new ArgumentException("No se encuentra dispositivo ni residencial");
+                throw new KeyNotFoundException("No se encuentra el residencial del dispositivo");
             }
         }
         else

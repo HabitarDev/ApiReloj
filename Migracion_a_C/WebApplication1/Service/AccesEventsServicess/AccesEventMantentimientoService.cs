@@ -199,7 +199,7 @@ public class AccesEventMantentimientoService(
         var reloj = _relojesRepository.GetById(relojId);
         if (reloj == null)
         {
-            throw new InvalidOperationException("Reloj inexistente");
+            throw new KeyNotFoundException("Reloj inexistente");
         }
 
         if (!reloj.LastPushEvent.HasValue || eventTimeUtc > reloj.LastPushEvent.Value)

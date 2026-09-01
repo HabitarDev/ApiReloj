@@ -15,8 +15,8 @@ public class DeviceMantenimientoService(IDeviceEntityService deviceEntityService
     {
         Device? deviceBuscado = _devicesRepository.GetById(device._deviceId);
         Residential? resiBuscado = _residentialRepo.GetById(device._residentialId);
-        if (resiBuscado == null) throw new Exception("El Residential no existe");
-        if (deviceBuscado != null) throw new Exception("El Device ya existe");
+        if (resiBuscado == null) throw new KeyNotFoundException("El Residential no existe");
+        if (deviceBuscado != null) throw new InvalidOperationException("El Device ya existe");
         deviceBuscado = _deviceEntityService.ToEntity(device);
         _devicesRepository.Add(deviceBuscado);
     }
@@ -24,14 +24,14 @@ public class DeviceMantenimientoService(IDeviceEntityService deviceEntityService
     public void Modificar(Device device)
     {
         Device? deviceBuscado = _devicesRepository.GetById(device.DeviceId);
-        if (deviceBuscado == null) throw new Exception("El Device no existe");
+        if (deviceBuscado == null) throw new KeyNotFoundException("El Device no existe");
         _devicesRepository.update(device);
     }
 
     public void Eliminar(string id)
     {
         Device? deviceBuscado = _devicesRepository.GetById(id);
-        if (deviceBuscado == null) throw new Exception("El Device no existe");
+        if (deviceBuscado == null) throw new KeyNotFoundException("El Device no existe");
         _devicesRepository.delete(id);
     }
 }

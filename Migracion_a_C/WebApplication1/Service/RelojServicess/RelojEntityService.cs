@@ -25,7 +25,7 @@ public class RelojEntityService(IRelojesRepository repo, IResidentialsRepository
             }
             else
             {
-                throw  new ArgumentException("No se encuentra reloj ni residencial");
+                throw new KeyNotFoundException("No se encuentra el residencial del reloj");
             }
         }
         return relojParaRetornar;

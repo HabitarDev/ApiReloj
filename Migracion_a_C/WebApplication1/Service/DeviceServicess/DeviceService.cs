@@ -61,7 +61,7 @@ public class DeviceService(IDeviceMantenimientoService mantenimientoService, IDe
         Device? device = db.GetById(id);
         if (device == null)
         {
-            throw new Exception("No se encontro el device");
+            throw new KeyNotFoundException("No se encontro el device");
         }
         return FromEntity(device);
     }

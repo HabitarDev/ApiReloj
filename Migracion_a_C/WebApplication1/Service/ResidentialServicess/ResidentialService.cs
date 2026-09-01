@@ -75,7 +75,7 @@ public class ResidentialService(
         Residential? residential = db.GetById(id);
         if (residential == null)
         {
-            throw new Exception("No se encontro el residential");
+            throw new KeyNotFoundException("No se encontro el residential");
         }
         return FromEntity(residential);
     }

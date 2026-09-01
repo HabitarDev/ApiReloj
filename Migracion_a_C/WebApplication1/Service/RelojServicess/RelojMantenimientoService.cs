@@ -16,8 +16,8 @@ public class RelojMantenimientoService(IRelojEntityService relojEntityService,IR
     {
         Reloj? relojBuscado = _relojesRepository.GetById(reloj._idReloj);
         Residential? resiBuscado = _residentialRepo.GetById(reloj._residentialId);
-        if (resiBuscado == null) throw  new Exception("El Residential no existe");
-        if (relojBuscado != null) throw  new Exception("El Reloj ya existe");
+        if (resiBuscado == null) throw new KeyNotFoundException("El Residential no existe");
+        if (relojBuscado != null) throw new InvalidOperationException("El Reloj ya existe");
         relojBuscado = _relojEntityService.ToEntity(reloj);
         _relojesRepository.Add(relojBuscado);
     }
@@ -25,7 +25,7 @@ public class RelojMantenimientoService(IRelojEntityService relojEntityService,IR
     public void Modificar(Reloj reloj)
     {
         Reloj? relojBuscado = _relojesRepository.GetById(reloj.IdReloj);
-        if (relojBuscado == null) throw  new Exception("El reloj no existe");
+        if (relojBuscado == null) throw new KeyNotFoundException("El reloj no existe");
             relojBuscado.Puerto = reloj.Puerto;
             relojBuscado.DeviceSn = reloj.DeviceSn;
         _relojesRepository.update(relojBuscado);
@@ -34,7 +34,7 @@ public class RelojMantenimientoService(IRelojEntityService relojEntityService,IR
     public void Eliminar(string id)
     {
         Reloj? relojBuscado = _relojesRepository.GetById(id);
-        if (relojBuscado == null) throw  new Exception("El reloj no existe");
+        if (relojBuscado == null) throw new KeyNotFoundException("El reloj no existe");
         _relojesRepository.delete(id);
     }
 }
