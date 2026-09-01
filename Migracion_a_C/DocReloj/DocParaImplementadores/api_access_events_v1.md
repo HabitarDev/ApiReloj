@@ -1,6 +1,6 @@
 # API AccessEvents V1
 
-Contrato vigente al 15 de julio de 2026.
+Contrato vigente al 1 de septiembre de 2026.
 
 ## Objetivo
 
@@ -24,7 +24,7 @@ GET /AccessEvents
 
 | Parámetro | Tipo | Default | Regla |
 |---|---|---:|---|
-| `residentialId` | `string?` | — | Debe existir. Se resuelve a los `DeviceSn` de sus relojes. |
+| `residentialId` | `string?` | — | Debe existir. Filtra directamente el `ResidentialId` persistido en cada evento. |
 | `deviceSn` | `string?` | — | Coincidencia exacta. |
 | `employeeNumber` | `string?` | — | Coincidencia exacta. |
 | `major` | `int?` | — | Coincidencia exacta. |
@@ -35,12 +35,13 @@ GET /AccessEvents
 | `limit` | `int` | `100` | Mayor que cero. |
 | `offset` | `int` | `0` | Mayor o igual a cero. |
 
-Todos los filtros se combinan con `AND`. Si se combinan `residentialId` y `deviceSn`, el device debe pertenecer a uno de los relojes del residencial; de lo contrario se obtiene una lista vacía.
+Todos los filtros se combinan con `AND` en PostgreSQL. Si se combinan `residentialId` y `deviceSn`, sólo coinciden filas que contienen ambos valores, independientemente de la relación actual del reloj.
 
 Orden estable:
 
 1. `EventTimeUtc` descendente.
 2. `SerialNumber` descendente.
+3. `DeviceSn` descendente.
 
 ## Ejemplos
 
@@ -106,7 +107,8 @@ Los errores de aplicación se representan como `ProblemDetails`. Las respuestas 
 
 ## Notas de integración
 
-- `_residentialId` se deriva de la relación del reloj y puede ser `null` para datos heredados sin asociación resoluble.
+- `_residentialId` se fija durante la ingesta y no cambia si el reloj se elimina o reasigna.
+- Los datos heredados cuya pertenencia no puede demostrarse usan `__legacy__`; no se asignan al residencial actual del reloj y quedan fuera de consultas de tenants reales.
 - Las fechas de filtro son UTC o deben incluir offset explícito.
 - La idempotencia de ingesta es `DeviceSn + SerialNumber`.
 - La consulta es apta para reconciliación incremental, pero no posee cursor propio; usar fechas y paginación estable.

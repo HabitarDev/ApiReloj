@@ -1,6 +1,6 @@
 # Seguridad de endpoints
 
-Esta es la copia autocontenida para integradores del documento `../seguridad_endpoints.md`, vigente al 15 de julio de 2026.
+Esta es la copia autocontenida para integradores del documento `../seguridad_endpoints.md`, vigente al 1 de septiembre de 2026.
 
 ## Matriz
 
@@ -42,3 +42,11 @@ El reloj no envía API key. ApiReloj autoriza comparando la IP origen con el res
 ## Secretos
 
 `_secretKey` es write-only: se acepta en `POST /Device` y nunca aparece en respuestas. En producción se exige HTTPS.
+
+## Reverse proxy confiable
+
+En Dokploy/Traefik, ApiReloj sólo acepta `X-Forwarded-For` y `X-Forwarded-Proto` desde las IPs o CIDR declaradas en `Security__Proxy__KnownProxies` o `Security__Proxy__KnownNetworks`. `Security__Proxy__ForwardLimit` debe ser positivo; el despliegue actual usa `1`.
+
+Los forwarded headers se procesan antes de redirección HTTPS, rate limiting, autenticación y autorización. Esto permite que las políticas usen la IP real del cliente y detecten HTTPS, sin confiar headers enviados directamente por Internet.
+
+Si `Security__Proxy__Enabled=true`, al menos un proxy o una red confiable debe ser válido o la aplicación no inicia. No debe usarse `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true`, porque habilitar forwarding sin una lista explícita ampliaría la superficie de suplantación de IP.

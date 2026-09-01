@@ -1,6 +1,6 @@
 # API completa de ApiReloj V1
 
-**Contrato revisado contra código:** 15 de julio de 2026.
+**Contrato revisado contra código:** 1 de septiembre de 2026.
 
 Este documento es la referencia rápida de todos los endpoints activos. Las guías especializadas de la misma carpeta amplían eventos, jornadas, polling y seguridad.
 
@@ -51,7 +51,7 @@ El filtro global devuelve `ProblemDetails` para excepciones de aplicación:
 }
 ```
 
-Mapeo principal: `400` argumento, `404` no encontrado, `409` conflicto, `422` regla de negocio y `500` inesperado. Algunas rutas legacy de maestros lanzan `Exception` genérica y todavía pueden responder `500` ante inexistencia o duplicación.
+Mapeo principal: `400` argumento, `404` no encontrado, `409` conflicto, `422` regla de negocio y `500` inesperado. Residential, Device y Reloj usan `404` para inexistentes o dependencias ausentes y `409` para duplicados.
 
 ## 2. Mapa de endpoints
 
@@ -198,6 +198,8 @@ Query params:
 ]
 ```
 
+Cuando se especifica `residentialId`, el filtro se aplica directamente sobre la pertenencia persistida al ingerir el evento. No depende de que el reloj siga existiendo o conserve su residencial actual. El orden estable es `EventTimeUtc`, `SerialNumber` y `DeviceSn`, todos descendentes. Históricos sin pertenencia demostrable permanecen en `__legacy__`.
+
 Ver `api_access_events_v1.md`.
 
 ## 6. Jornadas
@@ -313,6 +315,8 @@ Body opcional:
 
 Ejecuta la corrida sincrónicamente y devuelve `BackfillPollRunResultDto`. Una corrida concurrente dentro del mismo proceso produce `409`.
 
+El snapshot completo de relojes se persiste en `pending` antes de llamar ISAPI y cada resultado se guarda al avanzar. En estado `running`, `finishedAtUtc` es `null`; un run terminal tiene fecha y ningún reloj pendiente. Al arrancar, los runs interrumpidos se recuperan idempotentemente como `error`.
+
 ### `GET /admin/poll/status`
 
 Devuelve `BackfillPollStatusDto` con la ejecución actual y última corrida conocida.
@@ -369,7 +373,7 @@ Usa el mismo shape; los campos del DTO de modificación son obligatorios. ISAPI:
 
 ISAPI: `PUT /ISAPI/AccessControl/UserInfoDetail/Delete?format=json` con `mode=byEmployeeNo`.
 
-Actualmente los fallos de residencial, red o reloj suelen producir `500`.
+Una dependencia maestra inexistente responde `404`. Un fallo inesperado de red o ISAPI responde `500` sin exponer secretos ni stack trace.
 
 ## 9. Residential
 
@@ -392,7 +396,7 @@ Los devices anidados nunca incluyen `_secretKey`.
 
 ### `GET /Residential/{id}`
 
-Devuelve un `ResidentialDto`. La implementación legacy puede responder `500` si no existe.
+Devuelve un `ResidentialDto`. Si no existe responde `404`.
 
 ### `POST /Residential`
 
@@ -403,7 +407,7 @@ Devuelve un `ResidentialDto`. La implementación legacy puede responder `500` si
 }
 ```
 
-Devuelve el residencial creado con `200`. Duplicados pueden responder `500` en la implementación legacy.
+Devuelve el residencial creado con `200`. Un ID duplicado responde `409`.
 
 ## 10. Device
 
@@ -489,4 +493,6 @@ Todos los pasos administrativos llevan `X-Api-Key` y deben salir desde la IP aut
 - `GET /AccessEvents` y `GET /Jornadas` leen sólo BD local.
 - El backend calcula horas y remuneraciones; ApiReloj entrega datos semiprocesados.
 - Las jornadas pueden cambiar por backfill y deben sincronizarse por revisión.
-- Un reverse proxy requiere configuración explícita de forwarded headers.
+- Tras Traefik sólo se procesan `X-Forwarded-For` y `X-Forwarded-Proto` desde proxies o redes configurados explícitamente, con un límite de saltos acotado.
+- ApiReloj requiere exactamente una réplica porque la exclusión mutua de poll es por proceso.
+- No existen callbacks desde ApiReloj hacia QUIEVO.

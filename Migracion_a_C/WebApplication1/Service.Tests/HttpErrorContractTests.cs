@@ -31,6 +31,24 @@ public class HttpErrorContractTests
     }
 
     [Fact]
+    public void InvalidInput_MapsToBadRequestProblemDetails()
+    {
+        var result = Execute(new ArgumentException("Puerto de reloj invalido"));
+
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+        Assert.Equal(StatusCodes.Status400BadRequest, Assert.IsType<ProblemDetails>(result.Value).Status);
+    }
+
+    [Fact]
+    public void BusinessRule_MapsToUnprocessableEntityProblemDetails()
+    {
+        var result = Execute(new InvalidOperationException("No se pudo completar la operacion"));
+
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, Assert.IsType<ProblemDetails>(result.Value).Status);
+    }
+
+    [Fact]
     public void UnexpectedError_DoesNotExposeItsDetail()
     {
         var result = Execute(new Exception("database-password-must-not-leak"));

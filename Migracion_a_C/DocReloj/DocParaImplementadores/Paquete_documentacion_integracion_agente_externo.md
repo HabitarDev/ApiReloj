@@ -1,9 +1,9 @@
 # Paquete de documentación para integración externa
 
 **Carpeta contractual:** `DocReloj/DocParaImplementadores/`
-**Última revisión contra código:** 15 de julio de 2026.
+**Última revisión contra código:** 1 de septiembre de 2026.
 
-Los nueve archivos de este directorio forman un paquete autocontenido para desarrolladores que no tienen acceso al repositorio. No es necesario consultar `DocsDeCreacion` ni documentos de planificación.
+Los once archivos de este directorio forman un paquete autocontenido para desarrolladores que no tienen acceso al repositorio. No es necesario consultar `DocsDeCreacion` ni documentos de planificación.
 
 ## Contenido y función
 
@@ -17,7 +17,9 @@ Los nueve archivos de este directorio forman un paquete autocontenido para desar
 | 6 | `procesamiento_jornadas_concurrente.md` | Garantías de orden, transacción, reintentos y concurrencia. |
 | 7 | `api_poll_backfill_v1.md` | Poll ISAPI, cursores y endpoints administrativos. |
 | 8 | `explicacion_ids_string_operativa.md` | IDs string, migraciones, HMAC y configuración de rutas. |
-| 9 | `Paquete_documentacion_integracion_agente_externo.md` | Este índice. |
+| 9 | `compatibilidad_quievo_repo_readiness.md` | Matriz contractual contra QUIEVO y decisiones finales de compatibilidad. |
+| 10 | `despliegue_dokploy_traefik.md` | Despliegue seguro, variables, migraciones, smoke y rollback. |
+| 11 | `Paquete_documentacion_integracion_agente_externo.md` | Este índice. |
 
 ## Cambios que afectan al backend
 
@@ -29,6 +31,10 @@ Los bodies principales del backend no cambiaron. Sí cambiaron los requisitos de
 - Existen endpoints administrativos para reconstruir jornadas e inspeccionar la cola.
 - El heartbeat mantiene exactamente su body original; no usa headers nuevos.
 - El push conserva ruta, JSON, XML y multipart de ISAPI.
+- `GET /AccessEvents` aplica aislamiento por el `ResidentialId` persistido en cada evento.
+- Un poll `running` devuelve `finishedAtUtc: null`; un resultado terminal siempre tiene fecha y ningún reloj pendiente.
+- Inexistentes responden `404`, duplicados `409` y argumentos inválidos `400` mediante `ProblemDetails`.
+- No se agregaron callbacks ni tráfico de ApiReloj hacia QUIEVO.
 
 ## Regla de autoridad
 

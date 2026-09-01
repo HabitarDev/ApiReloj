@@ -99,6 +99,26 @@ public class IsapiAccessEventTests
         Assert.Equal("RES-1", Assert.Single(result)._residentialId);
     }
 
+    [Fact]
+    public void Search_RejectsAnUnknownResidentialBeforeQueryingEvents()
+    {
+        var events = new RecordingAccessEventsRepository([]);
+        var sut = new AccesEventMantentimientoService(
+            events,
+            null!,
+            new ExistingResidentialsRepository("RES-1"),
+            null!,
+            null!,
+            new AccesEventEntityService(),
+            null!);
+
+        Assert.Throws<KeyNotFoundException>(() => sut.Buscar(new AccessEventsQueryDto
+        {
+            ResidentialId = "RES-MISSING"
+        }));
+        Assert.Null(events.ResidentialId);
+    }
+
     private static HikvisionEventNotificationAlertDto PushPayload()
     {
         return new HikvisionEventNotificationAlertDto

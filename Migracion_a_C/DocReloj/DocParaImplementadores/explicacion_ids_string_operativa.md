@@ -1,6 +1,6 @@
 # IDs string: base de datos, heartbeat y relojes
 
-Contrato vigente al 15 de julio de 2026.
+Contrato vigente al 1 de septiembre de 2026.
 
 ## Identificadores
 
@@ -15,7 +15,9 @@ Consecuencias para clientes:
 
 ## Migraciones EF
 
-La migración `20260429005313_MaestrosIdsString` convirtió las claves y relaciones maestras a `varchar(128)`. Las migraciones posteriores agregan la cola de jornadas y el timestamp antireplay.
+La migración `20260429005313_MaestrosIdsString` convirtió las claves y relaciones maestras a `varchar(128)` mediante conversiones PostgreSQL explícitas. Las migraciones posteriores agregan pertenencia tenant, cola de jornadas, timestamp antireplay e índices de consulta.
+
+Al introducir pertenencia en históricos, ApiReloj no la infiere a partir del reloj actualmente configurado: esa relación pudo haber cambiado. Las filas anteriores cuya pertenencia no puede demostrarse reciben el identificador de cuarentena `__legacy__`. Los eventos nuevos conservan el residencial conocido durante push o poll.
 
 ApiReloj ejecuta automáticamente todas las migraciones pendientes mediante `Database.Migrate()` al arrancar. Si PostgreSQL no está disponible o una migración falla, la aplicación no inicia.
 
@@ -26,6 +28,8 @@ dotnet ef database update --project .\DataAcces\DataAcces.csproj --startup-proje
 ```
 
 No se deben editar tablas manualmente para reemplazar migraciones.
+
+Antes de desplegar una versión con migraciones nuevas se debe verificar `__EFMigrationsHistory` y crear un backup restaurable. Si el despliegue falla después de modificar el esquema, el rollback seguro restaura conjuntamente la imagen anterior y ese backup; volver sólo la imagen no garantiza compatibilidad con columnas obligatorias nuevas.
 
 ## Heartbeat
 

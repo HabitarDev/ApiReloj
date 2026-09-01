@@ -1,6 +1,6 @@
 # API Jornadas V1
 
-Contrato vigente al 15 de julio de 2026.
+Contrato vigente al 1 de septiembre de 2026.
 
 ## Propósito
 

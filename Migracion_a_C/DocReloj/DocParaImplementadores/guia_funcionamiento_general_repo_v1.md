@@ -1,6 +1,6 @@
 # Guía de funcionamiento general de ApiReloj V1
 
-**Contrato revisado contra código:** 15 de julio de 2026.
+**Contrato revisado contra código:** 1 de septiembre de 2026.
 
 ## 1. Propósito
 
@@ -60,7 +60,7 @@ Representa un reloj Hikvision dentro de un residencial. Mantiene:
 
 ### AccessEvent
 
-Es el registro inmutable normalizado desde push o poll. Su identidad idempotente es `DeviceSn + SerialNumber`. Conserva el payload original dentro de un envelope JSON `_raw`.
+Es el registro inmutable normalizado desde push o poll. Su identidad idempotente es `DeviceSn + SerialNumber`. Conserva el payload original dentro de un envelope JSON `_raw` y fija `ResidentialId` durante la ingesta; reasignar o borrar el reloj no cambia esa pertenencia.
 
 ### Jornada
 
@@ -104,6 +104,8 @@ El resultado funcional puede ser `inserted`, `duplicate` o `ignored`; los tres s
 ## 7. Flujo de poll y backfill
 
 `BackfillPollWorker` ejecuta corridas programadas. Los endpoints `/admin/poll/*` permiten operación manual y diagnóstico.
+
+Antes de consultar ISAPI se persiste el snapshot completo de candidatos en estado `pending`. El progreso y las métricas se guardan después de cada reloj. Si el proceso termina abruptamente, el siguiente arranque recupera idempotentemente el run como `error`, completa su fecha y convierte pendientes en errores.
 
 Por reloj:
 
@@ -176,7 +178,7 @@ Limitación vigente: no existe transacción distribuida entre relojes. Si alguno
 
 Al iniciar, ApiReloj ejecuta `Database.Migrate()`. Si PostgreSQL no está accesible o una migración falla, la aplicación no inicia. Esta decisión evita ejecutar código contra un esquema desactualizado.
 
-También se valida la configuración de seguridad durante el arranque.
+Después de migrar se recuperan los poll runs huérfanos y recién entonces se habilitan los hosted workers. También se valida la configuración de seguridad durante el arranque.
 
 ## 13. Compatibilidad ISAPI
 
@@ -190,13 +192,13 @@ El rediseño de seguridad y jornadas no cambió:
 - deduplicación;
 - conservación de `_raw`.
 
-`residentialId` es metadata interna: ISAPI no necesita enviarlo en los eventos porque ApiReloj lo deriva del reloj autenticado o consultado.
+`residentialId` es metadata interna: ISAPI no necesita enviarlo en los eventos porque ApiReloj lo fija desde el reloj autenticado o consultado al ingerir. Los históricos anteriores sin pertenencia demostrable quedan en `__legacy__`, sin inferirse a partir de la relación actual.
 
 ## 14. Limitaciones conocidas
 
-- La IP se toma directamente de `RemoteIpAddress`; un proxy requiere configuración explícita.
+- La IP se toma de `RemoteIpAddress` después de procesar forwarded headers exclusivamente desde proxies o redes confiables configurados explícitamente.
 - El fan-out de usuarios puede quedar parcialmente aplicado.
-- Algunos servicios legacy todavía convierten errores de maestros en `500`.
+- La exclusión mutua del poll es por proceso; el despliegue soportado requiere una réplica.
 - No hay cálculo de horas, salario ni sanciones en este repositorio.
 - No hay versionado de rutas `/api/v1`; las rutas documentadas son las activas.
 

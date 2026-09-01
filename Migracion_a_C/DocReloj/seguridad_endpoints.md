@@ -1,6 +1,6 @@
 # Seguridad de endpoints
 
-**Estado:** vigente al 15 de julio de 2026.
+**Estado:** vigente al 1 de septiembre de 2026.
 
 ApiReloj aplica autorización cerrada por defecto. Todo endpoint nuevo queda bajo la política `Backend` salvo que declare explícitamente `Heartbeat` o `ResidentialPush`.
 
@@ -97,4 +97,16 @@ Los secretos no deben almacenarse en archivos versionados. Compose obtiene la AP
 
 ## Red, HTTPS y proxies
 
-En producción se debe usar HTTPS. La versión actual toma la IP directamente desde `HttpContext.Connection.RemoteIpAddress`. Si se coloca un reverse proxy, se deben configurar `ForwardedHeaders` y proxies conocidos antes de confiar en direcciones reenviadas; de lo contrario se observará la IP del proxy.
+En producción se debe usar HTTPS. ApiReloj toma la IP de `HttpContext.Connection.RemoteIpAddress` después de procesar únicamente `X-Forwarded-For` y `X-Forwarded-Proto` provenientes de proxies o redes explícitamente confiables.
+
+Configuración Dokploy/Traefik mínima:
+
+```text
+Security__Proxy__Enabled=true
+Security__Proxy__ForwardLimit=1
+Security__Proxy__KnownNetworks__0=<CIDR-real-de-la-red-Traefik>
+```
+
+También puede declararse una IP individual con `Security__Proxy__KnownProxies__0`. Si el proxy está habilitado y no existe al menos una IP o red válida, la aplicación no inicia. Los headers se procesan antes de HTTPS, rate limiting y autorización, por lo que las políticas observan el cliente real sin aceptar suplantaciones desde orígenes no confiables.
+
+No se debe activar `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true`; esa alternativa no expresa la lista de confianza exigida por este despliegue.

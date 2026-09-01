@@ -258,6 +258,26 @@ public class PostgresProjectionIntegrationTests
         Assert.Equal(2, rows.Count);
         Assert.All(rows, row => Assert.Equal("RES-A", row.ResidentialId));
         Assert.Equal(["SN-B", "SN-A"], rows.Select(row => row.DeviceSn));
+
+        var combined = new AccessEventsRepository(context).Search(
+            fromUtc: at,
+            toUtc: at,
+            residentialId: "RES-A",
+            deviceSn: "SN-B",
+            employeeNumber: "EMP-1",
+            major: 5,
+            minor: 1,
+            attendanceStatus: "CHECKIN",
+            limit: 1,
+            offset: 0);
+        Assert.Equal("SN-B", Assert.Single(combined).DeviceSn);
+
+        var secondPage = new AccessEventsRepository(context).Search(
+            residentialId: "RES-A",
+            attendanceStatus: "checkIn",
+            limit: 1,
+            offset: 1);
+        Assert.Equal("SN-A", Assert.Single(secondPage).DeviceSn);
     }
 
     private static string TestConnectionString()

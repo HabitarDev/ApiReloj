@@ -104,7 +104,7 @@ public class ResidentialService(
 
             if (!db.TryUpdateIp(authContext.ResidentialId, ipNueva))
             {
-                throw new InvalidOperationException("El Residential no existe");
+                throw new KeyNotFoundException("El Residential no existe");
             }
 
             transaction.Commit();

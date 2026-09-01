@@ -79,7 +79,7 @@ jobs:
           --configuration Release
           --no-build
 
-      - name: Run all 22 tests
+      - name: Run complete test suite
         run: dotnet test --project Migracion_a_C/WebApplication1/Service.Tests/Service.Tests.csproj --configuration Release --no-build --no-restore
 
       - name: Confirm dependency vulnerability report

@@ -188,6 +188,83 @@ public class SecurityHandlerTests
         Assert.False(options.IsValid());
     }
 
+    [Fact]
+    public async Task ForwardedHeaders_ApplyClientIpAndSchemeFromTrustedProxy()
+    {
+        var context = ForwardedRequest(
+            remoteIp: "10.0.1.20",
+            forwardedFor: "203.0.113.40",
+            forwardedProto: "https");
+
+        await ForwardedMiddleware("10.0.1.0/24").Invoke(context);
+
+        Assert.Equal(IPAddress.Parse("203.0.113.40"), context.Connection.RemoteIpAddress);
+        Assert.Equal("https", context.Request.Scheme);
+    }
+
+    [Fact]
+    public async Task ForwardedHeaders_IgnoreSpoofedValuesFromUnknownProxy()
+    {
+        var context = ForwardedRequest(
+            remoteIp: "10.0.2.20",
+            forwardedFor: "203.0.113.40",
+            forwardedProto: "https");
+
+        await ForwardedMiddleware("10.0.1.0/24").Invoke(context);
+
+        Assert.Equal(IPAddress.Parse("10.0.2.20"), context.Connection.RemoteIpAddress);
+        Assert.Equal("http", context.Request.Scheme);
+    }
+
+    [Fact]
+    public async Task ForwardedHeaders_LeaveDirectRequestWithoutHeadersUnchanged()
+    {
+        var context = ForwardedRequest(remoteIp: "127.0.0.1");
+
+        await ForwardedMiddleware("10.0.1.0/24").Invoke(context);
+
+        Assert.Equal(IPAddress.Loopback, context.Connection.RemoteIpAddress);
+        Assert.Equal("http", context.Request.Scheme);
+    }
+
+    private static ForwardedHeadersMiddleware ForwardedMiddleware(string trustedNetwork)
+    {
+        var source = new ProxySecurityOptions
+        {
+            Enabled = true,
+            ForwardLimit = 1,
+            KnownNetworks = [trustedNetwork]
+        };
+        var options = new ForwardedHeadersOptions();
+        source.ApplyTo(options);
+
+        return new ForwardedHeadersMiddleware(
+            _ => Task.CompletedTask,
+            NullLoggerFactory.Instance,
+            Options.Create(options));
+    }
+
+    private static DefaultHttpContext ForwardedRequest(
+        string remoteIp,
+        string? forwardedFor = null,
+        string? forwardedProto = null)
+    {
+        var context = new DefaultHttpContext();
+        context.Connection.RemoteIpAddress = IPAddress.Parse(remoteIp);
+        context.Request.Scheme = "http";
+        if (forwardedFor is not null)
+        {
+            context.Request.Headers["X-Forwarded-For"] = forwardedFor;
+        }
+
+        if (forwardedProto is not null)
+        {
+            context.Request.Headers["X-Forwarded-Proto"] = forwardedProto;
+        }
+
+        return context;
+    }
+
     private static HeartbeatAuthenticationHandler HeartbeatHandler(string secret)
     {
         var device = new Device

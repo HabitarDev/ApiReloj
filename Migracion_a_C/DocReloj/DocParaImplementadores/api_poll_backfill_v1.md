@@ -1,6 +1,6 @@
 # API Poll Backfill V1
 
-Contrato vigente al 15 de julio de 2026.
+Contrato vigente al 1 de septiembre de 2026.
 
 ## Objetivo
 
@@ -93,7 +93,15 @@ Respuesta resumida:
 }
 ```
 
-Estados de corrida: `running`, `ok`, `partial_error`, `error`. Un reloj no configurado puede quedar `skipped` dentro del detalle sin convertir toda la corrida en error.
+Estados de corrida: `running`, `ok`, `partial_error`, `error`. Los estados por reloj son `pending`, `ok`, `skipped` y `error`. Un reloj no configurado puede quedar `skipped` dentro del detalle sin convertir toda la corrida en error. Si fallan algunos relojes el run termina en `partial_error`; si fallan todos termina en `error`.
+
+Invariantes temporales:
+
+- `running` implica `finishedAtUtc: null`;
+- un estado terminal implica `finishedAtUtc` no nulo;
+- un resultado terminal nunca conserva relojes `pending`.
+
+Antes de la primera llamada ISAPI, ApiReloj resuelve todos los candidatos y persiste atómicamente el snapshot completo con cada reloj en `pending`. El conjunto de `relojId` no cambia durante la corrida. Después de cada reloj se reemplaza su resultado y se persisten las métricas, por lo que el detalle representa progreso durable y no sólo el resultado final.
 
 ## Estado actual
 
@@ -102,6 +110,8 @@ GET /admin/poll/status
 ```
 
 Devuelve si hay una corrida en curso y el resumen de la última conocida. Después de un reinicio, se hidrata desde el último registro persistido.
+
+Durante el arranque, luego de aplicar migraciones y antes de iniciar los workers, todos los runs persistidos todavía en `running` se recuperan idempotentemente como `error`: los relojes `pending` pasan a `error`, se completa `finishedAtUtc` y se registra que el proceso anterior fue interrumpido.
 
 ## Historial
 
@@ -114,7 +124,9 @@ GET /admin/poll/runs/{runId}
 
 ## Worker
 
-`BackfillPollWorker` ejecuta corridas con `trigger=scheduled` según `WorkerIntervalMinutes`. `RunOnStartup` decide si ejecuta inmediatamente al arrancar.
+`BackfillPollWorker` ejecuta corridas con `trigger=scheduled` según `WorkerIntervalMinutes`. `RunOnStartup` decide si ejecuta inmediatamente al arrancar. Los únicos triggers aceptados son `manual` y `scheduled`; históricos `startup` se normalizan a `scheduled` por migración.
+
+El semáforo evita dos corridas simultáneas dentro de un proceso. Como no es un lock distribuido, el despliegue soportado exige exactamente una réplica de ApiReloj.
 
 ## Configuración
 
@@ -125,7 +137,7 @@ GET /admin/poll/runs/{runId}
     "WindowMinutes": 30,
     "MaxResultsPerPage": 30,
     "HttpTimeoutSeconds": 30,
-    "RunOnStartup": true,
+    "RunOnStartup": false,
     "BootstrapStartUtc": "2000-01-01T00:00:00Z",
     "MaxWindowsPerRun": 5000
   }
@@ -146,3 +158,5 @@ GET /admin/poll/runs/{runId}
 | `500` | Fallo general inesperado. |
 
 Los errores de un reloj se capturan en el resultado y normalmente producen `partial_error`, sin abortar los relojes siguientes.
+
+Para el primer despliegue o luego de una migración se recomienda `RunOnStartup=false`; se habilita sólo después del smoke controlado si la operación lo requiere.

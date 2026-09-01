@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Dominio;
 using IDataAcces;
+using IServices.IBackfillPoll;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Models.WebApi;
@@ -46,6 +47,96 @@ public class BackfillPollContractTests
     }
 
     [Fact]
+    public async Task Run_PersistsProgressAfterEachClockAndCompletesSuccessfully()
+    {
+        var repository = new InMemoryPollRunsRepository();
+        var firstCallObservedPendingSnapshot = false;
+        var client = new StubHikvisionClient((_, _) =>
+        {
+            var initial = repository.Snapshots.First();
+            firstCallObservedPendingSnapshot = Deserialize(initial.ClocksJson)
+                .All(clock => clock.Status == BackfillPollClockStatuses.Pending);
+            return Task.FromResult(EmptySearchResult());
+        });
+        var service = Service(repository, client, ReadyClock("CLOCK-1"), ReadyClock("CLOCK-2"));
+
+        var result = await service.EjecutarAsync(
+            new BackfillPollRunRequestDto { Trigger = BackfillPollTriggers.Manual },
+            TestContext.Current.CancellationToken);
+
+        Assert.True(firstCallObservedPendingSnapshot);
+        var afterFirstClock = Deserialize(repository.Snapshots[1].ClocksJson);
+        Assert.Equal(BackfillPollClockStatuses.Ok, afterFirstClock[0].Status);
+        Assert.Equal(BackfillPollClockStatuses.Pending, afterFirstClock[1].Status);
+        Assert.Equal(BackfillPollRunStatuses.Running, repository.Snapshots[1].Status);
+        Assert.Equal(BackfillPollRunStatuses.Ok, result.Status);
+        Assert.NotNull(result.FinishedAtUtc);
+        Assert.All(result.Clocks, clock => Assert.NotEqual(BackfillPollClockStatuses.Pending, clock.Status));
+    }
+
+    [Fact]
+    public async Task Run_UsesPartialErrorWhenOnlyOneClockFails()
+    {
+        var repository = new InMemoryPollRunsRepository();
+        var client = new StubHikvisionClient((clock, _) =>
+            clock.IdReloj == "CLOCK-2"
+                ? Task.FromException<HikvisionAcsEventResultDto>(new HttpRequestException("clock unavailable"))
+                : Task.FromResult(EmptySearchResult()));
+        var service = Service(repository, client, ReadyClock("CLOCK-1"), ReadyClock("CLOCK-2"));
+
+        var result = await service.EjecutarAsync(
+            new BackfillPollRunRequestDto { Trigger = BackfillPollTriggers.Scheduled },
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(BackfillPollRunStatuses.PartialError, result.Status);
+        Assert.Contains(result.Clocks, clock => clock.Status == BackfillPollClockStatuses.Ok);
+        Assert.Contains(result.Clocks, clock => clock.Status == BackfillPollClockStatuses.Error);
+        Assert.All(result.Clocks, clock => Assert.NotEqual(BackfillPollClockStatuses.Pending, clock.Status));
+    }
+
+    [Fact]
+    public async Task Run_UsesErrorWhenEveryClockFails()
+    {
+        var repository = new InMemoryPollRunsRepository();
+        var client = new StubHikvisionClient((_, _) =>
+            Task.FromException<HikvisionAcsEventResultDto>(new HttpRequestException("clock unavailable")));
+        var service = Service(repository, client, ReadyClock("CLOCK-1"));
+
+        var result = await service.EjecutarAsync(
+            new BackfillPollRunRequestDto { Trigger = BackfillPollTriggers.Manual },
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(BackfillPollRunStatuses.Error, result.Status);
+        Assert.NotNull(result.FinishedAtUtc);
+        Assert.Equal(BackfillPollClockStatuses.Error, Assert.Single(result.Clocks).Status);
+    }
+
+    [Fact]
+    public async Task Cancellation_ClosesTheRunAndConvertsEveryPendingClockToError()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var repository = new InMemoryPollRunsRepository();
+        var client = new StubHikvisionClient((_, ct) =>
+        {
+            cancellation.Cancel();
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(EmptySearchResult());
+        });
+        var service = Service(repository, client, ReadyClock("CLOCK-1"), ReadyClock("CLOCK-2"));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.EjecutarAsync(
+            new BackfillPollRunRequestDto { Trigger = BackfillPollTriggers.Manual },
+            cancellation.Token));
+
+        var final = repository.Snapshots.Last();
+        Assert.Equal(BackfillPollRunStatuses.Error, final.Status);
+        Assert.NotNull(final.FinishedAtUtc);
+        Assert.All(
+            Deserialize(final.ClocksJson),
+            clock => Assert.Equal(BackfillPollClockStatuses.Error, clock.Status));
+    }
+
+    [Fact]
     public void Recovery_TerminatesOrphanedRunsAndPendingClocksIdempotently()
     {
         var repository = new InMemoryPollRunsRepository();
@@ -75,6 +166,14 @@ public class BackfillPollContractTests
         Assert.Equal(BackfillPollRunStatuses.Error, recovered.Status);
         Assert.Equal(Now, recovered.FinishedAtUtc);
         Assert.Equal(BackfillPollClockStatuses.Error, Assert.Single(Deserialize(recovered.ClocksJson)).Status);
+
+        var listed = Assert.Single(service.ListarRuns(new BackfillPollRunsQueryDto
+        {
+            Status = BackfillPollRunStatuses.Error
+        }));
+        Assert.Equal("RUN-1", listed.RunId);
+        Assert.Equal(BackfillPollRunStatuses.Error, service.ObtenerRun("RUN-1").Status);
+        Assert.Throws<KeyNotFoundException>(() => service.ObtenerRun("missing"));
     }
 
     [Fact]
@@ -114,15 +213,40 @@ public class BackfillPollContractTests
         InMemoryPollRunsRepository repository,
         params Reloj[] clocks)
     {
+        return Service(repository, new StubHikvisionClient(), clocks);
+    }
+
+    private static BackfillPollMantenimientoService Service(
+        InMemoryPollRunsRepository repository,
+        IHikvisionAcsEventClient hikvisionClient,
+        params Reloj[] clocks)
+    {
         return new BackfillPollMantenimientoService(
             new StaticRelojesRepository(clocks),
             repository,
             null!,
-            null!,
+            hikvisionClient,
             Options.Create(new BackfillPollingOptions()),
             new FixedTimeProvider(Now),
             NullLogger<BackfillPollMantenimientoService>.Instance);
     }
+
+    private static Reloj ReadyClock(string id) => new()
+    {
+        IdReloj = id,
+        ResidentialId = "RES-1",
+        Residential = new Residential { IdResidential = "RES-1", IpActual = "127.0.0.1" },
+        DeviceSn = $"SN-{id}",
+        Puerto = 80,
+        LastPollEvent = Now.AddMinutes(-10)
+    };
+
+    private static HikvisionAcsEventResultDto EmptySearchResult() => new()
+    {
+        ResponseStatusStrg = "OK",
+        NumOfMatches = 0,
+        InfoList = []
+    };
 
     private static List<BackfillPollClockResultDto> Deserialize(string json)
     {
@@ -143,8 +267,31 @@ public class BackfillPollContractTests
             clocks.Where(clock => residentialId == null || clock.ResidentialId == residentialId)
                 .Where(clock => relojId == null || clock.IdReloj == relojId)
                 .ToList();
-        public void update(Reloj reloj) => throw new NotSupportedException();
+        public void update(Reloj reloj) { }
         public void delete(string id) => throw new NotSupportedException();
+    }
+
+    private sealed class StubHikvisionClient(
+        Func<Reloj, CancellationToken, Task<HikvisionAcsEventResultDto>>? search = null)
+        : IHikvisionAcsEventClient
+    {
+        public Task<HikvisionAcsEventResultDto> SearchAsync(
+            Reloj reloj,
+            DateTimeOffset fromUtc,
+            DateTimeOffset toUtc,
+            string searchId,
+            int searchResultPosition,
+            int maxResults,
+            bool timeReverseOrder,
+            CancellationToken ct) =>
+            search?.Invoke(reloj, ct) ?? Task.FromResult(EmptySearchResult());
+
+        public Task<DateTimeOffset?> GetOldestEventTimeAsync(
+            Reloj reloj,
+            DateTimeOffset bootstrapStartUtc,
+            DateTimeOffset nowUtc,
+            int maxResults,
+            CancellationToken ct) => Task.FromResult<DateTimeOffset?>(null);
     }
 
     private sealed class InMemoryPollRunsRepository : IBackfillPollRunsRepository

@@ -108,9 +108,13 @@ public class BackfillPollMantenimientoService(
                 PersistProgressRun(run);
             }
 
-            run.Status = run.Clocks.Any(x => x.Status == BackfillPollClockStatuses.Error)
-                ? BackfillPollRunStatuses.PartialError
-                : BackfillPollRunStatuses.Ok;
+            var failedClocks = run.Clocks.Count(x => x.Status == BackfillPollClockStatuses.Error);
+            run.Status = failedClocks switch
+            {
+                0 => BackfillPollRunStatuses.Ok,
+                _ when failedClocks == run.Clocks.Count => BackfillPollRunStatuses.Error,
+                _ => BackfillPollRunStatuses.PartialError
+            };
             return run;
         }
         catch (Exception ex)
@@ -142,7 +146,7 @@ public class BackfillPollMantenimientoService(
         var row = _pollRunsRepository.GetById(runId);
         if (row == null)
         {
-            throw new ArgumentException("Run inexistente");
+            throw new KeyNotFoundException("Run inexistente");
         }
 
         var clocks = DeserializeClocks(row.ClocksJson);

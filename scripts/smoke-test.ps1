@@ -14,13 +14,17 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $project = Join-Path $repoRoot 'Migracion_a_C/WebApplication1/WebApplication1/WebApplication1.csproj'
 $runId = [Guid]::NewGuid().ToString('N').Substring(0, 10).ToUpperInvariant()
 $residentialId = "SMOKE-RES-$runId"
+$otherResidentialId = "SMOKE-RES-OTHER-$runId"
 $heartbeatDeviceId = "SMOKE-DEVICE-$runId"
 $heartbeatSecret = "smoke-secret-$runId"
 $clockAId = "SMOKE-CLOCK-A-$runId"
 $clockBId = "SMOKE-CLOCK-B-$runId"
 $clockASn = "SMOKE-SN-A-$runId"
 $clockBSn = "SMOKE-SN-B-$runId"
+$otherClockId = "SMOKE-CLOCK-OTHER-$runId"
+$otherClockSn = "SMOKE-SN-OTHER-$runId"
 $employee = "SMOKE-EMP-$runId"
+$otherEmployee = "SMOKE-EMP-OTHER-$runId"
 $stdoutPath = Join-Path ([IO.Path]::GetTempPath()) "apireloj-smoke-$runId.stdout.log"
 $stderrPath = Join-Path ([IO.Path]::GetTempPath()) "apireloj-smoke-$runId.stderr.log"
 
@@ -149,6 +153,12 @@ try {
     }
     Assert-Status $response 200 'Creacion de residencial'
 
+    $response = Send-ApiRequest -Method ([Net.Http.HttpMethod]::Post) -Path '/Residential' -ApiKey $BackendApiKey -Body @{
+        idResidential = $otherResidentialId
+        ipActual = '127.0.0.1'
+    }
+    Assert-Status $response 200 'Creacion del segundo residencial'
+
     $response = Send-ApiRequest -Method ([Net.Http.HttpMethod]::Post) -Path '/Device' -ApiKey $BackendApiKey -Body @{
         _deviceId = $heartbeatDeviceId
         _secretKey = $heartbeatSecret
@@ -176,6 +186,19 @@ try {
         }
         Assert-Status $response 200 "Asignacion de DeviceSn al reloj $($clock.Id)"
     }
+
+    $response = Send-ApiRequest -Method ([Net.Http.HttpMethod]::Post) -Path '/Reloj' -ApiKey $BackendApiKey -Body @{
+        _idReloj = $otherClockId
+        _puerto = 82
+        _residentialId = $otherResidentialId
+    }
+    Assert-Status $response 200 'Creacion del reloj del segundo residencial'
+    $response = Send-ApiRequest -Method ([Net.Http.HttpMethod]::Put) -Path '/Reloj' -ApiKey $BackendApiKey -Body @{
+        _idReloj = $otherClockId
+        _puerto = 82
+        _deviceSn = $otherClockSn
+    }
+    Assert-Status $response 200 'Asignacion de DeviceSn al reloj del segundo residencial'
 
     $heartbeatTimestamp = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $canonicalHeartbeat = "$heartbeatTimestamp|$heartbeatDeviceId|$residentialId"
@@ -244,6 +267,22 @@ try {
     Assert-Status $response 200 'Push check-out desde otro reloj del residencial'
     Assert-True (($response.Body | ConvertFrom-Json).status -eq 'inserted') 'El check-out no fue insertado.'
 
+    $otherCheckIn = @{
+        dateTime = $start.ToString('o')
+        eventType = 'AccessControllerEvent'
+        deviceID = $otherClockSn
+        accessControllerEvent = @{
+            serialNo = 1
+            employeeNoString = $otherEmployee
+            majorEventType = 5
+            subEventType = 1
+            attendanceStatus = 'checkIn'
+        }
+    }
+    $response = Send-ApiRequest -Method ([Net.Http.HttpMethod]::Post) -Path "/AccessEvents/push/$otherClockId" -Body $otherCheckIn
+    Assert-Status $response 200 'Push del segundo residencial'
+    Assert-True (($response.Body | ConvertFrom-Json).status -eq 'inserted') 'El evento del segundo residencial no fue insertado.'
+
     $encodedEmployee = [Uri]::EscapeDataString($employee)
     $encodedResidential = [Uri]::EscapeDataString($residentialId)
     $projectionReady = $false
@@ -292,9 +331,22 @@ try {
         $events += ,$item
     }
     Assert-True ($events.Count -eq 2) 'El smoke test esperaba dos eventos persistidos y deduplicados.'
+    Assert-True (($events | Where-Object { $_._residentialId -ne $residentialId }).Count -eq 0) 'La consulta devolvio eventos de otro residencial.'
+
+    $encodedOtherResidential = [Uri]::EscapeDataString($otherResidentialId)
+    $response = Send-ApiRequest -Method ([Net.Http.HttpMethod]::Get) `
+        -Path "/AccessEvents?residentialId=$encodedOtherResidential&limit=10" `
+        -ApiKey $BackendApiKey
+    Assert-Status $response 200 'Consulta de eventos del segundo residencial'
+    $otherEvents = @()
+    foreach ($item in ($response.Body | ConvertFrom-Json)) {
+        $otherEvents += ,$item
+    }
+    Assert-True ($otherEvents.Count -eq 1) 'El segundo residencial debe devolver exactamente su evento.'
+    Assert-True ($otherEvents[0]._residentialId -eq $otherResidentialId) 'El evento del segundo residencial tiene ownership incorrecto.'
 
     $smokePassed = $true
-    Write-Host 'HTTP smoke test passed: auth, heartbeat, replay, push, deduplication, queue and cross-clock jornada.'
+    Write-Host 'HTTP smoke test passed: auth, heartbeat, replay, tenant isolation, deduplication, queue and cross-clock jornada.'
 }
 catch {
     Write-Error $_
@@ -311,7 +363,9 @@ catch {
 finally {
     $client.Dispose()
     if ($null -ne $process -and -not $process.HasExited) {
-        Stop-Process -Id $process.Id -Force
+        # dotnet run mantiene la API como proceso hijo. Detener el árbol completo
+        # evita que conserve abiertos los streams redirigidos al finalizar pwsh.
+        $process.Kill($true)
         $process.WaitForExit()
     }
     foreach ($name in $environment.Keys) {

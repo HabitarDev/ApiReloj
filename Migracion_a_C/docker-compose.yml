@@ -20,6 +20,7 @@ services:
       Security__Proxy__KnownNetworks__0: "${PROXY_KNOWN_NETWORK:-10.0.1.0/24}"
       ISAPI_USER: "${ISAPI_USER}"
       ISAPI_PASSWORD: "${ISAPI_PASSWORD}"
+      BackfillPolling__RunOnStartup: "${BACKFILL_RUN_ON_STARTUP:-false}"
 
     extra_hosts:
       - "host.docker.internal:host-gateway"
