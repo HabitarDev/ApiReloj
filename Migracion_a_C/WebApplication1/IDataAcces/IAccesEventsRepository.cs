@@ -14,6 +14,7 @@ public interface IAccesEventsRepository
     List<AccessEvents> Search(
         DateTimeOffset? fromUtc = null,
         DateTimeOffset? toUtc = null,
+        string? residentialId = null,
         string? deviceSn = null,
         string? employeeNumber = null,
         int? major = null,

@@ -71,6 +71,7 @@ public class AccessEventsRepository(SqlContext repos) : IAccesEventsRepository
     public List<AccessEvents> Search(
         DateTimeOffset? fromUtc = null,
         DateTimeOffset? toUtc = null,
+        string? residentialId = null,
         string? deviceSn = null,
         string? employeeNumber = null,
         int? major = null,
@@ -80,6 +81,11 @@ public class AccessEventsRepository(SqlContext repos) : IAccesEventsRepository
         int offset = 0)
     {
         var query = _context.AccessEvents.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(residentialId))
+        {
+            query = query.Where(x => x.ResidentialId == residentialId);
+        }
 
         if (fromUtc.HasValue && toUtc.HasValue)
         {
@@ -119,6 +125,7 @@ public class AccessEventsRepository(SqlContext repos) : IAccesEventsRepository
         return query
             .OrderByDescending(x => x.EventTimeUtc)
             .ThenByDescending(x => x.SerialNumber)
+            .ThenByDescending(x => x.DeviceSn)
             .Skip(offset)
             .Take(limit)
             .ToList();

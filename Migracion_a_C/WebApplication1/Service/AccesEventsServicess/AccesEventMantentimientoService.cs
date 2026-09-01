@@ -109,75 +109,25 @@ public class AccesEventMantentimientoService(
 
     public List<AccesEventDto> Buscar(AccessEventsQueryDto query)
     {
-        if (string.IsNullOrEmpty(query.ResidentialId))
+        if (!string.IsNullOrWhiteSpace(query.ResidentialId)
+            && _residentialsRepository.GetById(query.ResidentialId) == null)
         {
-            var rows = _accessEventsRepository.Search(
-                fromUtc: query.FromUtc,
-                toUtc: query.ToUtc,
-                deviceSn: query.DeviceSn,
-                employeeNumber: query.EmployeeNumber,
-                major: query.Major,
-                minor: query.Minor,
-                attendanceStatus: query.AttendanceStatus,
-                limit: query.Limit,
-                offset: query.Offset);
-
-            return rows.Select(_entityService.FromEntity).ToList();
+            throw new KeyNotFoundException("Residential inexistente");
         }
 
-        var residential = _residentialsRepository.GetById(query.ResidentialId!);
-        if (residential == null)
-        {
-            throw new ArgumentException("Residential inexistente");
-        }
+        var rows = _accessEventsRepository.Search(
+            fromUtc: query.FromUtc,
+            toUtc: query.ToUtc,
+            residentialId: query.ResidentialId,
+            deviceSn: query.DeviceSn,
+            employeeNumber: query.EmployeeNumber,
+            major: query.Major,
+            minor: query.Minor,
+            attendanceStatus: query.AttendanceStatus,
+            limit: query.Limit,
+            offset: query.Offset);
 
-        var deviceSnList = residential.Relojes
-            .Select(r => r.DeviceSn)
-            .Where(sn => !string.IsNullOrWhiteSpace(sn))
-            .Select(sn => sn!)
-            .Distinct()
-            .ToList();
-
-        if (!string.IsNullOrWhiteSpace(query.DeviceSn))
-        {
-            if (!deviceSnList.Contains(query.DeviceSn))
-            {
-                return new List<AccesEventDto>();
-            }
-
-            deviceSnList = new List<string> { query.DeviceSn };
-        }
-
-        if (deviceSnList.Count == 0)
-        {
-            return new List<AccesEventDto>();
-        }
-
-        var merged = new List<AccessEvents>();
-        foreach (var sn in deviceSnList)
-        {
-            var rows = _accessEventsRepository.Search(
-                fromUtc: query.FromUtc,
-                toUtc: query.ToUtc,
-                deviceSn: sn,
-                employeeNumber: query.EmployeeNumber,
-                major: query.Major,
-                minor: query.Minor,
-                attendanceStatus: query.AttendanceStatus,
-                limit: int.MaxValue,
-                offset: 0);
-
-            merged.AddRange(rows);
-        }
-
-        var paged = merged
-            .OrderByDescending(x => x.EventTimeUtc)
-            .ThenByDescending(x => x.SerialNumber)
-            .Skip(query.Offset)
-            .Take(query.Limit)
-            .ToList();
-
-        return paged.Select(_entityService.FromEntity).ToList();
+        return rows.Select(_entityService.FromEntity).ToList();
     }
 
     public PollIngestResultDto ProcesarEventosDesdePoll(

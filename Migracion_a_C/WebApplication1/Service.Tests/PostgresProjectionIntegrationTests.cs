@@ -232,6 +232,34 @@ public class PostgresProjectionIntegrationTests
         }
     }
 
+    [Fact]
+    public void AccessEventSearch_FiltersByStoredResidentialAndUsesDeterministicOrder()
+    {
+        var connectionString = TestConnectionString();
+        var at = new DateTimeOffset(2026, 7, 11, 12, 0, 0, TimeSpan.Zero);
+
+        using (var setup = CreateContext(connectionString))
+        {
+            ResetProjectionTables(setup);
+            setup.AccessEvents.AddRange(
+                Event("SN-A", "RES-A", 11, at, "checkIn"),
+                Event("SN-B", "RES-A", 11, at, "checkIn"),
+                Event("SN-C", "RES-B", 11, at, "checkIn"));
+            setup.SaveChanges();
+        }
+
+        using var context = CreateContext(connectionString);
+        var rows = new AccessEventsRepository(context).Search(
+            residentialId: "RES-A",
+            attendanceStatus: "CHECKIN",
+            limit: 10,
+            offset: 0);
+
+        Assert.Equal(2, rows.Count);
+        Assert.All(rows, row => Assert.Equal("RES-A", row.ResidentialId));
+        Assert.Equal(["SN-B", "SN-A"], rows.Select(row => row.DeviceSn));
+    }
+
     private static string TestConnectionString()
     {
         var connectionString = Environment.GetEnvironmentVariable("APIRELOJ_TEST_CONNECTION");
@@ -284,9 +312,19 @@ public class PostgresProjectionIntegrationTests
         DateTimeOffset at,
         string attendanceStatus)
     {
+        return Event(deviceSn, "RES-1", serialNumber, at, attendanceStatus);
+    }
+
+    private static AccessEvents Event(
+        string deviceSn,
+        string residentialId,
+        long serialNumber,
+        DateTimeOffset at,
+        string attendanceStatus)
+    {
         return new AccessEvents(
             deviceSn,
-            "RES-1",
+            residentialId,
             serialNumber,
             at,
             at.ToString("O"),

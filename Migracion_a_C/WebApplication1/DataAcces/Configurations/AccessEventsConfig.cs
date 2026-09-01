@@ -39,6 +39,8 @@ public class AccessEventsConfig : IEntityTypeConfiguration<AccessEvents>
 
         builder.HasIndex(x => new { x.EmployeeNumber, x.ResidentialId, x.EventTimeUtc });
 
+        builder.HasIndex(x => new { x.ResidentialId, x.EventTimeUtc, x.SerialNumber, x.DeviceSn });
+
         builder.HasIndex(x => new { x.DeviceSn, x.EventTimeUtc });
 
         builder.HasIndex(x => new { x.Major, x.Minor, x.EventTimeUtc });

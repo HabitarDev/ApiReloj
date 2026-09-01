@@ -132,21 +132,10 @@ namespace DataAcces.Migrations
                 maxLength: 128,
                 nullable: true);
 
-            // Compatibilidad con bases de desarrollo que ya tengan filas. El
-            // residencial se deriva del reloj, igual que en la ingesta nueva.
+            // Las filas anteriores no contienen evidencia suficiente para inferir
+            // el tenant a partir de la asociación actual del reloj. Se conservan
+            // en cuarentena para impedir una atribución histórica incorrecta.
             migrationBuilder.Sql("""
-                UPDATE "AccessEvents" AS ae
-                SET "ResidentialId" = r."ResidentialId"
-                FROM "Relojes" AS r
-                WHERE r."DeviceSn" = ae."DeviceSn"
-                  AND ae."ResidentialId" IS NULL;
-
-                UPDATE "Jornadas" AS j
-                SET "ResidentialId" = r."ResidentialId"
-                FROM "Relojes" AS r
-                WHERE r."DeviceSn" = j."ClockSn"
-                  AND j."ResidentialId" IS NULL;
-
                 UPDATE "AccessEvents"
                 SET "ResidentialId" = '__legacy__'
                 WHERE "ResidentialId" IS NULL;
