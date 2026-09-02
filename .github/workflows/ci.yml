@@ -86,7 +86,7 @@ jobs:
         run: dotnet list Migracion_a_C/WebApplication1/WebApplication1.sln package --vulnerable --include-transitive --no-restore
 
       - name: Validate Compose
-        run: docker compose --env-file Migracion_a_C/.env.example -f Migracion_a_C/docker-compose.yml config --quiet
+        run: docker compose --env-file Migracion_a_C/.env.sample -f Migracion_a_C/docker-compose.yml config --quiet
 
       - name: Build production Docker image
         run: docker build --tag apireloj-ci:${{ github.sha }} .

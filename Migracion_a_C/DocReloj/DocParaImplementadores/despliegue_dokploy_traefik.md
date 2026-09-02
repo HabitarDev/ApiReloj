@@ -26,9 +26,10 @@ Traefik termina TLS. ApiReloj confía X-Forwarded-For y X-Forwarded-Proto única
 
 ## Variables obligatorias
 
+El template versionado para este modo es `.env.sample.dokploy`. Sus claves se pegan en **Environment Settings** del recurso Application; no corresponden a Build-time Arguments ni Build-time Secrets.
+
 ```dotenv
 ASPNETCORE_ENVIRONMENT=Production
-ASPNETCORE_URLS=http://+:8080
 ConnectionStrings__Default=Host=<database>;Port=5432;Database=apireloj;Username=apireloj;Password=<secret>
 
 Security__Backend__ApiKey=<clave-larga-aleatoria>
@@ -43,7 +44,11 @@ ISAPI_PASSWORD=<password-isapi>
 BackfillPolling__RunOnStartup=false
 ```
 
+El Dockerfile ya define `ASPNETCORE_URLS=http://+:8080`; en Dokploy sólo se debe configurar el target/container port `8080`.
+
 En la aplicación directa de Dokploy deben usarse los nombres ASP.NET completos. Los aliases `BACKEND_API_KEY`, `DB_NAME` y similares solo funcionan cuando `docker-compose.yml` realiza el mapeo.
+
+Para Compose local se usa `.env.sample`, que se copia a `.env`. ASP.NET Core no carga esos aliases ni un archivo `.env` por sí solo: es Compose quien lee el archivo y construye las variables efectivas del contenedor.
 
 No configurar `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true`; la confianza debe permanecer limitada a Traefik.
 

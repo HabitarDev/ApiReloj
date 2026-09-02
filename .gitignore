@@ -66,8 +66,8 @@ coverage.cobertura.xml
 # ─────────────────────────────
 .env
 .env.*
-!.env.example
-!.env.*.example
+!.env.sample
+!.env.sample.dokploy
 
 # ─────────────────────────────
 # Certificados/keys del dispositivo

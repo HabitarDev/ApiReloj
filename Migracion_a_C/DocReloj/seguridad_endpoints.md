@@ -93,7 +93,7 @@ Una autenticación de push fallida produce `401`. No se revela si falló la ruta
 
 `Device.SecretKey` se recibe únicamente al crear el device. Nunca se serializa desde `/Device` ni dentro de `/Residential`.
 
-Los secretos no deben almacenarse en archivos versionados. Compose obtiene la API key y la IP autorizada desde `BACKEND_API_KEY` y `BACKEND_ALLOWED_IP`; usar `.env.example` como plantilla.
+Los secretos no deben almacenarse en archivos versionados. Compose obtiene la API key y la IP autorizada desde `BACKEND_API_KEY` y `BACKEND_ALLOWED_IP`; usar `.env.sample` como plantilla. Para una Application creada desde Dockerfile en Dokploy se debe usar `.env.sample.dokploy`, que contiene los nombres ASP.NET efectivos.
 
 ## Red, HTTPS y proxies
 

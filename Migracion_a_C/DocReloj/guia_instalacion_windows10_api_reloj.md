@@ -132,7 +132,7 @@ Copiar la plantilla:
 
 ```powershell
 cd C:\ruta\ApiReloj\Migracion_a_C
-Copy-Item .env.example .env
+Copy-Item .env.sample .env
 ```
 
 Variables:
@@ -322,7 +322,7 @@ Validaciones adicionales equivalentes a CI:
 
 ```powershell
 dotnet list Migracion_a_C/WebApplication1/WebApplication1.sln package --vulnerable --include-transitive --no-restore
-docker compose --env-file Migracion_a_C/.env.example -f Migracion_a_C/docker-compose.yml config --quiet
+docker compose --env-file Migracion_a_C/.env.sample -f Migracion_a_C/docker-compose.yml config --quiet
 docker build --tag apireloj-local-check .
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke-test.ps1 `
   -ConnectionString $env:APIRELOJ_TEST_CONNECTION -BackendApiKey "local-smoke-key"
