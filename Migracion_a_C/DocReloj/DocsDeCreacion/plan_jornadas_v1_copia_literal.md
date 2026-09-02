@@ -1,5 +1,7 @@
 # Plan V1 (mezcla: explicación completa + clases ejemplo) — `Jornada` derivada de `AccessEvents`
 
+> **COPIA HISTORICA LITERAL.** Se conserva para trazabilidad del diseño y no debe actualizarse como contrato. Usar `../DocParaImplementadores/api_jornadas_v1.md`.
+
 ## Resumen
 Se agrega la feature `Jornada` para transformar eventos de acceso en jornadas laborales listas para consumo del backend.
 

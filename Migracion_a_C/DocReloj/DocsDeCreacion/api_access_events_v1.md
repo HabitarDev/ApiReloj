@@ -1,5 +1,7 @@
 # API AccessEvents V1
 
+> **ARCHIVO HISTORICO.** Esta copia registra el estado durante la creación. No usar como contrato. La versión vigente está en `../DocParaImplementadores/api_access_events_v1.md`.
+
 ## 1. Objetivo
 Consultar eventos de acceso almacenados localmente en la tabla `AccessEvents`.
 

@@ -3,6 +3,7 @@
 # ─────────────────────────────
 .idea/
 .vscode/
+.vs/
 
 # HTTP client y datasources de WebStorm
 httpRequests/
@@ -12,6 +13,8 @@ dataSources.local.xml
 # Ignorar carpeta de comunicación con otro agente
 **/ComunicacionConOtroAgente/
 Migracion_a_C/DocReloj/ComunicacionConOtroAgente/*.md
+**/ComuicacionConOtroAgente/
+Migracion_a_C/DocReloj/ComuicacionConOtroAgente/*.md
 
 
 # ─────────────────────────────
@@ -45,13 +48,26 @@ coverage/
 *.tsbuildinfo
 tsconfig.tsbuildinfo
 
+# .NET: nunca versionar artefactos generados
+[Bb]in/
+[Oo]bj/
+artifacts/
+TestResults/
+publish/
+*.trx
+*.coverage
+*.coveragexml
+coverage.cobertura.xml
+*.nupkg
+*.snupkg
+
 # ─────────────────────────────
 # Variables y secretos
 # ─────────────────────────────
 .env
 .env.*
-!.env.example
-!.env.*.example
+!.env.sample
+!.env.sample.dokploy
 
 # ─────────────────────────────
 # Certificados/keys del dispositivo

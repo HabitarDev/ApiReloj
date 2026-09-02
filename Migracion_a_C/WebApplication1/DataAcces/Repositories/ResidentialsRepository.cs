@@ -28,6 +28,15 @@ public class ResidentialsRepository (SqlContext repos) : IResidentialsRepository
         return _context.Residentials.Include(x => x.Relojes).Include(x => x.Devices).ToList();
     }
 
+    public bool TryUpdateIp(string residentialId, string ipNueva)
+    {
+        var affected = _context.Residentials
+            .Where(x => x.IdResidential == residentialId)
+            .ExecuteUpdate(setters => setters.SetProperty(x => x.IpActual, ipNueva));
+
+        return affected == 1;
+    }
+
     public void update(Residential residential)
     {
         var exists = _context.Residentials.Any(x => x.IdResidential == residential.IdResidential);

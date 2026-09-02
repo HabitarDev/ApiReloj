@@ -14,7 +14,7 @@ public class BackfillPollRunsRepository(SqlContext context) : IBackfillPollRunsR
         _context.SaveChanges();
     }
 
-    public void UpdateFinished(BackfillPollRunLog run)
+    public void Update(BackfillPollRunLog run)
     {
         _context.Set<BackfillPollRunLog>().Update(run);
         _context.SaveChanges();
@@ -31,6 +31,14 @@ public class BackfillPollRunsRepository(SqlContext context) : IBackfillPollRunsR
         return _context.Set<BackfillPollRunLog>()
             .OrderByDescending(x => x.StartedAtUtc)
             .FirstOrDefault();
+    }
+
+    public List<BackfillPollRunLog> GetRunning()
+    {
+        return _context.Set<BackfillPollRunLog>()
+            .Where(x => x.Status == "running")
+            .OrderBy(x => x.StartedAtUtc)
+            .ToList();
     }
 
     public List<BackfillPollRunLog> Search(string? status = null, int limit = 50, int offset = 0)

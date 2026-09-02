@@ -36,16 +36,30 @@ public class JornadaValidationService : IJornadaValidationService
         ValidarStatus(query.StatusCheck, query.StatusBreak);
         query.StatusCheck = NormalizeStatus(query.StatusCheck);
         query.StatusBreak = NormalizeStatus(query.StatusBreak);
+        query.ProjectionStatus = NormalizeStatus(query.ProjectionStatus);
+
+        if (!string.IsNullOrWhiteSpace(query.ProjectionStatus)
+            && query.ProjectionStatus != JornadaProjectionStatuses.Ready)
+        {
+            throw new ArgumentException("projectionStatus invalido");
+        }
     }
 
     public void ValidarStatus(string? statusCheck, string? statusBreak)
     {
-        string[] valid = [JornadaStatuses.Ok, JornadaStatuses.Incomplete, JornadaStatuses.Error];
+        string[] validCheck = [JornadaStatuses.Ok, JornadaStatuses.Incomplete, JornadaStatuses.Error];
+        string[] validBreak =
+        [
+            JornadaStatuses.Ok,
+            JornadaStatuses.Incomplete,
+            JornadaStatuses.Error,
+            JornadaStatuses.NoBreak
+        ];
 
         if (!string.IsNullOrWhiteSpace(statusCheck))
         {
             var normalized = NormalizeStatus(statusCheck);
-            if (!valid.Contains(normalized))
+            if (!validCheck.Contains(normalized))
             {
                 throw new ArgumentException("statusCheck invalido");
             }
@@ -54,7 +68,7 @@ public class JornadaValidationService : IJornadaValidationService
         if (!string.IsNullOrWhiteSpace(statusBreak))
         {
             var normalized = NormalizeStatus(statusBreak);
-            if (!valid.Contains(normalized))
+            if (!validBreak.Contains(normalized))
             {
                 throw new ArgumentException("statusBreak invalido");
             }

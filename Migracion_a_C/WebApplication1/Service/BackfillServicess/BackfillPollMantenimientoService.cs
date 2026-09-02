@@ -15,6 +15,7 @@ public class BackfillPollMantenimientoService(
     IAccesEventService accesEventService,
     IHikvisionAcsEventClient hikvisionClient,
     IOptions<BackfillPollingOptions> options,
+    TimeProvider timeProvider,
     ILogger<BackfillPollMantenimientoService> logger) : IBackfillPollMantenimientoService
 {
     private readonly IRelojesRepository _relojesRepository = relojesRepository;
@@ -22,6 +23,7 @@ public class BackfillPollMantenimientoService(
     private readonly IAccesEventService _accesEventService = accesEventService;
     private readonly IHikvisionAcsEventClient _hikvisionClient = hikvisionClient;
     private readonly BackfillPollingOptions _options = options.Value;
+    private readonly TimeProvider _timeProvider = timeProvider;
     private readonly ILogger<BackfillPollMantenimientoService> _logger = logger;
 
     private static readonly SemaphoreSlim RunLock = new(1, 1);
@@ -52,27 +54,40 @@ public class BackfillPollMantenimientoService(
         {
             RunId = Guid.NewGuid().ToString("N"),
             Trigger = request.Trigger,
-            StartedAtUtc = DateTimeOffset.UtcNow,
-            Status = "running"
+            StartedAtUtc = _timeProvider.GetUtcNow(),
+            Status = BackfillPollRunStatuses.Running
         };
 
         try
         {
+            var nowUtc = _timeProvider.GetUtcNow();
+            var relojes = _relojesRepository.GetPollCandidates(request.ResidentialId, request.RelojId);
+            run.Clocks = relojes.Select(reloj => new BackfillPollClockResultDto
+            {
+                RelojId = reloj.IdReloj,
+                DeviceSn = reloj.DeviceSn,
+                Status = BackfillPollClockStatuses.Pending,
+                CursorBefore = reloj.LastPollEvent,
+                CursorAfter = reloj.LastPollEvent
+            }).ToList();
+            run.TotalClocks = run.Clocks.Count;
+
             SetRunningStatus(run);
             PersistStartedRun(run);
 
-            var nowUtc = DateTimeOffset.UtcNow;
-            var relojes = _relojesRepository.GetPollCandidates(request.ResidentialId, request.RelojId);
-            run.TotalClocks = relojes.Count;
-
-            foreach (var reloj in relojes)
+            for (var index = 0; index < relojes.Count; index++)
             {
                 ct.ThrowIfCancellationRequested();
+                var reloj = relojes[index];
 
                 BackfillPollClockResultDto clockResult;
                 try
                 {
                     clockResult = await ProcessClockAsync(reloj, nowUtc, ct);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -81,33 +96,38 @@ public class BackfillPollMantenimientoService(
                     {
                         RelojId = reloj.IdReloj,
                         DeviceSn = reloj.DeviceSn,
-                        Status = "error",
+                        Status = BackfillPollClockStatuses.Error,
                         Error = ex.Message,
                         CursorBefore = reloj.LastPollEvent,
                         CursorAfter = reloj.LastPollEvent
                     };
                 }
 
-                run.Clocks.Add(clockResult);
-                run.TotalWindows += clockResult.WindowsProcessed;
-                run.TotalPages += clockResult.PagesProcessed;
-                run.Inserted += clockResult.Inserted;
-                run.Duplicates += clockResult.Duplicates;
-                run.Ignored += clockResult.Ignored;
+                run.Clocks[index] = clockResult;
+                RecalculateMetrics(run);
+                PersistProgressRun(run);
             }
 
-            run.Status = run.Clocks.Any(x => x.Status == "error") ? "partial_error" : "ok";
+            var failedClocks = run.Clocks.Count(x => x.Status == BackfillPollClockStatuses.Error);
+            run.Status = failedClocks switch
+            {
+                0 => BackfillPollRunStatuses.Ok,
+                _ when failedClocks == run.Clocks.Count => BackfillPollRunStatuses.Error,
+                _ => BackfillPollRunStatuses.PartialError
+            };
             return run;
         }
         catch (Exception ex)
         {
-            run.Status = "error";
+            run.Status = BackfillPollRunStatuses.Error;
             run.Error = ex.Message;
+            MarkPendingClocksAsError(run, "run_interrupted", ex.Message);
+            RecalculateMetrics(run);
             throw;
         }
         finally
         {
-            run.FinishedAtUtc = DateTimeOffset.UtcNow;
+            run.FinishedAtUtc = _timeProvider.GetUtcNow();
             FinalizeRunSafely(run);
             RunLock.Release();
         }
@@ -126,7 +146,7 @@ public class BackfillPollMantenimientoService(
         var row = _pollRunsRepository.GetById(runId);
         if (row == null)
         {
-            throw new ArgumentException("Run inexistente");
+            throw new KeyNotFoundException("Run inexistente");
         }
 
         var clocks = DeserializeClocks(row.ClocksJson);
@@ -136,7 +156,7 @@ public class BackfillPollMantenimientoService(
             RunId = row.RunId,
             Trigger = row.Trigger,
             StartedAtUtc = row.StartedAtUtc,
-            FinishedAtUtc = row.FinishedAtUtc ?? row.StartedAtUtc,
+            FinishedAtUtc = row.FinishedAtUtc,
             Status = row.Status,
             Error = row.Error,
             TotalClocks = row.TotalClocks,
@@ -161,7 +181,7 @@ public class BackfillPollMantenimientoService(
 
         if (!IsClockReady(reloj, out var reason))
         {
-            result.Status = "skipped";
+            result.Status = BackfillPollClockStatuses.Skipped;
             result.Note = reason;
             return result;
         }
@@ -169,7 +189,7 @@ public class BackfillPollMantenimientoService(
         var windows = await ResolveWindowsAsync(reloj, nowUtc, result, ct);
         if (windows.Count == 0)
         {
-            result.Status = "ok";
+            result.Status = BackfillPollClockStatuses.Ok;
             result.CursorAfter = reloj.LastPollEvent;
             return result;
         }
@@ -192,8 +212,47 @@ public class BackfillPollMantenimientoService(
             result.CursorAfter = reloj.LastPollEvent;
         }
 
-        result.Status = "ok";
+        result.Status = BackfillPollClockStatuses.Ok;
         return result;
+    }
+
+    public int RecuperarRunsHuerfanos(DateTimeOffset recoveredAtUtc)
+    {
+        var recovered = 0;
+        foreach (var row in _pollRunsRepository.GetRunning())
+        {
+            var clocks = DeserializeClocks(row.ClocksJson);
+            foreach (var clock in clocks.Where(clock => clock.Status == BackfillPollClockStatuses.Pending))
+            {
+                clock.Status = BackfillPollClockStatuses.Error;
+                clock.Note ??= "process_restarted";
+                clock.Error ??= "El proceso termino antes de completar el reloj";
+            }
+
+            row.Trigger = row.Trigger == "startup" ? BackfillPollTriggers.Scheduled : row.Trigger;
+            row.Status = BackfillPollRunStatuses.Error;
+            row.FinishedAtUtc = recoveredAtUtc;
+            row.Error = "Poll interrumpido por reinicio del proceso";
+            row.TotalClocks = clocks.Count;
+            row.TotalWindows = clocks.Sum(clock => clock.WindowsProcessed);
+            row.TotalPages = clocks.Sum(clock => clock.PagesProcessed);
+            row.Inserted = clocks.Sum(clock => clock.Inserted);
+            row.Duplicates = clocks.Sum(clock => clock.Duplicates);
+            row.Ignored = clocks.Sum(clock => clock.Ignored);
+            row.ClocksJson = JsonSerializer.Serialize(clocks);
+            _pollRunsRepository.Update(row);
+            recovered++;
+        }
+
+        if (recovered > 0)
+        {
+            lock (StatusSync)
+            {
+                _status = new BackfillPollStatusDto();
+            }
+        }
+
+        return recovered;
     }
 
     private async Task<List<PollWindow>> ResolveWindowsAsync(
@@ -279,7 +338,11 @@ public class BackfillPollMantenimientoService(
             var infoList = response.InfoList ?? [];
             if (infoList.Count > 0)
             {
-                var ingest = _accesEventService.ProcesarEventosDesdePoll(reloj.IdReloj, reloj.DeviceSn!, infoList);
+                var ingest = _accesEventService.ProcesarEventosDesdePoll(
+                    reloj.IdReloj,
+                    reloj.ResidentialId,
+                    reloj.DeviceSn!,
+                    infoList);
                 inserted += ingest.Inserted;
                 duplicates += ingest.Duplicates;
                 ignored += ingest.Ignored;
@@ -384,18 +447,28 @@ public class BackfillPollMantenimientoService(
             Trigger = run.Trigger,
             StartedAtUtc = run.StartedAtUtc,
             FinishedAtUtc = null,
-            Status = "running",
+            Status = BackfillPollRunStatuses.Running,
             Error = null,
-            TotalClocks = 0,
+            TotalClocks = run.TotalClocks,
             TotalWindows = 0,
             TotalPages = 0,
             Inserted = 0,
             Duplicates = 0,
             Ignored = 0,
-            ClocksJson = "[]"
+            ClocksJson = JsonSerializer.Serialize(run.Clocks)
         };
 
         _pollRunsRepository.AddStarted(row);
+    }
+
+    private void PersistProgressRun(BackfillPollRunResultDto run)
+    {
+        var row = _pollRunsRepository.GetById(run.RunId)
+                  ?? throw new InvalidOperationException("No se encontro el run iniciado");
+        CopyRunToRow(run, row);
+        row.FinishedAtUtc = null;
+        row.Status = BackfillPollRunStatuses.Running;
+        _pollRunsRepository.Update(row);
     }
 
     private void PersistFinishedRun(BackfillPollRunResultDto run)
@@ -424,6 +497,13 @@ public class BackfillPollMantenimientoService(
             return;
         }
 
+        CopyRunToRow(run, row);
+        _pollRunsRepository.Update(row);
+    }
+
+    private static void CopyRunToRow(BackfillPollRunResultDto run, BackfillPollRunLog row)
+    {
+        row.Trigger = run.Trigger;
         row.FinishedAtUtc = run.FinishedAtUtc;
         row.Status = run.Status;
         row.Error = run.Error;
@@ -434,8 +514,26 @@ public class BackfillPollMantenimientoService(
         row.Duplicates = run.Duplicates;
         row.Ignored = run.Ignored;
         row.ClocksJson = JsonSerializer.Serialize(run.Clocks);
+    }
 
-        _pollRunsRepository.UpdateFinished(row);
+    private static void RecalculateMetrics(BackfillPollRunResultDto run)
+    {
+        run.TotalClocks = run.Clocks.Count;
+        run.TotalWindows = run.Clocks.Sum(clock => clock.WindowsProcessed);
+        run.TotalPages = run.Clocks.Sum(clock => clock.PagesProcessed);
+        run.Inserted = run.Clocks.Sum(clock => clock.Inserted);
+        run.Duplicates = run.Clocks.Sum(clock => clock.Duplicates);
+        run.Ignored = run.Clocks.Sum(clock => clock.Ignored);
+    }
+
+    private static void MarkPendingClocksAsError(BackfillPollRunResultDto run, string note, string error)
+    {
+        foreach (var clock in run.Clocks.Where(clock => clock.Status == BackfillPollClockStatuses.Pending))
+        {
+            clock.Status = BackfillPollClockStatuses.Error;
+            clock.Note = note;
+            clock.Error = error;
+        }
     }
 
     private void FinalizeRunSafely(BackfillPollRunResultDto run)
@@ -522,7 +620,7 @@ public class BackfillPollMantenimientoService(
             _status.LastTrigger = run.Trigger;
             _status.LastStartedAtUtc = run.StartedAtUtc;
             _status.LastFinishedAtUtc = null;
-            _status.LastStatus = "running";
+            _status.LastStatus = BackfillPollRunStatuses.Running;
             _status.LastError = null;
         }
     }

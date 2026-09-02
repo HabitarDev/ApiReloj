@@ -17,7 +17,7 @@ public class BackfillPollWorker(
     {
         if (_options.RunOnStartup)
         {
-            await RunOnceSafeAsync("startup", stoppingToken);
+            await RunOnceSafeAsync(BackfillPollTriggers.Scheduled, stoppingToken);
         }
 
         var interval = TimeSpan.FromMinutes(Math.Max(1, _options.WorkerIntervalMinutes));
@@ -25,7 +25,7 @@ public class BackfillPollWorker(
         while (!stoppingToken.IsCancellationRequested)
         {
             await Task.Delay(interval, stoppingToken);
-            await RunOnceSafeAsync("scheduled", stoppingToken);
+            await RunOnceSafeAsync(BackfillPollTriggers.Scheduled, stoppingToken);
         }
     }
 

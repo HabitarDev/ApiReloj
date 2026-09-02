@@ -17,6 +17,7 @@ public class JornadaConfig : IEntityTypeConfiguration<Jornada>
             .IsRequired();
 
         builder.Property(x => x.EmployeeNumber).IsRequired();
+        builder.Property(x => x.ResidentialId).HasMaxLength(128).IsRequired();
         builder.Property(x => x.ClockSn).IsRequired();
 
         builder.Property(x => x.StartAt);
@@ -32,9 +33,24 @@ public class JornadaConfig : IEntityTypeConfiguration<Jornada>
             .HasMaxLength(20)
             .IsRequired();
 
+        builder.Property(x => x.WarningsJson).HasColumnType("jsonb").IsRequired();
+        builder.Property(x => x.ErrorsJson).HasColumnType("jsonb").IsRequired();
+        builder.Property(x => x.ProjectionStatus).HasMaxLength(20).IsRequired();
+        builder.Property(x => x.Revision).IsRequired();
+        builder.Property(x => x.IsDeleted).IsRequired();
+        builder.Property(x => x.CreatedAt).IsRequired();
+
         builder.Property(x => x.UpdatedAt).IsRequired();
 
-        builder.HasIndex(x => new { x.EmployeeNumber, x.ClockSn, x.StatusCheck });
+        builder.HasIndex(x => new { x.EmployeeNumber, x.ResidentialId, x.StatusCheck });
+        builder.HasIndex(x => new
+            {
+                x.EmployeeNumber,
+                x.ResidentialId,
+                x.IdentityDeviceSn,
+                x.IdentitySerialNumber
+            })
+            .IsUnique();
         builder.HasIndex(x => x.UpdatedAt);
         builder.HasIndex(x => x.StartAt);
         builder.HasIndex(x => x.ClockSn);

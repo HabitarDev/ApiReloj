@@ -4,7 +4,7 @@ public class BackfillPollRunRequestDto
 {
     public string? ResidentialId { get; set; }
     public string? RelojId { get; set; }
-    public string Trigger { get; set; } = "manual";
+    public string Trigger { get; set; } = BackfillPollTriggers.Manual;
 }
 
 public class BackfillPollRunsQueryDto
@@ -46,7 +46,7 @@ public class BackfillPollRunResultDto
     public string RunId { get; set; } = null!;
     public string Trigger { get; set; } = null!;
     public DateTimeOffset StartedAtUtc { get; set; }
-    public DateTimeOffset FinishedAtUtc { get; set; }
+    public DateTimeOffset? FinishedAtUtc { get; set; }
 
     public string Status { get; set; } = null!;
     public string? Error { get; set; }

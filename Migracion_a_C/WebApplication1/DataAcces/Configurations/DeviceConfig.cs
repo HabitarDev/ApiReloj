@@ -13,6 +13,7 @@ public class DeviceConfig : IEntityTypeConfiguration<Device>
         builder.Property(x => x.DeviceId).HasMaxLength(128).ValueGeneratedNever();
 
         builder.Property(x => x.SecretKey).IsRequired();
+        builder.Property(x => x.LastAcceptedHeartbeatTimestamp);
         builder.Property(x => x.ResidentialId).HasMaxLength(128).IsRequired();
         builder.HasIndex(x => x.ResidentialId);
     }

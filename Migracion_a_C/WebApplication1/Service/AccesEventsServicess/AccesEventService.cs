@@ -51,9 +51,10 @@ public class AccesEventService(
 
     public PollIngestResultDto ProcesarEventosDesdePoll(
         string relojId,
+        string residentialId,
         string deviceSn,
         IReadOnlyCollection<HikvisionAcsEventInfoDto> infoList)
     {
-        return _mantenimiento.ProcesarEventosDesdePoll(relojId, deviceSn, infoList);
+        return _mantenimiento.ProcesarEventosDesdePoll(relojId, residentialId, deviceSn, infoList);
     }
 }

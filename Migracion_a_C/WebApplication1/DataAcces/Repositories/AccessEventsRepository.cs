@@ -2,7 +2,6 @@ using DataAcces.Context;
 using Dominio;
 using IDataAcces;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace DataAcces.Repositories;
 
@@ -19,25 +18,19 @@ public class AccessEventsRepository(SqlContext repos) : IAccesEventsRepository
 
     public bool AddIfNotExists(AccessEvents accessEvent)
     {
-        var exists = _context.AccessEvents.Any(x =>
-            x.DeviceSn == accessEvent.DeviceSn &&
-            x.SerialNumber == accessEvent.SerialNumber);
-        if (exists)
-        {
-            return false;
-        }
+        var affected = _context.Database.ExecuteSqlInterpolated($"""
+            INSERT INTO "AccessEvents"
+                ("DeviceSn", "ResidentialId", "SerialNumber", "EventTimeUtc", "TimeDevice",
+                 "EmployeeNumber", "Major", "Minor", "AttendanceStatus", "Raw")
+            VALUES
+                ({accessEvent.DeviceSn}, {accessEvent.ResidentialId}, {accessEvent.SerialNumber},
+                 {accessEvent.EventTimeUtc}, {accessEvent.TimeDevice}, {accessEvent.EmployeeNumber},
+                 {accessEvent.Major}, {accessEvent.Minor}, {accessEvent.AttendanceStatus},
+                 CAST({accessEvent.Raw} AS jsonb))
+            ON CONFLICT ("DeviceSn", "SerialNumber") DO NOTHING
+            """);
 
-        try
-        {
-            _context.AccessEvents.Add(accessEvent);
-            _context.SaveChanges();
-            return true;
-        }
-        catch (DbUpdateException ex) when (IsUniqueViolation(ex))
-        {
-            // Si push y poll insertan al mismo tiempo, se toma como duplicado.
-            return false;
-        }
+        return affected == 1;
     }
 
     public int AddRangeIfNotExists(List<AccessEvents> accessEvents)
@@ -64,9 +57,21 @@ public class AccessEventsRepository(SqlContext repos) : IAccesEventsRepository
         return _context.AccessEvents.ToList();
     }
 
+    public List<AccessEvents> GetForProjection(string employeeNumber, string residentialId)
+    {
+        return _context.AccessEvents
+            .Where(x => x.EmployeeNumber == employeeNumber && x.ResidentialId == residentialId)
+            .OrderBy(x => x.EventTimeUtc)
+            .ThenBy(x => x.SerialNumber)
+            .ThenBy(x => x.DeviceSn)
+            .AsNoTracking()
+            .ToList();
+    }
+
     public List<AccessEvents> Search(
         DateTimeOffset? fromUtc = null,
         DateTimeOffset? toUtc = null,
+        string? residentialId = null,
         string? deviceSn = null,
         string? employeeNumber = null,
         int? major = null,
@@ -76,6 +81,11 @@ public class AccessEventsRepository(SqlContext repos) : IAccesEventsRepository
         int offset = 0)
     {
         var query = _context.AccessEvents.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(residentialId))
+        {
+            query = query.Where(x => x.ResidentialId == residentialId);
+        }
 
         if (fromUtc.HasValue && toUtc.HasValue)
         {
@@ -115,6 +125,7 @@ public class AccessEventsRepository(SqlContext repos) : IAccesEventsRepository
         return query
             .OrderByDescending(x => x.EventTimeUtc)
             .ThenByDescending(x => x.SerialNumber)
+            .ThenByDescending(x => x.DeviceSn)
             .Skip(offset)
             .Take(limit)
             .ToList();
@@ -200,9 +211,4 @@ public class AccessEventsRepository(SqlContext repos) : IAccesEventsRepository
         _context.SaveChanges();
     }
 
-    private static bool IsUniqueViolation(DbUpdateException ex)
-    {
-        return ex.InnerException is PostgresException pg &&
-               pg.SqlState == PostgresErrorCodes.UniqueViolation;
-    }
 }

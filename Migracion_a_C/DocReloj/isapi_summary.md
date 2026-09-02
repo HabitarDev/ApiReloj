@@ -1,5 +1,7 @@
 # ISAPI (Hikvision) - Resumen para Pasamanos API
 
+> **Referencia técnica, no contrato HTTP de ApiReloj.** Este archivo resume capacidades ISAPI del fabricante. Las rutas que ApiReloj expone a consumidores están en `DocParaImplementadores/api_completa_repo_v1.md`. Las rutas ISAPI efectivamente usadas son `UserInfo/SetUp`, `UserInfo/Modify`, `UserInfoDetail/Delete` y `AcsEvent`.
+
 Este resumen está basado en los textos extraídos de la documentación ISAPI en `DocReloj/extracted/`.
 
 ## Autenticación y headers generales

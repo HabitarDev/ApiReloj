@@ -1,7 +1,10 @@
 ﻿using IServices.IResidentials;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using Models.Dominio;
 using Models.WebApi;
+using WebApplication1.Security;
 
 namespace WebApplication1.Controllers;
 [ApiController]
@@ -30,9 +33,19 @@ public class ResidentialController(IResidentialService service) : ControllerBase
     }
 
     [HttpPost("heartbeat")]
-    public void HeartBeat([FromBody] HeartBeatDto heartBeat)
+    [Authorize(Policy = SecurityPolicies.Heartbeat)]
+    [EnableRateLimiting(RateLimitingPolicies.Heartbeat)]
+    public IActionResult HeartBeat([FromBody] HeartBeatDto heartBeat)
     {
-        var ip = HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
-        _service.ProcesarHeartBeat(heartBeat, ip);
+        if (!HttpContext.Items.TryGetValue(HeartbeatAuthContext.HttpContextItemKey, out var raw)
+            || raw is not HeartbeatAuthContext authContext)
+        {
+            throw new InvalidOperationException("No se pudo resolver el contexto autenticado del heartbeat");
+        }
+
+        var ip = BackendIpAuthorizationHandler.Normalize(HttpContext.Connection.RemoteIpAddress)?.ToString()
+                 ?? throw new InvalidOperationException("No se pudo determinar la IP del heartbeat");
+        _service.ProcesarHeartBeat(authContext, ip);
+        return NoContent();
     }
 }

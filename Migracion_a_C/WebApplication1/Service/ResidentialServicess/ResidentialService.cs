@@ -1,24 +1,26 @@
 ﻿using System.ComponentModel.Design;
-using System.Security.Cryptography;
-using System.Text;
 using Dominio;
 using IDataAcces;
-using IServices.IDevice;
 using IServices.IResidentials;
 using Models.Dominio;
 using Models.WebApi;
 
 namespace Service.ResidentialServicess;
 
-public class ResidentialService(IResidentialsRepository repo, IResidentialEntityService entityService, 
-    IResidentialValidationService validacionService, IResidentialMantenimientoService mantenimientoService
-    , IDeviceService deviceService) : IResidentialService
+public class ResidentialService(
+    IResidentialsRepository repo,
+    IResidentialEntityService entityService,
+    IResidentialValidationService validacionService,
+    IResidentialMantenimientoService mantenimientoService,
+    IDevicesRepository devicesRepository,
+    IDataTransactionManager transactionManager) : IResidentialService
 {
     private IResidentialsRepository db = repo;
     private IResidentialEntityService entity = entityService;
     private IResidentialValidationService validacion = validacionService;
     private IResidentialMantenimientoService mantenimiento = mantenimientoService;
-    private IDeviceService device = deviceService;
+    private readonly IDevicesRepository _devicesRepository = devicesRepository;
+    private readonly IDataTransactionManager _transactionManager = transactionManager;
     
     public Residential ToEntity(ResidentialDto dto)
     {
@@ -73,53 +75,49 @@ public class ResidentialService(IResidentialsRepository repo, IResidentialEntity
         Residential? residential = db.GetById(id);
         if (residential == null)
         {
-            throw new Exception("No se encontro el residential");
+            throw new KeyNotFoundException("No se encontro el residential");
         }
         return FromEntity(residential);
     }
 
-    public void ProcesarHeartBeat(HeartBeatDto dto, string ipNueva)
+    public bool ProcesarHeartBeat(HeartbeatAuthContext authContext, string ipNueva)
     {
-        ResidentialDto residential = GetById(dto.ResidentialId);
-        DeviceDto buscado = EsMio(dto.DeviceId, residential);
-        if (SignatureAprobada(dto.Signature, buscado, dto.TimeStamp))
+        if (string.IsNullOrWhiteSpace(ipNueva))
         {
-            DateTime timeStampEnDateTime = DateTimeOffset.FromUnixTimeSeconds(dto.TimeStamp).UtcDateTime;
-            Residential resiFinal = entity.ToEntity(residential);
-            resiFinal.IpActual = ipNueva;
-            Modificar(resiFinal);
-            buscado._lastSeen = timeStampEnDateTime;
-            device.HeartbeatProcesado(buscado);
+            throw new InvalidOperationException("No se pudo determinar la IP del heartbeat");
         }
-    }
 
-    private DeviceDto EsMio(string deviceId, ResidentialDto residential)
-    {
-        DeviceDto buscado = device.GetById(deviceId);
-        if (buscado._residentialId != residential._idResidential)
-        {
-            throw new Exception("El device no pertenece al residencial");
-        }
-        return buscado;
-    }
-    
-    private bool SignatureAprobada(string signature, DeviceDto deviceBuscado, long timeStamp)
-    {
-        string claveJunta = $"{timeStamp}|{deviceBuscado._deviceId}|{deviceBuscado._residentialId}";
-        var keyBytes = Encoding.UTF8.GetBytes(deviceBuscado._secretKey);
-
-        using var hmac = new HMACSHA256(keyBytes);
-        var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(claveJunta));
-        byte[] sigBytes;
+        using var transaction = _transactionManager.BeginTransaction();
         try
         {
-            sigBytes = Convert.FromHexString(signature);
+            var accepted = _devicesRepository.TryAcceptHeartbeat(
+                authContext.DeviceId,
+                authContext.ResidentialId,
+                authContext.Timestamp,
+                authContext.TimestampUtc.UtcDateTime);
+
+            if (!accepted)
+            {
+                transaction.Rollback();
+                return false;
+            }
+
+            if (!db.TryUpdateIp(authContext.ResidentialId, ipNueva))
+            {
+                throw new KeyNotFoundException("El Residential no existe");
+            }
+
+            transaction.Commit();
+            return true;
         }
         catch
         {
-            return false;
+            transaction.Rollback();
+            throw;
         }
-        return sigBytes.Length == hash.Length
-               && CryptographicOperations.FixedTimeEquals(hash, sigBytes);
+        finally
+        {
+            _transactionManager.ClearTracking();
+        }
     }
 }

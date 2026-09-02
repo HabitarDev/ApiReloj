@@ -12,7 +12,7 @@ public class ResidentialMantenimientoService(IResidentialsRepository residential
     public void Crear(ResidentialDto resiACrear)
     {
         Residential? resiBuscado = _residentialRepo.GetById(resiACrear._idResidential);
-        if (resiBuscado != null) throw  new Exception("El Residential ya existe");
+        if (resiBuscado != null) throw new InvalidOperationException("El Residential ya existe");
         resiBuscado = _residentialEntityService.ToEntity(resiACrear);
         _residentialRepo.Add(resiBuscado);
     }
@@ -20,7 +20,7 @@ public class ResidentialMantenimientoService(IResidentialsRepository residential
     public void Modificar(Residential resiAModificar)
     {
         Residential? resiBuscado = _residentialRepo.GetById(resiAModificar.IdResidential);
-        if (resiBuscado == null) throw  new Exception("El Residential no existe");
+        if (resiBuscado == null) throw new KeyNotFoundException("El Residential no existe");
         resiBuscado.IpActual = resiAModificar.IpActual;
         _residentialRepo.update(resiBuscado);
     }
@@ -28,7 +28,7 @@ public class ResidentialMantenimientoService(IResidentialsRepository residential
     public void Eliminar(string idAEliinar)
     {
         Residential? resiBuscado = _residentialRepo.GetById(idAEliinar);
-        if (resiBuscado == null) throw  new Exception("El Residential no existe");
+        if (resiBuscado == null) throw new KeyNotFoundException("El Residential no existe");
         _residentialRepo.delete(resiBuscado.IdResidential);
     }
 }

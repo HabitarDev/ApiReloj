@@ -81,7 +81,7 @@ public class RelojService (IRelojMantenimientoService mantenimientoService,IRelo
         Reloj? reloj = db.GetById(id);
         if (reloj == null)
         {
-            throw new Exception("No se encontro el reloj");
+            throw new KeyNotFoundException("No se encontro el reloj");
         }
         return FromEntity(reloj);
     }

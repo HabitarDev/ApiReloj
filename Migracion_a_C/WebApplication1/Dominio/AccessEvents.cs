@@ -7,6 +7,7 @@ public class AccessEvents
 
     public AccessEvents(
         string deviceSn,
+        string residentialId,
         long serialNumber,
         DateTimeOffset eventTimeUtc,
         string? timeDevice,
@@ -17,6 +18,7 @@ public class AccessEvents
         string raw)
     {
         DeviceSn = deviceSn;
+        ResidentialId = residentialId;
         SerialNumber = serialNumber;
         EventTimeUtc = eventTimeUtc;
         TimeDevice = timeDevice;
@@ -28,6 +30,7 @@ public class AccessEvents
     }
 
     public string DeviceSn { get; set; } = null!;
+    public string ResidentialId { get; set; } = null!;
     public long SerialNumber { get; set; }
     public DateTimeOffset EventTimeUtc { get; set; }
     public string? TimeDevice { get; set; }
